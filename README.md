@@ -3,7 +3,7 @@ Basic MATLAB tools for Graph Partitioning, including an implementation of the cu
 
 All graphs are generated and required as inpunt in the eg2 format.
 
-Directory GRAPHS contains scripts to generate graphs from various families, including geometric graphs, unions of matchings,...
+Directory GRAPHS contains scripts  graphs from various families, including geometric graphs, unions of matchings,...
 
 Directory GRAPHTOOLS contains matlab scripts to do basic graph processing, including reading graph, printing a graph, computing graph partitioning objective functions.
 
