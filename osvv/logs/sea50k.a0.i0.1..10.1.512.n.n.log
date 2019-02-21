@@ -1,0 +1,270 @@
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.467391
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 0.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.080626. Iter 1. Exp: 484.000000 / 17021 = 0.028435
+
+Best cut found: 484.000000 / 17021. Expansion: 0.028435.
+Algorithm has completed. Time required: 11.600543
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.487483
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 1.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.063838. Iter 1. Exp: 343.000000 / 7689 = 0.044609
+
+Best cut found: 343.000000 / 7689. Expansion: 0.044609.
+Algorithm has completed. Time required: 13.365806
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.501869
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 2.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.069610. Iter 1. Exp: 503.000000 / 21640 = 0.023244
+
+Best cut found: 503.000000 / 21640. Expansion: 0.023244.
+Algorithm has completed. Time required: 13.111636
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.601767
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 3.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 6. Wrat: 0.053947. Iter 1. Exp: 451.000000 / 10202 = 0.044207
+
+Best cut found: 451.000000 / 10202. Expansion: 0.044207.
+Algorithm has completed. Time required: 11.843065
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.559150
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 4.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.081943. Iter 1. Exp: 931.000000 / 20518 = 0.045375
+
+Best cut found: 931.000000 / 20518. Expansion: 0.045375.
+Algorithm has completed. Time required: 12.670733
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.532407
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 5.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.068395. Iter 1. Exp: 335.000000 / 8200 = 0.040854
+
+Best cut found: 335.000000 / 8200. Expansion: 0.040854.
+Algorithm has completed. Time required: 13.524051
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.539484
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 6.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.072377. Iter 1. Exp: 518.000000 / 21313 = 0.024304
+
+Best cut found: 518.000000 / 21313. Expansion: 0.024304.
+Algorithm has completed. Time required: 13.253796
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.588537
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 7.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.073853. Iter 1. Exp: 531.000000 / 23032 = 0.023055
+
+Best cut found: 531.000000 / 23032. Expansion: 0.023055.
+Algorithm has completed. Time required: 13.124344
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.463135
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 8.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 6. Wrat: 0.067491. Iter 1. Exp: 535.000000 / 20601 = 0.025970
+
+Best cut found: 535.000000 / 20601. Expansion: 0.025970.
+Algorithm has completed. Time required: 10.895226
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.480808
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 1.
+Stopping condition: 1
+Learning rate: 10.000000.
+Initialization: 1.000000.
+Random generator seed: 9.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.071732. Iter 1. Exp: 524.000000 / 23059 = 0.022724
+
+Best cut found: 524.000000 / 23059. Expansion: 0.022724.
+Algorithm has completed. Time required: 14.391868

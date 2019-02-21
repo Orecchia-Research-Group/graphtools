@@ -1,0 +1,14 @@
+#! /bin/bash
+if [ $# -ne 3  ]
+then
+	echo "Usage bestof location result_file k-value";
+	exit
+fi
+
+trials=`grep "^r:" $1/$2 |  wc -l`
+
+echo -n "$2:	";
+sort -n -k 3,3 $1/$2 | gawk 'BEGIN{ '"m=$trials; k=$3;"'sum_score=0; sum_score_sq=0; sum_time_sq=0; sum_time=0; sum_prod=0; cnt =0;} 
+                            /^r:/ {if(seed[$2] == 1) {next;} else {seed[$2] = 1; cnt++}; p = (m-cnt+1)^k - (m-cnt)^k; sum_score += $3*p; sum_time += $6*p; sum_score_sq += $3*$3*p; sum_time_sq += $6*$6*p; sum_prod +=$3*$6*p;};
+			    END {if(m != cnt) {prinf "Error.\n"; quit;}; avg_score = sum_score/m^k; var_score = sum_score_sq/m^k-avg_score^2; if(var_score < 0) var_score=0; avg_time = sum_time/m^k; var_time = sum_time_sq/m^k - avg_time^2; if(var_score > 0 && var_time > 0) { cor = (sum_prod/m^k - avg_time*avg_score)/(sqrt(var_score*var_time))} else {cor = "0"};
+				print avg_score "\t" sqrt(var_score) "\t" avg_time "\t" sqrt(var_time) "\t" cor;}' 

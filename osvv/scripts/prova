@@ -1,0 +1,340 @@
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.669507
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 20.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.558071
+Number of maxflows: 5. Wrat: 0.188947. Iter 1. Exp: 832.000000 / 4871 = 0.170807
+
+Best cut found: 832.000000 / 4871. Expansion: 0.170807.
+Algorithm has completed. Time required: 2.170843
+r:	20	0.170807	832	4871	2.170843	0.669507	1	0.000000	5	1.558071	0.595812
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.648565
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 21.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.524788
+Number of maxflows: 6. Wrat: 0.201805. Iter 1. Exp: 738.000000 / 4567 = 0.161594
+
+Best cut found: 738.000000 / 4567. Expansion: 0.161594.
+Algorithm has completed. Time required: 2.316043
+r:	21	0.161594	738	4567	2.316043	0.648565	1	0.000000	6	1.524788	0.779749
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.653104
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 22.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.536870
+Number of maxflows: 5. Wrat: 0.185441. Iter 1. Exp: 698.000000 / 4378 = 0.159434
+
+Best cut found: 698.000000 / 4378. Expansion: 0.159434.
+Algorithm has completed. Time required: 2.110863
+r:	22	0.159434	698	4378	2.110863	0.653104	1	0.000000	5	1.536870	0.562502
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.658325
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 23.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.543651
+Number of maxflows: 5. Wrat: 0.219862. Iter 1. Exp: 890.000000 / 4908 = 0.181337
+
+Best cut found: 890.000000 / 4908. Expansion: 0.181337.
+Algorithm has completed. Time required: 2.128268
+r:	23	0.181337	890	4908	2.128268	0.658325	1	0.000000	5	1.543651	0.572662
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.629119
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 24.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.470479
+Number of maxflows: 5. Wrat: 0.179905. Iter 1. Exp: 761.000000 / 4950 = 0.153737
+
+Best cut found: 761.000000 / 4950. Expansion: 0.153737.
+Algorithm has completed. Time required: 2.100348
+r:	24	0.153737	761	4950	2.100348	0.629119	1	0.000000	5	1.470479	0.618133
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.646175
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 25.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.592036
+Number of maxflows: 5. Wrat: 0.169927. Iter 1. Exp: 773.000000 / 4995 = 0.154755
+
+Best cut found: 773.000000 / 4995. Expansion: 0.154755.
+Algorithm has completed. Time required: 2.179426
+r:	25	0.154755	773	4995	2.179426	0.646175	1	0.000000	5	1.592036	0.576061
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.665419
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 26.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.585231
+Number of maxflows: 5. Wrat: 0.189289. Iter 1. Exp: 767.000000 / 4988 = 0.153769
+
+Best cut found: 767.000000 / 4988. Expansion: 0.153769.
+Algorithm has completed. Time required: 2.146430
+r:	26	0.153769	767	4988	2.146430	0.665419	1	0.000000	5	1.585231	0.549578
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.663619
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 27.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.523975
+Number of maxflows: 5. Wrat: 0.198893. Iter 1. Exp: 683.000000 / 3456 = 0.197627
+
+Best cut found: 683.000000 / 3456. Expansion: 0.197627.
+Algorithm has completed. Time required: 2.084084
+r:	27	0.197627	683	3456	2.084084	0.663619	1	0.000000	5	1.523975	0.547339
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.693307
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 28.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.529939
+Number of maxflows: 5. Wrat: 0.188001. Iter 1. Exp: 727.000000 / 4879 = 0.149006
+
+Best cut found: 727.000000 / 4879. Expansion: 0.149006.
+Algorithm has completed. Time required: 2.066017
+r:	28	0.149006	727	4879	2.066017	0.693307	1	0.000000	5	1.529939	0.524623
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+    ----------------------------------------------------------
+        Your MATLAB license will expire in 43 days.
+        Please contact your system administrator or
+        The MathWorks to renew this license.
+    ----------------------------------------------------------
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 0.655647
+
+Running on ...
+Graph: ../data/geo10kplus/geo10kplus.000.eg2. Number of vertices: 10000. Number of edges: 58935.
+Number of iterations: 1.
+Stopping condition: 1.
+Learning rate: 10.000000.
+Initialization: 10.000000.
+Random generator seed: 29.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+1.407937
+Number of maxflows: 5. Wrat: 0.189076. Iter 1. Exp: 810.000000 / 4340 = 0.186636
+
+Best cut found: 810.000000 / 4340. Expansion: 0.186636.
+Algorithm has completed. Time required: 1.925760
+r:	29	0.186636	810	4340	1.925760	0.655647	1	0.000000	5	1.407937	0.506573

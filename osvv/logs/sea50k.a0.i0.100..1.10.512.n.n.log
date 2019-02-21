@@ -1,0 +1,544 @@
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 4.371307
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 0.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.080626. Iter 1. Exp: 484.000000 / 17021 = 0.028435
+Number of maxflows: 4. Wrat: 0.063919. Iter 2. Exp: 484.000000 / 17021 = 0.028435
+Number of maxflows: 3. Wrat: 0.038803. Iter 3. Exp: 484.000000 / 17021 = 0.028435
+Number of maxflows: 4. Wrat: 0.028837. Iter 4. Exp: 462.000000 / 20797 = 0.022215
+Number of maxflows: 2. Wrat: 0.028837. Iter 5. Exp: 462.000000 / 20797 = 0.022215
+Number of maxflows: 2. Wrat: 0.028837. Iter 6. Exp: 462.000000 / 20797 = 0.022215
+
+Best cut found: 462.000000 / 20797. Expansion: 0.022215.
+Algorithm has completed. Time required: 159.420351
+Number of maxflows: 4. Wrat: 0.023702. Iter 7. Exp: 465.000000 / 22649 = 0.020531
+Number of maxflows: 3. Wrat: 0.022698. Iter 8. Exp: 465.000000 / 22649 = 0.020531
+Number of maxflows: 2. Wrat: 0.022698. Iter 9. Exp: 465.000000 / 22649 = 0.020531
+Number of maxflows: 2. Wrat: 0.022698. Iter 10. Exp: 465.000000 / 22649 = 0.020531
+Number of maxflows: 2. Wrat: 0.022698. Iter 11. Exp: 465.000000 / 22649 = 0.020531
+Number of maxflows: 2. Wrat: 0.022698. Iter 12. Exp: 465.000000 / 22649 = 0.020531
+Number of maxflows: 2. Wrat: 0.022698. Iter 13. Exp: 465.000000 / 22649 = 0.020531
+
+Best cut found: 465.000000 / 22649. Expansion: 0.020531.
+Algorithm has completed. Time required: 390.696240
+Number of maxflows: 3. Wrat: 0.021576. Iter 14. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 15. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 16. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 17. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 18. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 19. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 20. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 21. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 22. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 23. Exp: 440.000000 / 21823 = 0.020162
+Number of maxflows: 2. Wrat: 0.021576. Iter 24. Exp: 440.000000 / 21823 = 0.020162
+
+Best cut found: 440.000000 / 21823. Expansion: 0.020162.
+Algorithm has completed. Time required: 784.522126
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 4.167681
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 1.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.063838. Iter 1. Exp: 343.000000 / 7689 = 0.044609
+Number of maxflows: 4. Wrat: 0.046873. Iter 2. Exp: 452.000000 / 13097 = 0.034512
+Number of maxflows: 2. Wrat: 0.046873. Iter 3. Exp: 452.000000 / 13097 = 0.034512
+Number of maxflows: 4. Wrat: 0.023903. Iter 4. Exp: 508.000000 / 24619 = 0.020634
+Number of maxflows: 2. Wrat: 0.023903. Iter 5. Exp: 508.000000 / 24619 = 0.020634
+Number of maxflows: 2. Wrat: 0.023903. Iter 6. Exp: 508.000000 / 24619 = 0.020634
+
+Best cut found: 508.000000 / 24619. Expansion: 0.020634.
+Algorithm has completed. Time required: 170.700461
+Number of maxflows: 2. Wrat: 0.023903. Iter 7. Exp: 508.000000 / 24619 = 0.020634
+Number of maxflows: 4. Wrat: 0.020936. Iter 8. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.020936. Iter 9. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.020936. Iter 10. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.020936. Iter 11. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.020936. Iter 12. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.020936. Iter 13. Exp: 480.000000 / 24870 = 0.019300
+
+Best cut found: 480.000000 / 24870. Expansion: 0.019300.
+Algorithm has completed. Time required: 404.517653
+Number of maxflows: 2. Wrat: 0.020936. Iter 14. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.020936. Iter 15. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 3. Wrat: 0.019969. Iter 16. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 17. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 18. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 19. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 20. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 21. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 22. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 23. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 24. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 25. Exp: 480.000000 / 24870 = 0.019300
+Number of maxflows: 2. Wrat: 0.019969. Iter 26. Exp: 480.000000 / 24870 = 0.019300
+
+Best cut found: 480.000000 / 24870. Expansion: 0.019300.
+Algorithm has completed. Time required: 805.935979
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 5.050447
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 2.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.069610. Iter 1. Exp: 503.000000 / 21640 = 0.023244
+Number of maxflows: 2. Wrat: 0.069610. Iter 2. Exp: 503.000000 / 21640 = 0.023244
+Number of maxflows: 3. Wrat: 0.061759. Iter 3. Exp: 503.000000 / 21640 = 0.023244
+Number of maxflows: 4. Wrat: 0.047456. Iter 4. Exp: 503.000000 / 21640 = 0.023244
+Number of maxflows: 4. Wrat: 0.024289. Iter 5. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 2. Wrat: 0.024289. Iter 6. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 2. Wrat: 0.024289. Iter 7. Exp: 474.000000 / 23741 = 0.019965
+
+Best cut found: 474.000000 / 23741. Expansion: 0.019965.
+Algorithm has completed. Time required: 158.435975
+Number of maxflows: 3. Wrat: 0.022253. Iter 8. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 2. Wrat: 0.022253. Iter 9. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 2. Wrat: 0.022253. Iter 10. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 3. Wrat: 0.021470. Iter 11. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 2. Wrat: 0.021470. Iter 12. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 3. Wrat: 0.021256. Iter 13. Exp: 474.000000 / 23741 = 0.019965
+Number of maxflows: 3. Wrat: 0.020778. Iter 14. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 15. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 16. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 17. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 18. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 19. Exp: 470.000000 / 24990 = 0.018808
+
+Best cut found: 470.000000 / 24990. Expansion: 0.018808.
+Algorithm has completed. Time required: 495.535832
+Number of maxflows: 2. Wrat: 0.020778. Iter 20. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 21. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 22. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 23. Exp: 470.000000 / 24990 = 0.018808
+Number of maxflows: 2. Wrat: 0.020778. Iter 24. Exp: 470.000000 / 24990 = 0.018808
+
+Best cut found: 470.000000 / 24990. Expansion: 0.018808.
+Algorithm has completed. Time required: 619.851251
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 5.412309
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 3.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 6. Wrat: 0.053947. Iter 1. Exp: 451.000000 / 10202 = 0.044207
+Number of maxflows: 2. Wrat: 0.053947. Iter 2. Exp: 451.000000 / 10202 = 0.044207
+Number of maxflows: 3. Wrat: 0.044898. Iter 3. Exp: 480.000000 / 19173 = 0.025035
+Number of maxflows: 4. Wrat: 0.043322. Iter 4. Exp: 480.000000 / 19173 = 0.025035
+Number of maxflows: 3. Wrat: 0.039112. Iter 5. Exp: 480.000000 / 19173 = 0.025035
+Number of maxflows: 3. Wrat: 0.038983. Iter 6. Exp: 480.000000 / 19173 = 0.025035
+Number of maxflows: 4. Wrat: 0.023285. Iter 7. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 3. Wrat: 0.020996. Iter 8. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 9. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 10. Exp: 444.000000 / 22022 = 0.020162
+
+Best cut found: 444.000000 / 22022. Expansion: 0.020162.
+Algorithm has completed. Time required: 255.718145
+Number of maxflows: 2. Wrat: 0.020996. Iter 11. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 12. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 13. Exp: 444.000000 / 22022 = 0.020162
+
+Best cut found: 444.000000 / 22022. Expansion: 0.020162.
+Algorithm has completed. Time required: 350.731518
+Number of maxflows: 2. Wrat: 0.020996. Iter 14. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 15. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 16. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 17. Exp: 444.000000 / 22022 = 0.020162
+Number of maxflows: 2. Wrat: 0.020996. Iter 18. Exp: 444.000000 / 22022 = 0.020162
+
+Best cut found: 444.000000 / 22022. Expansion: 0.020162.
+Algorithm has completed. Time required: 528.995675
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 4.856468
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 4.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.081943. Iter 1. Exp: 931.000000 / 20518 = 0.045375
+Number of maxflows: 4. Wrat: 0.039359. Iter 2. Exp: 491.000000 / 19857 = 0.024727
+Number of maxflows: 2. Wrat: 0.039359. Iter 3. Exp: 491.000000 / 19857 = 0.024727
+Number of maxflows: 2. Wrat: 0.039359. Iter 4. Exp: 491.000000 / 19857 = 0.024727
+
+Best cut found: 491.000000 / 19857. Expansion: 0.024727.
+Algorithm has completed. Time required: 93.079877
+Number of maxflows: 4. Wrat: 0.023773. Iter 5. Exp: 499.000000 / 22746 = 0.021938
+Number of maxflows: 2. Wrat: 0.023773. Iter 6. Exp: 499.000000 / 22746 = 0.021938
+Number of maxflows: 2. Wrat: 0.023773. Iter 7. Exp: 499.000000 / 22746 = 0.021938
+Number of maxflows: 3. Wrat: 0.019495. Iter 8. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 9. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 10. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 11. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 12. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 13. Exp: 434.000000 / 22320 = 0.019444
+
+Best cut found: 434.000000 / 22320. Expansion: 0.019444.
+Algorithm has completed. Time required: 344.719914
+Number of maxflows: 2. Wrat: 0.019495. Iter 14. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 15. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 16. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 17. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.019495. Iter 18. Exp: 434.000000 / 22320 = 0.019444
+
+Best cut found: 434.000000 / 22320. Expansion: 0.019444.
+Algorithm has completed. Time required: 487.846404
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.875118
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 5.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.068395. Iter 1. Exp: 335.000000 / 8200 = 0.040854
+Number of maxflows: 4. Wrat: 0.041063. Iter 2. Exp: 476.000000 / 23900 = 0.019916
+Number of maxflows: 3. Wrat: 0.037316. Iter 3. Exp: 476.000000 / 23900 = 0.019916
+Number of maxflows: 3. Wrat: 0.028351. Iter 4. Exp: 476.000000 / 23900 = 0.019916
+Number of maxflows: 2. Wrat: 0.028351. Iter 5. Exp: 476.000000 / 23900 = 0.019916
+Number of maxflows: 2. Wrat: 0.028351. Iter 6. Exp: 476.000000 / 23900 = 0.019916
+
+Best cut found: 476.000000 / 23900. Expansion: 0.019916.
+Algorithm has completed. Time required: 136.197656
+Number of maxflows: 4. Wrat: 0.023112. Iter 7. Exp: 488.000000 / 24561 = 0.019869
+Number of maxflows: 3. Wrat: 0.022497. Iter 8. Exp: 478.000000 / 24397 = 0.019593
+Number of maxflows: 2. Wrat: 0.022497. Iter 9. Exp: 478.000000 / 24397 = 0.019593
+Number of maxflows: 3. Wrat: 0.020897. Iter 10. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 11. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 12. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 13. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 14. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 15. Exp: 438.000000 / 22512 = 0.019456
+
+Best cut found: 438.000000 / 22512. Expansion: 0.019456.
+Algorithm has completed. Time required: 403.221082
+Number of maxflows: 2. Wrat: 0.020897. Iter 16. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 17. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 18. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 19. Exp: 438.000000 / 22512 = 0.019456
+Number of maxflows: 2. Wrat: 0.020897. Iter 20. Exp: 438.000000 / 22512 = 0.019456
+
+Best cut found: 438.000000 / 22512. Expansion: 0.019456.
+Algorithm has completed. Time required: 553.664140
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.754260
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 6.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.072377. Iter 1. Exp: 518.000000 / 21313 = 0.024304
+Number of maxflows: 3. Wrat: 0.061547. Iter 2. Exp: 518.000000 / 21313 = 0.024304
+Number of maxflows: 4. Wrat: 0.055889. Iter 3. Exp: 518.000000 / 21313 = 0.024304
+Number of maxflows: 4. Wrat: 0.034123. Iter 4. Exp: 518.000000 / 21313 = 0.024304
+Number of maxflows: 4. Wrat: 0.024337. Iter 5. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 3. Wrat: 0.023960. Iter 6. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 2. Wrat: 0.023960. Iter 7. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 2. Wrat: 0.023960. Iter 8. Exp: 434.000000 / 22303 = 0.019459
+
+Best cut found: 434.000000 / 22303. Expansion: 0.019459.
+Algorithm has completed. Time required: 209.057422
+Number of maxflows: 3. Wrat: 0.023901. Iter 9. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 3. Wrat: 0.022099. Iter 10. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 2. Wrat: 0.022099. Iter 11. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 2. Wrat: 0.022099. Iter 12. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 2. Wrat: 0.022099. Iter 13. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 2. Wrat: 0.022099. Iter 14. Exp: 434.000000 / 22303 = 0.019459
+Number of maxflows: 3. Wrat: 0.020275. Iter 15. Exp: 434.000000 / 22318 = 0.019446
+Number of maxflows: 2. Wrat: 0.020275. Iter 16. Exp: 434.000000 / 22318 = 0.019446
+Number of maxflows: 2. Wrat: 0.020275. Iter 17. Exp: 434.000000 / 22318 = 0.019446
+Number of maxflows: 2. Wrat: 0.020275. Iter 18. Exp: 434.000000 / 22318 = 0.019446
+Number of maxflows: 2. Wrat: 0.020275. Iter 19. Exp: 434.000000 / 22318 = 0.019446
+Number of maxflows: 2. Wrat: 0.020275. Iter 20. Exp: 434.000000 / 22318 = 0.019446
+
+Best cut found: 434.000000 / 22318. Expansion: 0.019446.
+Algorithm has completed. Time required: 448.786536
+Number of maxflows: 3. Wrat: 0.020106. Iter 21. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 22. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 23. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 24. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 25. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 26. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 27. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 28. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 29. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 30. Exp: 434.000000 / 22320 = 0.019444
+Number of maxflows: 2. Wrat: 0.020106. Iter 31. Exp: 434.000000 / 22320 = 0.019444
+
+Best cut found: 434.000000 / 22320. Expansion: 0.019444.
+Algorithm has completed. Time required: 781.521674
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 4.261006
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 7.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.073853. Iter 1. Exp: 531.000000 / 23032 = 0.023055
+Number of maxflows: 4. Wrat: 0.056735. Iter 2. Exp: 531.000000 / 23032 = 0.023055
+Number of maxflows: 4. Wrat: 0.054378. Iter 3. Exp: 531.000000 / 23032 = 0.023055
+Number of maxflows: 3. Wrat: 0.026894. Iter 4. Exp: 531.000000 / 23032 = 0.023055
+Number of maxflows: 3. Wrat: 0.025995. Iter 5. Exp: 484.000000 / 22645 = 0.021373
+Number of maxflows: 3. Wrat: 0.020485. Iter 6. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 7. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 8. Exp: 483.000000 / 24002 = 0.020123
+
+Best cut found: 483.000000 / 24002. Expansion: 0.020123.
+Algorithm has completed. Time required: 234.200116
+Number of maxflows: 2. Wrat: 0.020485. Iter 9. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 10. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 11. Exp: 483.000000 / 24002 = 0.020123
+
+Best cut found: 483.000000 / 24002. Expansion: 0.020123.
+Algorithm has completed. Time required: 334.030277
+Number of maxflows: 2. Wrat: 0.020485. Iter 12. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 13. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 14. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 15. Exp: 483.000000 / 24002 = 0.020123
+Number of maxflows: 2. Wrat: 0.020485. Iter 16. Exp: 483.000000 / 24002 = 0.020123
+
+Best cut found: 483.000000 / 24002. Expansion: 0.020123.
+Algorithm has completed. Time required: 506.173756
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 4.073174
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 8.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 6. Wrat: 0.067491. Iter 1. Exp: 535.000000 / 20601 = 0.025970
+Number of maxflows: 3. Wrat: 0.056359. Iter 2. Exp: 535.000000 / 20601 = 0.025970
+Number of maxflows: 3. Wrat: 0.035401. Iter 3. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 4. Wrat: 0.031231. Iter 4. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 2. Wrat: 0.031231. Iter 5. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 3. Wrat: 0.021740. Iter 6. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 2. Wrat: 0.021740. Iter 7. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 2. Wrat: 0.021740. Iter 8. Exp: 504.000000 / 24373 = 0.020679
+
+Best cut found: 504.000000 / 24373. Expansion: 0.020679.
+Algorithm has completed. Time required: 216.450246
+Number of maxflows: 2. Wrat: 0.021740. Iter 9. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 2. Wrat: 0.021740. Iter 10. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 2. Wrat: 0.021740. Iter 11. Exp: 504.000000 / 24373 = 0.020679
+
+Best cut found: 504.000000 / 24373. Expansion: 0.020679.
+Algorithm has completed. Time required: 310.854744
+Number of maxflows: 2. Wrat: 0.021740. Iter 12. Exp: 504.000000 / 24373 = 0.020679
+Number of maxflows: 3. Wrat: 0.020513. Iter 13. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 2. Wrat: 0.020513. Iter 14. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 2. Wrat: 0.020513. Iter 15. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 2. Wrat: 0.020513. Iter 16. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 2. Wrat: 0.020513. Iter 17. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 2. Wrat: 0.020513. Iter 18. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 2. Wrat: 0.020513. Iter 19. Exp: 481.000000 / 24805 = 0.019391
+Number of maxflows: 3. Wrat: 0.020289. Iter 20. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 21. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 22. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 23. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 24. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 25. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 26. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 27. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 28. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 29. Exp: 457.000000 / 24746 = 0.018468
+Number of maxflows: 2. Wrat: 0.020289. Iter 30. Exp: 457.000000 / 24746 = 0.018468
+
+Best cut found: 457.000000 / 24746. Expansion: 0.018468.
+Algorithm has completed. Time required: 1015.707166
+
+                              < M A T L A B >
+                  Copyright 1984-2006 The MathWorks, Inc.
+                         Version 7.3.0.298 (R2006b)
+                              August 03, 2006
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+Initialization complete. Time required: 3.845726
+
+Running on ...
+Graph: /home/eecs/orecchia/yahoo/graphs/sea50k-dir/sea50k.a0.i0.eg2. Number of vertices: 50000. Number of edges: 316806.
+Number of iterations: 100.
+Stopping condition: 2 5 10
+Learning rate: 1.000000.
+Initialization: 10.000000.
+Random generator seed: 9.000000.
+Flow precision: 512.
+Run rate: n.
+Lower bound: n.
+Number of maxflows: 7. Wrat: 0.071732. Iter 1. Exp: 524.000000 / 23059 = 0.022724
+Number of maxflows: 3. Wrat: 0.055332. Iter 2. Exp: 524.000000 / 23059 = 0.022724
+Number of maxflows: 4. Wrat: 0.032091. Iter 3. Exp: 524.000000 / 23059 = 0.022724
+Number of maxflows: 2. Wrat: 0.032091. Iter 4. Exp: 524.000000 / 23059 = 0.022724
+Number of maxflows: 3. Wrat: 0.024088. Iter 5. Exp: 524.000000 / 23059 = 0.022724
+Number of maxflows: 2. Wrat: 0.024088. Iter 6. Exp: 524.000000 / 23059 = 0.022724
+Number of maxflows: 3. Wrat: 0.022274. Iter 7. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 8. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 9. Exp: 477.000000 / 22293 = 0.021397
+
+Best cut found: 477.000000 / 22293. Expansion: 0.021397.
+Algorithm has completed. Time required: 262.018303
+Number of maxflows: 2. Wrat: 0.022274. Iter 10. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 11. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 12. Exp: 477.000000 / 22293 = 0.021397
+
+Best cut found: 477.000000 / 22293. Expansion: 0.021397.
+Algorithm has completed. Time required: 360.612680
+Number of maxflows: 2. Wrat: 0.022274. Iter 13. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 14. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 15. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 16. Exp: 477.000000 / 22293 = 0.021397
+Number of maxflows: 2. Wrat: 0.022274. Iter 17. Exp: 477.000000 / 22293 = 0.021397
+
+Best cut found: 477.000000 / 22293. Expansion: 0.021397.
+Algorithm has completed. Time required: 528.987330

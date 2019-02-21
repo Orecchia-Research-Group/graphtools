@@ -1,0 +1,17 @@
+#! /bin/bash
+# WRAPPER SCRIPT: allows the access to the cutfind function from the shell and handles multiple iterations with different seeds. Results are appended to result file in ../results directory.
+#                  Logs are appended to log file in ../logs directory.
+
+# USAGE
+if [ "$#" -ne 11 ]
+then
+   echo "Usage: wrapper eg2file_directory eg2file(no.eg2) max_iter  stop eta init seedstart #trial precision rate_spec lwbd"
+   exit 65
+fi
+
+
+# RUN
+for((i=$7; i <$7+$8; i++)); do
+   echo "cd ../final; cutfind('$1/$2.eg2', 1,'', $3, $4, $5, $6, $i, $9, '${10}', '${11}', 1); quit ;" 
+#| matlab -nojvm -nodesktop -nosplash -nodisplay 
+done

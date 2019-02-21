@@ -1,0 +1,11 @@
+#! /bin/bash
+if [ $# -ne 2  ]
+then
+	echo "Usage statsscript result location result_file";
+	exit
+fi
+
+echo -n "$2:	";
+gawk 'BEGIN {min = +9999999999999999999999; max = 0;};
+      /^r:/ {if(seed[$2] == 1) {next;} else {seed[$2] = 1;}; score_sum += $3; time_sum += $6; score_sumsq += $3*$3; time_sumsq +=$6*$6; cnt = cnt +1; if($3 < min){ min = $3; min_num = $4; min_den = $5}; if($9 > max) { max = $9}; iter_sum += $8; iter_sumsq += $8*$8; flow_sum += $10; flow_sumsq += $10*$10;};  
+      END   {var = score_sumsq/cnt - (score_sum/cnt)^2 ; if (var < 0) var = 0; print score_sum/cnt "\t" sqrt(var)  "\t" time_sum/cnt "\t" sqrt(time_sumsq/cnt - (time_sum/cnt)^2) "\t" min "\t" min_num "\t" min_den "\t" max "\t" cnt "\t" iter_sum/cnt "\t" sqrt(iter_sumsq/cnt - (iter_sum/cnt)^2) "\t" flow_sum/cnt "\t" sqrt(flow_sumsq/cnt - (flow_sum/cnt)^2);}' $1/$2

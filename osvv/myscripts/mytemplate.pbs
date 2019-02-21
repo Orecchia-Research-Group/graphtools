@@ -1,0 +1,46 @@
+#! /bin/bash
+
+### Set the job name
+#PBS -N %1
+
+### Email
+### PBS -M orecchia@eecs.berkeley.edu
+
+### Queue
+#PBS -q batch
+
+### machines # and kind
+#PBS -l nodes=%2:%3
+
+### memory requirements
+#PBS -l mem=%4
+
+### Time requirements
+#PBS -l walltime=%5
+
+echo Working directory is ~/yahoo/kevin2/orecchia/myscripts
+cd ~/yahoo/kevin2/orecchia/myscripts
+
+#
+### Run some informational commands.
+echo Running on host `hostname`
+echo Time is `date`
+echo Directory is `pwd`
+echo This jobs runs on the following processors:
+echo `cat $PBS_NODEFILE`
+### Define number of processors
+NPROCS=`wc -l < $PBS_NODEFILE`
+echo This job has allocated $NPROCS cpus
+#
+
+### Use gexec to run a program on the assigned processors.  $GEXEC_SVRS is automatically defined for you.
+#gexec -n 0 myprogram
+#
+### Alternatively, run a parallel MPI executable.
+#mpirun -v -machinefile $PBS_NODEFILE -np $NPROCS mympiprogram
+#
+### Or, if you're running on only one node, run your executable directly:
+#/some/path/to/a/binary
+bash
+source ~/.bashrc
+%6

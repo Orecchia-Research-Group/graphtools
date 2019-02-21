@@ -1,0 +1,57 @@
+#! /bin/bash
+# FULLSUITE SCRIPT: this script runs the whole suite of experiments for a given graph. 
+
+#USAGE
+#fullsuite graph_location graph_name(noeg2) seedstart #trials seedstart_special #trials_special
+
+# USAGE
+if [ "$#" -ne 6 ]
+then
+   echo "fullsuite graph_location graph_name(noeg2) seedstart #trials seedstart_special #trials_special"
+   exit 65
+fi
+
+#  FAST RUNS
+#ESTABLISH MODES
+t=100
+stop="[2 5 10]"
+eta=( 1 10 100)
+init=( 0 10 100)
+p=512
+
+#RUN
+   for((ieta=0; ieta < 3; ieta++)); do
+      for((iinit=0; iinit < 3; iinit++)); do
+               ../scripts/wrapper $1 $2 $t "$stop" ${eta[ieta]} ${init[iinit]} $3 $4 $p 'n' 'n'
+      done
+   done
+
+#RUN INFTy
+init=( 0.0001 100 10000)
+for((iinit=0; iinit < 3; iinit++)); do
+   ../scripts/wrapper $1 $2 $t "$stop" 1 ${init[iinit]} 0 1 $p 'infty' 'n'
+done
+
+# ONE SHOT EXPONENTIAL RUNS
+eta=( 10 100 1000)
+init=1
+
+for((ieta=0; ieta < 3; ieta++)); do
+    ../scripts/wrapper $1 $2 1 1 ${eta[ieta]} 1 $5 $6 $p 'n' 'n'
+done
+
+# SLOW RUNS
+#MODES
+#t=200
+#stop="[10 20]"
+#eta=.1
+#init=( 0 100)
+#rate='n'
+#lwbd='n'
+#p=512
+#
+#RUN
+#for((iinit=0; iinit < 2; iinit++)); do
+#     ../scripts/wrapper $1 $2 $t "$stop" $eta ${init[iinit]} $3 $4 $p 'n' 'n'
+# done
+
