@@ -1,0 +1,25 @@
+#!/bin/bash -l
+
+#-N DEFINED IN wd_start_tasks.sh
+#$-l mem_per_core=8G
+#$-pe omp 8
+#$-m a
+#$-j y
+#$-l h_rt=48:00:00
+#-q !linga
+#$-l cpu_arch=!bulldozer
+#$-t 1-50
+#$-P salabs
+#$-o logs
+
+module load R/3.2.3
+
+#Arguments
+#1. weighted diameter threshold
+#2. edge weight column (3, 4 or 5)
+#3. number of groups
+
+# run fuzzyGraph in R
+time Rscript wd_fuzzyGraph_tasks.R $1 3 50
+
+
