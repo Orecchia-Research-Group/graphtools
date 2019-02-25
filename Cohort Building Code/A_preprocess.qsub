@@ -1,0 +1,15 @@
+#!/bin/bash -l
+
+#$-N A_preprocess
+#$-m ea
+#$-l mem_per_core=8G
+#$-pe omp 16
+#$-j y
+#$-l h_rt=12:00:00
+#$-q !linga
+#$-P salabs
+#$-o logs
+
+# Run pre-processing code
+stata-mp -b do A_preprocess_26apr2017.do
+
