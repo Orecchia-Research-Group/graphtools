@@ -84,6 +84,7 @@ size_stop = size(stop,2);
 if(size_stop <1)
    error(error_string, 'stopping condition');
 end
+
 for k=1:size_stop
   if(stop(k) < 1)
     error(error_string, 'stopping condition');
@@ -117,7 +118,7 @@ tic;
 rand('twister', seed);
 
 % READ GRAPH G
-[G, n, m] = loadeg2graph(FileToRead);
+[G, n, ~] = loadeg2graph(FileToRead);
  
 % ERROR CHECKING: G MUST BE UNDIRECTED
 if(nnz(G - G') ~= 0)
@@ -218,20 +219,23 @@ for i=1:double(t)
     
     % LEARNING RATE INITIALIZATION
     if(strcmp(rate,'d'))      
-      eta = eta*sqrt(8*log(n)/i);
+      current_eta = eta*sqrt(8*log(n)/i);
+    else
+      current_eta = eta;
     end
    
     % SPECTRAL PARTITIONING
-    %% SECOOND EIGENVALUE
+    %% SECOND EIGENVALUE
     if(strcmp(rate,'infty'))
        opts.k = 2;
        opts.tol = 0.001;
-       opts.sigma = 'se';
-       [temp, trash ] = irbleigs(D-H, opts);
+       opts.sigma = 'sa';
+
+       [temp, trash ] = eigs(D-H, 2, 'SA', opts);
        u=temp([1:n],2);
     else
 %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
-    u = expv((-1)*eta, (D - H), v);
+    u = expv((-1)*current_eta, (D - H), v);
 %%%                   %%%
     end
     spectime = spectime + toc(tSpectral);
@@ -251,7 +255,7 @@ for i=1:double(t)
     % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW    
     [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching);
     flowtime = flowtime + toc(tFlow);
-
+    % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));
     % UPDATE LOWER BOUND
     congestion = congestion +1/matchrat;
 
@@ -280,7 +284,7 @@ for i=1:double(t)
     end
 
     % PRINT CURRENT RESULT
-    fprintf(2, 'Wrat: %f. Iter %d. Exp: %f / %d = %f\n', minweirdrat, i, minexp_num, minexp_den, minexp);
+    fprintf(2, 'Wrat: %f. Iter %d. Exp: %f / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
 
 
     
@@ -309,6 +313,7 @@ for i=1:double(t)
       lowertime = toc(tLower);
    
    % PRINT RUN RESULTS TO OUTPUT FILE
+      fprintf(output(stop_cnt), 'r:\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n', 'seed', 'minexp', 'minexp_num', 'minexp_den', 'endtime', 'inittime', 'i', 'lower', 'flownumber', 'spectime', 'flowtime', 'lowertime');
       fprintf(output(stop_cnt), 'r:\t%d\t%f\t%d\t%d\t%f\t%f\t%d\t%f\t%d\t%f\t%f\t%f\n', seed, minexp, minexp_num, minexp_den, endtime, inittime, i, lower, flownumber, spectime, flowtime, lowertime);
 
       if(~strcmp(lwbd, 'n'))
