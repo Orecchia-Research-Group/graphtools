@@ -42,7 +42,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #define MAXLONG 1000000000
 
 #include "types.h"          /* type definitions */
-/* #include "flow.h" */
+/* #include "   flow.h" */
 #include "timer.h"        /* timing routine */
 
 /* MATLAB INTEGRATION LIBS */

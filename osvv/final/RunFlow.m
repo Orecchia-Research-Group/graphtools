@@ -66,33 +66,33 @@ counter = 0;
 while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
   
 
-%%% [cap_add, cap_orig] = Farey(int64(cap_add), cap_orig, int64(100));
-cap_add = int64(weirdrat_num);
-cap_orig = weirdrat_den;
+    %%% [cap_add, cap_orig] = Farey(int64(cap_add), cap_orig, int64(100));
+    cap_add = int64(weirdrat_num);
+    cap_orig = weirdrat_den;
 
 
-[flow, cut] = Pairing(G, bisec, cap_add, cap_orig); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
-   
-  counter = counter + 1;
+    [flow, cut] = Pairing(G, bisec, cap_add, cap_orig); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
 
-if(flow < double(size_bisec) * weirdrat_num) % IF BETTER CUT FOUND
-  %CHANGES    
-  found_flag = int8(1);
-[weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, bisec); % COMPUTE NEW WEIRDRAT
+      counter = counter + 1;
+
+    if(flow < double(size_bisec) * weirdrat_num) % IF BETTER CUT FOUND
+      %CHANGES    
+        found_flag = int8(1);
+        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, bisec); % COMPUTE NEW WEIRDRAT
       
-      % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
-      [newex_num, newex_den, newex] = cutexp(G, cut);
-      if(newex < ex)
-        ex_num = newex_num;
-        ex_den = int64(newex_den);
-        ex = newex;  
-        bestcut = cut;
-      end
-      % PLACE HERE CODE TO PRINT EXPANSION GRAPH
+        % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
+        [newex_num, newex_den, newex] = cutexp(G, cut);
+        if(newex < ex)
+            ex_num = newex_num;
+            ex_den = int64(newex_den);
+            ex = newex;  
+            bestcut = cut;
+        end
+        % PLACE HERE CODE TO PRINT EXPANSION GRAPH
 
-   else  % OTHERWISE STOP 
+    else  % OTHERWISE STOP 
         found_flag = int8(0); 
-   end
+    end
 end
      
 	fprintf(2, 'Number of maxflows: %d. ', counter + 1);
