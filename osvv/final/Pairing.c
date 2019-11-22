@@ -81,9 +81,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   long n;
   long m;
   int* output_set;
-  long* mheads;
-  long* mtails;
-  long* mweights;
+  long* mheads = NULL;
+  long* mtails = NULL;
+  long* mweights = NULL;
   long nedges;
   long fflow;
   long size_cut;
@@ -224,5 +224,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*   t2 = timer() -t2;
 	fprintf(stderr, "Oth tm: %f", t2 + t1);*/
+   free(heads);
+   free(tails);
+   free(weights);
+   if(mheads) free(mheads);
+   if(mtails) free(mtails);
+   if(mweights) free(mweights);
+   free(output_set);
 }
  
