@@ -14,6 +14,7 @@
 %                                     'd' - equals eta sqrt(8log(n)/t)
 %                                     'infty' - uses the second smallest eigenvalue of the Laplacian;            
 %                                     'n'  - equals eta; 
+%    (int32) lambda - flow that can pass through a node. If missing considered to be infinity
 
 
 %    (char) lwbd - 'y' if final lower bound desired. 'n' otherwise
@@ -40,14 +41,14 @@
 % - does it make sense to use weirdrat as bound guiding the search?
 % - reorder parameters
 
-function [expansionFound, edgesCut, cutFound,H, iterations, lower] = cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec) 
+function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin) 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%  ERROR CHECKING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 error_string = 'Error in parameter %s. See README file for usage.\n';
 
-if(~ischar(FileToRead))
+if(~ischar(FileToRead) && (~isnumeric(FileToRead) || (size(FileToRead, 1) ~= size(FileToRead, 2))))
    error(error_string, 'eg2 input file');
 end
 
@@ -108,6 +109,13 @@ if(~ischar(suffix))
    error(error_string, 'suffix file name');
 end
 
+% Mixed cut or edge cut?
+if (size(varargin, 2) > 0)
+    lamda = varargin{1};
+else
+    lamda = -1.0;
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%% READ GRAPH & INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%  
 
@@ -118,15 +126,25 @@ tic;
 rand('twister', seed);
 
 % READ GRAPH G
-[G, n, ~] = loadeg2graph(FileToRead);
- 
-% ERROR CHECKING: G MUST BE UNDIRECTED
-if(nnz(G - G') ~= 0)
-   error('The eg2 graph is not undirected.\n');
+if(ischar(FileToRead))
+    [G, n, ~] = loadeg2graph(FileToRead);
+else
+    G = FileToRead;
+    n = size(G, 1);
 end
+% ERROR CHECKING: G MUST BE UNDIRECTED
+% if(nnz(G - G') ~= 0)
+%    error('The eg2 graph is not undirected.\n');
+% end
 
  % CONVERT m FROM NUMBER OF ARCS TO NUMBER OF EDGES
 m = nnz(G)/2;
+
+% Check that the graph is strongly connected
+[S, ~] = graphconncomp(G);
+if (S > 1)
+    error('Graph is not strongly connected.');
+end
 
 %  INTIAL CERTIFICATE
 H = init*G;
@@ -191,7 +209,7 @@ nomatching = 0;
 inittime = toc;
 fprintf(2, '\nInitialization complete. Time required: %f\n', inittime);
 fprintf(2, '\nRunning on ...\n');
-fprintf(2, 'Graph: %s. Number of vertices: %ld. Number of edges: %ld.\n', FileToRead, n, m);
+fprintf(2, 'Number of vertices: %ld. Number of edges: %ld.\n', n, m);
 fprintf(2, 'Number of iterations: %d.\n', t);
 
 fprintf(2, 'Stopping condition:');
@@ -227,9 +245,9 @@ for i=1:double(t)
     % SPECTRAL PARTITIONING
     %% SECOND EIGENVALUE
     if(strcmp(rate,'infty'))
-       opts.k = 2;
+       % opts.k = 2;
        opts.tol = 0.001;
-       opts.sigma = 'sa';
+       % opts.sigma = 'SM';
 
        [temp, trash ] = eigs(D-H, 2, 'SA', opts);
        u=temp([1:n],2);
@@ -245,24 +263,28 @@ for i=1:double(t)
      [ordered, index] = sort(u);
      index = int64(index);
      bisec=int64(index(1:floor(n/2)));
-
+    
     % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
     if(strcmp(lwbd,'n') && certificatespec == 1 && i == t)
        nomatching = 1;
     end    
     
     tFlow = tic;
-    % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW    
-    [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching);
+    % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
+    if (lamda > 0)
+        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, lamda);
+    else
+        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching);
+    end
     flowtime = flowtime + toc(tFlow);
     % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));
     % UPDATE LOWER BOUND
     congestion = congestion +1/matchrat;
 
     % UPDATE CERTIFICATE
+    fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d\n', nnz(matching), nnz(H));
     H = H + matching;
     D = D + diag(sum(matching));
-
    % UPDATE COUNTER 
    flownumber = flownumber + iterflownumber;
 
@@ -270,6 +292,7 @@ for i=1:double(t)
     if(~isempty(cut)) % if some cut has been found
        if(ex < minexp)
            bestcut=cut;
+           reciprocalBestcut = reciprocalCut;
            minexp = ex;
            minexp_num = ex_num;
            minexp_den = ex_den;          
@@ -284,7 +307,7 @@ for i=1:double(t)
     end
 
     % PRINT CURRENT RESULT
-    fprintf(2, 'Wrat: %f. Iter %d. Exp: %f / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
+    fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
 
 
     
@@ -339,13 +362,11 @@ end
 expansionFound = minexp;
 edgesCut = minexp_num;
 if(size(bestcut,1) < double(n)/2)
-   cutFound = bestcut;
+   L = bestcut;
+   R = reciprocalBestcut;
 else
-   mask = zeros(n,1);
-   mask(bestcut) = 1;
-   mask = mask - ones(n,1);
-   mask = (-1)*mask;
-   cutFound = find(mask);
+   L = reciprocalBestcut;
+   R = bestcut;
 end
 
 % ITERATIONS
