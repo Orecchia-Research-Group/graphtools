@@ -16,9 +16,10 @@
 %       spectime - time taken by spectral computations
 %       flowtime - time taken by flow computations
 
-function [edgesCut, cutsFound, endtime, cuttimes, inittimes, spectimes, flowtimes] = iterative_cutfind(cluster_count, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
+function [edgesCut, cutsFound, endtime, cuttimes, inittimes, spectimes, flowtimes] = iterative_cutfind(clusterCount, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
 
-if(floor(cluster_count) ~= cluster_count)
+clusterCount = sort(clusterCount);
+if(any(floor(clusterCount) ~= clusterCount))
     error('cluster_count must be integer');
 end
 
@@ -41,15 +42,16 @@ subgraphs = {G};
 clusters = {[1:n]};
 clusterSizes = [n];
 
-for k=1:cluster_count-1
-    [largestClusterSize, largestClusterIndex] = max(clusterSizes);
+clusterCountIndex = 1;
+for k=2:max(clusterCount)
+    [~, largestClusterIndex] = max(clusterSizes);
     largestSubgraph = subgraphs{largestClusterIndex};
     largestClusterNodes = clusters{largestClusterIndex};
     if (~isreal(largestSubgraph))
         fprintf(2, 'Graph is not real!');
     end
     
-    
+    % Check to see if largestSubgraph is disconnected.
     grph = graph(largestSubgraph);
     bins = conncomp(grph);
     
@@ -89,9 +91,12 @@ for k=1:cluster_count-1
     for i=1:size(subgraphs, 1)
         fprintf(2, 'Size of subgraph %d: %d\n', i, size(subgraphs{i}, 1));
     end
+    
+    if k == clusterCount(clusterCountIndex)
+        cutsFound{clusterCountIndex} = clusters;
+        clusterCountIndex = clusterCountIndex + 1;
+    end
 end
-cutsFound = clusters;
-
 
 end
 
