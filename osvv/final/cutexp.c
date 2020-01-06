@@ -97,7 +97,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 cutedges += array_G[j];
         }
     }
-    cutedges += (size_cut + reciprocal_size_cut - n);
+    cutedges += lamda * (size_cut + reciprocal_size_cut - n);
 
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
     if (size_cut > reciprocal_size_cut)
