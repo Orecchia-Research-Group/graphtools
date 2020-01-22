@@ -128,11 +128,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (lamda > 0) cutedges += lamda * (size_cut + reciprocal_size_cut - n);
     printf("cutedges: %lf\n", cutedges);
     /* COMPUTE DENOMINATOR */
-    if (abs(2 * size_intersect - size_cut) < abs(2 * reciprocal_size_intersect - reciprocal_size_cut))
-        denominator = 2 * size_intersect - size_cut;
-    else
-        denominator = 2 * reciprocal_size_intersect - reciprocal_size_cut;
-
+    denominator = size_intersect - reciprocal_size_intersect;
     if (denominator < 0)
         denominator = denominator * (-1);
 

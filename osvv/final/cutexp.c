@@ -88,15 +88,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     for (i = 0; i < reciprocal_size_cut; i++)
         reciprocal_mask_cut[reciprocal_cut[i]] = 1;
 
+    long counter = 0;
     /* COMPUTE EXPANSION */
     for (i = 0; i < size_cut; i++) {
         if (reciprocal_mask_cut[cut[i]] == 1)
             continue;
+        long c = 0;
         for (j = col[cut[i] - 1]; j < col[cut[i]]; j++) {
-            if (mask_cut[row[j] + 1] == 0)
+            if (mask_cut[row[j] + 1] == 0) {
                 cutedges += array_G[j];
+                c = 1;
+            }
         }
+        counter += c;
     }
+    printf("Nodes at border: %ld\n", counter);
     cutedges += lamda * (size_cut + reciprocal_size_cut - n);
 
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
