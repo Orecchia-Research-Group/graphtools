@@ -1,11 +1,11 @@
 /*
 C MATLAB function: cutweird
- 
+
 USAGE: [(double) wr_num, (int64) wr_den,  (double) wr] = cutexp(sparse matrix (double) G, vector (int64) cut, vector (int64) bisec);
 
 PURPOSE: compute the weird ratio of the cut with respect to the near bisection bisec.
 
-NOTES: 
+NOTES:
    - if weird ratio is negative, return abs.value (i.e. weirdratio of complement cut)
    - G is assumed to be undirected, no check for that
    - G is assumed to be sparse, program will check this
@@ -15,7 +15,7 @@ NOTES:
 mexFunction INPUTS;
    nrhs = 3
    nlhs = 3
-   
+
 */
 #include "mex.h"
 #include "matrix.h"
@@ -32,6 +32,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *reciprocal_cut;
     long size_cut;
     long reciprocal_size_cut;
+    long size_overlap_intersect;
     long *bisec;
     long size_bisec;
     long i, j;
@@ -39,7 +40,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     double cutedges = 0;
     long size_intersect;
     long reciprocal_size_intersect;
-    long denominator;
+    long denominator = 0;
     long lamda;
 
     int *mask_cut;
@@ -105,9 +106,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         reciprocal_mask_cut[reciprocal_cut[i]] = 1;
 
     size_intersect = 0;
-    for (i = 0; i < size_bisec; i++)
-        if (mask_cut[bisec[i]] == 1)
+    size_overlap_intersect = 0;
+    for (i = 0; i < size_bisec; i++) {
+        if (mask_cut[bisec[i]] == 1) {
             size_intersect++;
+            if (reciprocal_mask_cut[bisec[i]] == 1)
+                size_overlap_intersect++;
+        }
+    }
 
     reciprocal_size_intersect = 0;
     for (i = 0; i < size_bisec; i++)
@@ -128,7 +134,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (lamda > 0) cutedges += lamda * (size_cut + reciprocal_size_cut - n);
     printf("cutedges: %lf\n", cutedges);
     /* COMPUTE DENOMINATOR */
-    denominator = size_intersect - reciprocal_size_intersect;
+    denominator = 2 * size_intersect - size_cut + (size_cut + reciprocal_size_cut - n - size_overlap_intersect);
     if (denominator < 0)
         denominator = denominator * (-1);
 
@@ -142,11 +148,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     free(mask_cut);
 
-} 
+}
 
 
 
-  
 
 
-  
+
+
