@@ -16,7 +16,7 @@
 %       spectime - time taken by spectral computations
 %       flowtime - time taken by flow computations
 
-function [edgesCut, cutsFound, endtime, cuttimes, inittimes, spectimes, flowtimes] = iterative_cutfind(clusterCount, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
+function [edgesCut, cutsFound, sizes, expansions, endtime, cuttimes, inittimes, spectimes, flowtimes] = iterative_cutfind(clusterCount, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
 
 clusterCount = sort(clusterCount);
 if(any(floor(clusterCount) ~= clusterCount))
@@ -38,65 +38,75 @@ flowtimes = 0;
 
 [G, n, ~] = loadeg2graph(FileToRead);
 
-subgraphs = {G};
-clusters = {[1:n]};
+shared = false(n, 1);
+clusters = {[1:n]'};
 clusterSizes = [n];
+clusterExpansions = [0];
 
 clusterCountIndex = 1;
 for k=2:max(clusterCount)
     [~, largestClusterIndex] = max(clusterSizes);
-    largestSubgraph = subgraphs{largestClusterIndex};
     largestClusterNodes = clusters{largestClusterIndex};
-    if (~isreal(largestSubgraph))
-        fprintf(2, 'Graph is not real!');
-    end
+    
+    largestMask = full(sparse(largestClusterNodes, 1, true, n, 1));
+    sharedBefore = largestMask & shared;
+    largestNotShared = largestMask & (~shared);
+    % fprintf('shared Before: %d. largestNotShared: %d.\n', sum(sharedBefore'), sum(largestNotShared'));
+    flowgraph = G(largestNotShared, largestNotShared);
+    nodes = find(largestNotShared);
     
     % Check to see if largestSubgraph is disconnected.
-    grph = graph(largestSubgraph);
+    grph = graph(flowgraph);
     bins = conncomp(grph);
-    
     if (length(unique(bins)) > 1)
         a = hist(bins,unique(bins));
         fprintf(2, 'Size: %d\n', a);
-        % fprintf(2, 'Graph disconnected: %d', length(unique(bins)));
     end
     
     if lamda > 0
-        [expansionFound, edgeCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(largestSubgraph,  outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, lamda);
+        [expansionFound, edgeCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(flowgraph,  outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, lamda);
     else
-        [expansionFound, edgeCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(largestSubgraph,  outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec);
+        [expansionFound, edgeCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(flowgraph,  outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec);
     end
     
+    Lnodes = nodes(L, 1);
+    Rnodes = nodes(R, 1);
+    Lmask = sparse(Lnodes, 1, true, n, 1);
+    Rmask = sparse(Rnodes, 1, true, n, 1);
+    Cmask = Lmask & Rmask;
+    
+    shared = shared | Cmask;
     % Update time counters
     cuttimes = cuttimes + endtime;
     innitimes = inittimes + inittime;
     spectimes = spectimes + spectime;
     flowtimes = flowtimes + flowtime;
+
+    clusters{end+1, 1} = find(Lmask | sharedBefore);
+    clusters{largestClusterIndex, 1} = find(Rmask | sharedBefore);
     
-    RGraph = largestSubgraph(R, R);
-    LGraph = largestSubgraph(L, L);
-    
-    fprintf(2, 'size of largest subgraph: %d\n', size(largestSubgraph, 1));
-    subgraphs{size(subgraphs, 1)+1, 1} = largestSubgraph(R, R);
-    subgraphs{largestClusterIndex, 1} = largestSubgraph(L, L);
-    
-    clusters{size(clusters, 1)+1, 1} = largestClusterNodes(1, R);
-    clusters{largestClusterIndex, 1} = largestClusterNodes(1, L);
-    
-    clusterSizes = [clusterSizes; size(R, 1)];
-    clusterSizes(largestClusterIndex, 1) = size(L, 1);
-    
-    edgesCut = edgesCut + nnz(largestSubgraph(L, R));
-    
-    for i=1:size(subgraphs, 1)
-        fprintf(2, 'Size of subgraph %d: %d\n', i, size(subgraphs{i}, 1));
+    clusterSizes = [clusterSizes; size(clusters{end, 1}, 1)];
+    clusterSizes(largestClusterIndex, 1) = size(clusters{largestClusterIndex, 1}, 1);
+    % fprintf('%d %d %d %d\n', full(sum(Lmask & ~shared)), full(sum(~(Lmask | shared))), full(sum(Lmask & ~shared & ~(Lmask | shared))), nnz(G(Lmask & ~shared, ~(Lmask | shared))));
+    % fprintf('%d %d %d %d\n', full(sum(Rmask & ~shared)), full(sum(~(Rmask | shared))), full(sum(Rmask & ~shared & ~(Rmask | shared))), nnz(G(Rmask & ~shared, ~(Rmask | shared))));
+
+    clusterExpansions(end+1, 1) = nnz(G(Lmask & ~shared, ~(Lmask | shared)));
+    clusterExpansions(largestClusterIndex, 1) = nnz(G(Rmask & ~shared, ~(Rmask | shared)));
+    if lamda > 0
+        clusterExpansions(end, 1) = clusterExpansions(end, 1) + lamda * sum(Cmask | sharedBefore);
+        clusterExpansions(largestClusterIndex, 1) = clusterExpansions(largestClusterIndex, 1) + lamda * sum(Cmask | sharedBefore);
     end
     
+    edgesCut = edgesCut + nnz(flowgraph(L, R));
+
     if k == clusterCount(clusterCountIndex)
         cutsFound{clusterCountIndex} = clusters;
+        expansions{clusterCountIndex} = clusterExpansions ./ clusterSizes;
+        sizes{clusterCountIndex} = clusterSizes;
         clusterCountIndex = clusterCountIndex + 1;
     end
 end
 
 end
 
+    
