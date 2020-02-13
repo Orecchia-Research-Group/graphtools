@@ -132,6 +132,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     */
 
     mask = calloc(sizeof(*mask), N + 1);
+    if (!mask) {
+        fprintf(2, "Error allocating mask\n");
+    }
 
     for (h = 0; h < size_bisec; h++)
         mask[bisec[h]] = 1;
@@ -144,6 +147,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     tails = calloc(sizeof(*tails), M + N + reciprocalOffset);
     heads = calloc(sizeof(*heads), M + N + reciprocalOffset);
     weights = calloc(sizeof(*weights), M + N + reciprocalOffset);
+    
+    if (!(tails || heads || weights)) {
+        fprintf(2, "Error allocating memory for edge information\n");
+    }
 
     for (i = 0; i < N; i++)
         for (j = col_G[i]; j < col_G[i+1]; j++) {

@@ -336,7 +336,7 @@ for i=1:double(t)
       lowertime = toc(tLower);
    
    % PRINT RUN RESULTS TO OUTPUT FILE
-      fprintf(output(stop_cnt), 'r:\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n', 'seed', 'minexp', 'minexp_num', 'minexp_den', 'endtime', 'inittime', 'i', 'lower', 'flownumber', 'spectime', 'flowtime', 'lowertime');
+      % fprintf(output(stop_cnt), 'r:\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n', 'seed', 'minexp', 'minexp_num', 'minexp_den', 'endtime', 'inittime', 'i', 'lower', 'flownumber', 'spectime', 'flowtime', 'lowertime');
       fprintf(output(stop_cnt), 'r:\t%d\t%f\t%d\t%d\t%f\t%f\t%d\t%f\t%d\t%f\t%f\t%f\n', seed, minexp, minexp_num, minexp_den, endtime, inittime, i, lower, flownumber, spectime, flowtime, lowertime);
 
       if(~strcmp(lwbd, 'n'))

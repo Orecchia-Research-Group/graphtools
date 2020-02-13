@@ -132,7 +132,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
 
     if (lamda > 0) cutedges += lamda * (size_cut + reciprocal_size_cut - n);
-    printf("cutedges: %lf\n", cutedges);
+    // printf("cutedges: %lf\n", cutedges);
     /* COMPUTE DENOMINATOR */
     denominator = 2 * size_intersect - size_cut + (size_cut + reciprocal_size_cut - n - size_overlap_intersect);
     if (denominator < 0)

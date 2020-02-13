@@ -102,7 +102,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         counter += c;
     }
-    printf("Nodes at border: %ld\n", counter);
+    // printf("Nodes at border: %ld\n", counter);
     cutedges += lamda * (size_cut + reciprocal_size_cut - n);
 
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
