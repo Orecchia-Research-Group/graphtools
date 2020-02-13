@@ -18,7 +18,11 @@ function [ ] = toPtn(outputFilename, partitions)
 
 n = max([partitions{:}]);
 p = length(partitions);
-outputFile = fopen(outputFilename, 'w');
+if ischar(outputFilename)
+    outputFile = fopen(outputFilename, 'w');
+else
+    outputFile = outputFilename;
+end
 if outputFile == -1
     fprintf(2, 'Failed to open %s\n', outputFilename);
 end
@@ -43,7 +47,9 @@ for node=1:n
     end
     fprintf(outputFile, '\n');
 end
-fclose(outputFile);
+if ischar(outputFilename)
+    fclose(outputFile);
+end
 
 end
 

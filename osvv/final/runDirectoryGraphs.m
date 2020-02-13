@@ -22,18 +22,64 @@ files = dir(directorySearch);
 for f=1:length(files)
     fprintf('%s\n', files(f).name);
     [~, dataset, ~] = fileparts(files(f).name);
+    if any(strcmp(dataset, ["bcsstk29" "bcsstk31" "fe_body" "fe_pwt"]))
+        continue;                                                     
+    end
+%     if ~any(strcmp(dataset, ["auto" "wave"]))
+%         continue;
+%     end
+    %if exist(fullfile(outputDirectory, sprintf('%s.gif', dataset))) == 2
+    %    continue;
+    %end
     inputFilename = fullfile(inputDirectory, files(f).name);
+    [G, n, m] = loadeg2graph(inputFilename);
+    [vec, ~] = eigs(diag(sum(G)) - G, 3, 'SA');
+    save(fullfile(outputDirectory, sprintf('%s.mat', dataset)), 'vec');
     for lamda=lamdas
-        [edgesCut, cutsFound, endtime, cuttimes, inittimes, spectimes, flowtimes] = iterative_cutfind(clusterCounts, inputFilename, 1, '', 1000, 10, 5, 1, 1, 10, 'infty', 'n', 1, lamda);
-        fprintf('% 15s end: %9.2f. cut: %9.2f. init: %9.2f. spec: %9.2f. flow: %9.2f\n', dataset, endtime, cuttimes, inittimes, spectimes, flowtimes);
-        for i=1:length(clusterCounts)
-            if lamda > 0
-                outputFilename = fullfile(outputDirectory, sprintf('%s.%d.%d.ptn', dataset, lamda, clusterCounts(i)));
-            else
-                outputFilename = fullfile(outputDirectory, sprintf('%s.%d.ptn', dataset, clusterCounts(i)));
-            end
-            toPtn(outputFilename, cutsFound{i});
+        plotFile = fullfile(outputDirectory, sprintf('%s.%02d.png', dataset, lamda));
+        if exist(plotFile) == 2
+            continue;
         end
+        [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, lamda);
+        fprintf('% 15s end: %9.2f. init: %9.2f. spec: %9.2f. flow: %9.2f\n', dataset, endtime, inittime, spectime, flowtime);
+        Lmask = sparse(double(L), 1, true, n, 1);
+        Rmask = sparse(double(R), 1, true, n, 1);
+        Cmask = Lmask & Rmask;
+%         colorIndex = ones(n, 1);
+%         colorIndex(Lmask & ~Cmask) = 2;
+%         colorIndex(Rmask & ~Cmask) = 3;
+%         colors = [0 1 0; 1 0 0; 0 0 1];
+%         c = colors(colorIndex, 1:end);
+%         figure;
+%         hold on;
+%         scatter(vec(1:end, 2), vec(1:end, 3), 10, c, 'filled');
+%         axis off;
+%         title(sprintf('Graph: %s. Lambda: %2d. Overlap: %3d nodes.', dataset, lamda, full(sum(Cmask))));
+        
+%         cutnodes = full(sum(Cmask));
+%         cutnodes_perc = full(cutnodes / n);
+%         cutedges = edgesCut - lamda * cutnodes;
+%         cutedges_perc = full(cutedges / m);
+        
+        ptnFilename = fullfile(outputDirectory, sprintf('%s_%02d.ptn', dataset, lamda));
+        ptnFile = fopen(ptnFilename, 'w');
+%         fprintf(ptnFile, 'cutedges %d,cutedges_perc %f,expansion %f,overlap %d,overlap_perc %f\n', cutedges, cutedges_perc, expansionFound, cutnodes, cutnodes_perc);
+        partitions{1} = L';
+        partitions{2} = R';
+        toPtn(ptnFile, partitions);
+        fclose(ptnFile);
+%         
+%         str = {
+%             sprintf('Cutedges: %d', cutedges),
+%             sprintf('Overlap: %d', cutnodes),
+%             sprintf('Expansion: %.3f', expansionFound)
+%         };
+%         text(-0.1, 0.85, str, 'Units', 'normalized');
+%         saveas(gcf, plotFile);
+        if sum(Cmask) == 0
+            break;
+        end
+        
     end
 end
 
