@@ -7,8 +7,11 @@ import numpy as np
 import scipy.io
 import scipy.sparse
 import matplotlib.pyplot as plt
+import pandas as pd
 import networkx as nx
 
+
+EMBEDDING = "deepwalk"
 
 def read_ptn(filename):
     """Read a ptn and returns the partitions"""
@@ -59,7 +62,11 @@ def main():
             if ext != ".eg2":
                 continue
             try:
-                vectors = scipy.io.loadmat(os.path.join(inputDirectory, "{}.mat".format(dataset)))['vec']
+                if EMBEDDING == "spectral":
+                    vectors = scipy.io.loadmat(os.path.join(inputDirectory, "{}.mat".format(dataset)))['vec'][1:, 0]
+                elif EMBEDDING == "deepwalk":
+                    df = pd.read_csv(os.path.join(graphDirectory, "{}_deepwalk.txt".format(dataset)), delimiter=' ', skiprows=1, index_col=0, header=None).sort_index()
+                    vectors = df.values
             except FileNotFoundError:
                 continue
             graph = loadeg2Graph(os.path.join(graphRoot, graphFilename))
@@ -111,12 +118,12 @@ def main():
 
                 plt.figure()
                 ax = plt.gca()
-                plt.scatter(vectors[:, 1], vectors[:, 2], c=c, s=0.25)
+                plt.scatter(vectors[:, 0], vectors[:, 1], c=c, s=0.25)
                 plt.axis('off')
                 plt.title("Graph: {}. Nodes: {}. Edges: {}. Lambda: {:d}".format(dataset, n, m, lamda))
-                diff = max(vectors[:, 1]) - min(vectors[:, 1])
-                ax.text(max(vectors[:, 1]) + 0.025 * diff, max(vectors[:, 2]), "Nodes: {:10d}\nEdges: {:10d}\nL: {:18d}\nR: {:18d}\nCut edges: {:d}\nOverlap: {:6d}\nExpansion: {:.3f}".format(n, m, len(L), len(R), edgescut, overlapNodes, expansion[lamda]), va='top', ha='left', fontsize=7, alpha=0.8, backgroundcolor='#d3d3d3')
-                plt.savefig(os.path.join(inputDirectory, "{}_{:02d}.png".format(dataset, lamda)), bbox_inches="tight", dpi=500)
+                diff = max(vectors[:, 0]) - min(vectors[:, 0])
+                ax.text(max(vectors[:, 0]) + 0.025 * diff, max(vectors[:, 1]), "Nodes: {:10d}\nEdges: {:10d}\nL: {:18d}\nR: {:18d}\nCut edges: {:d}\nOverlap: {:6d}\nExpansion: {:.3f}".format(n, m, len(L), len(R), edgescut, overlapNodes, expansion[lamda]), va='top', ha='left', fontsize=7, alpha=0.8, backgroundcolor='#d3d3d3')
+                plt.savefig(os.path.join(inputDirectory, "{}_{}_{:02d}.png".format(EMBEDDING, dataset, lamda)), bbox_inches="tight", dpi=500)
                 print("Dataset: {}. Lamda: {:d}. edges: {}. overlap: {}. Expansion: {:.6f}.".format(dataset, lamda, edgescut, overlapNodes, expansion[lamda]))
                 plt.close()
 
