@@ -108,5 +108,8 @@ if size(sizeIndex, 1) > 3
     end
 end
 
+L = find(Lmask);
+R = find(Rmask);
+
 end
 
