@@ -40,6 +40,8 @@ for node=1:n
     end
     if isempty(clusterList)
         fprintf(2, 'Node %d does not belong to any cluster\n', node);
+        fprintf(outputFile, '\n');
+        continue;
     end
     fprintf(outputFile, '%d', clusterList(1));
     for c=clusterList(2:end)

@@ -39,7 +39,7 @@ clusterCountIndex = 1;
 while largestClusterSize > c * n
     largestClusterNodes = clusters{largestClusterIndex};
     
-    largestMask = full(sparse(largestClusterNodes, 1, true, n, 1));
+    largestMask = sparse(largestClusterNodes, 1, true, n, 1);
     sharedBefore = largestMask & shared;
     largestNotShared = largestMask & (~shared);
     % fprintf('shared Before: %d. largestNotShared: %d.\n', sum(sharedBefore'), sum(largestNotShared'));
@@ -94,24 +94,19 @@ L = clusters{sizeIndex(1)};
 R = clusters{sizeIndex(2)};
 Lmask = sparse(L, 1, true, n, 1);
 Rmask = sparse(R, 1, true, n, 1);
-Lmask  = Lmask & (~shared);
-Rmask  = Rmask & (~shared);
 if size(sizeIndex, 1) > 3
     for i = sizeIndex(3:end)
         newCluster = clusters{i};
-        newMask = sparse(newCluster, 1, true, n, 1) & (~shared);
-        Lcount = nnz(G(Lmask, newMask));
-        Rcount = nnz(G(Rmask, newMask));
+        newMask = sparse(newCluster, 1, true, n, 1);
+        Lcount = nnz(G(Lmask & (~shared), newMask & (~shared)));
+        Rcount = nnz(G(Rmask & (~shared), newMask & (~shared)));
         if Rcount > Lcount
-            Lmask = Lmask | newMask;
-        else
             Rmask = Rmask | newMask;
+        else
+            Lmask = Lmask | newMask;
         end
     end
 end
-
-L = find(Lmask | shared);
-R = find(Rmask | shared);
 
 end
 
