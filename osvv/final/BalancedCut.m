@@ -95,7 +95,7 @@ R = clusters{sizeIndex(2)};
 Lmask = sparse(L, 1, true, n, 1);
 Rmask = sparse(R, 1, true, n, 1);
 if size(sizeIndex, 1) > 3
-    for i = sizeIndex(3:end)
+    for i = sizeIndex(3:end)'
         newCluster = clusters{i};
         newMask = sparse(newCluster, 1, true, n, 1);
         Lcount = nnz(G(Lmask & (~shared), newMask & (~shared)));
