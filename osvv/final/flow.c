@@ -1023,6 +1023,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     if (route_flag == 1) {
         long int minCap;
+        long int matchingCapacity;
+        long *reallocPtr;
+
         node *last;
         arc *stopA;
 
@@ -1030,10 +1033,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         int k;
 
         /* INITIALIZE MATCHING ARRAYS */
-
-        *mheads = calloc(sizeof(**mheads), 2 * (*fflow));
-        *mtails = calloc(sizeof(**mtails), 2 * (*fflow));
-        *mweights = calloc(sizeof(**mweights), 2 * (*fflow));
+        matchingCapacity = 0;
         k = 0;
 
         forAllNodes(i) {
@@ -1055,9 +1055,32 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
                     a->resCap += minCap;
                     if (last != NULL) {
-                        if (k >= 2 * (*fflow)) {
-                            fprintf(stderr, "Too many paths routed\n");
-                            exit(1);
+                        if (k >= matchingCapacity) {
+                            if (!matchingCapacity) matchingCapacity = 2 * n;
+                            else matchingCapacity = 2 * matchingCapacity;
+                            reallocPtr = *mheads;
+                            *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+                            if (NULL == *mheads) {
+                                free(reallocPtr);
+                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                exit(1);
+                            }
+
+                            reallocPtr = *mtails;
+                            *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+                            if (NULL == *mtails)  {
+                                free(reallocPtr);
+                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                exit(1);
+                            }
+
+                            reallocPtr = *mweights;
+                            *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+                            if (NULL == *mweights) {
+                                free(reallocPtr);
+                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                exit(1);
+                            }
                         }
 
                         (*mheads)[k] = nNode(a->head);
@@ -1068,7 +1091,6 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                         (*mheads)[k + 1] = nNode(last);
                         (*mweights)[k + 1] = minCap;
 
-
                         k = k + 2;
                     } else {
                         printf("cycle with source detected marked %ld should be -2\n", source->d);
@@ -1078,7 +1100,6 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                 }
             }
         }
-
         *nedges = k;
     }
 
