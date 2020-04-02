@@ -11,7 +11,7 @@
 %       L - list of vertices composing best cut found
 %       R- total time taken
 
-function [edgesCut, L, R] = BalancedCut(c, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
+function [edgesCut, partitions] = BalancedCut(c, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
 
 % Mixed cut or edge cut?
 if (size(varargin, 2) > 0)
@@ -89,27 +89,28 @@ while largestClusterSize > c * n
 end
 
 fprintf('%d\n', clusterSizes);
-[~, sizeIndex] = sort(clusterSizes, 'descend');
-L = clusters{sizeIndex(1)};
-R = clusters{sizeIndex(2)};
-Lmask = sparse(L, 1, true, n, 1);
-Rmask = sparse(R, 1, true, n, 1);
-if size(sizeIndex, 1) > 3
-    for i = sizeIndex(3:end)'
-        newCluster = clusters{i};
-        newMask = sparse(newCluster, 1, true, n, 1);
-        Lcount = nnz(G(Lmask & (~shared), newMask & (~shared)));
-        Rcount = nnz(G(Rmask & (~shared), newMask & (~shared)));
-        if Rcount > Lcount
-            Rmask = Rmask | newMask;
-        else
-            Lmask = Lmask | newMask;
-        end
-    end
-end
-
-L = find(Lmask);
-R = find(Rmask);
+partitions = clusters;
+% [~, sizeIndex] = sort(clusterSizes, 'descend');
+% L = clusters{sizeIndex(1)};
+% R = clusters{sizeIndex(2)};
+% Lmask = sparse(L, 1, true, n, 1);
+% Rmask = sparse(R, 1, true, n, 1);
+% if size(sizeIndex, 1) > 3
+%     for i = sizeIndex(3:end)'
+%         newCluster = clusters{i};
+%         newMask = sparse(newCluster, 1, true, n, 1);
+%         Lcount = nnz(G(Lmask & (~shared), newMask & (~shared)));
+%         Rcount = nnz(G(Rmask & (~shared), newMask & (~shared)));
+%         if Rcount > Lcount
+%             Rmask = Rmask | newMask;
+%         else
+%             Lmask = Lmask | newMask;
+%         end
+%     end
+% end
+% 
+% L = find(Lmask);
+% R = find(Rmask);
 
 end
 

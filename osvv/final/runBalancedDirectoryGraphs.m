@@ -33,20 +33,21 @@ for f=1:length(files)
     %[vec, ~] = eigs(diag(sum(G)) - G, 3, 'SA');
     %save(fullfile(outputDirectory, sprintf('%s.mat', dataset)), 'vec');
     for lamda=lamdas
-        [edgesCut, L, R] = BalancedCut(bal, G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, lamda);
-        Lmask = sparse(double(L), 1, true, n, 1);
-        Rmask = sparse(double(R), 1, true, n, 1);
-        Cmask = Lmask & Rmask;
-        
-        ptnFilename = fullfile(outputDirectory, sprintf('bal_%s_%02d.ptn', dataset, lamda));
-        ptnFile = fopen(ptnFilename, 'w');
-        partitions{1} = L';
-        partitions{2} = R';
-        toPtn(ptnFile, partitions);
-        fclose(ptnFile);
-        if sum(Cmask) == 0
-            break;
+        [edgesCut, partitions] = BalancedCut(bal, G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, lamda);
+        for i=1:length(partitions)
+            partitions{i} = partitions{i}';
         end
+%         Lmask = sparse(double(L), 1, true, n, 1);
+%         Rmask = sparse(double(R), 1, true, n, 1);
+%         Cmask = Lmask & Rmask;
+%         
+        ptnFilename = fullfile(outputDirectory, sprintf('%s_bal_%02d.ptn', dataset, lamda));
+%         partitions{1} = L';
+%         partitions{2} = R';
+        toPtn(ptnFilename, partitions);
+%         if sum(Cmask) == 0
+%             break;
+%         end
         
     end
 end
