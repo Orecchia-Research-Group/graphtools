@@ -22,7 +22,7 @@ mexFunction INPUTS;
 
 #define abs(x) (x) > 0 ? (x) : -(x)
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {       // TODO: Add weight vector argument
     const mxArray *G;
     mwIndex *col;
     mwIndex *row;
@@ -32,19 +32,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *reciprocal_cut;
     long size_cut;
     long reciprocal_size_cut;
-    long size_overlap_intersect;
     long *bisec;
     long size_bisec;
+    long *weight;
     long i, j;
     long n;
     double cutedges = 0;
-    long size_intersect;
-    long reciprocal_size_intersect;
     long denominator = 0;
     long lamda;
 
     int *mask_cut;
     int *reciprocal_mask_cut;
+    int *mask_bisec;
     mxArray *exp;
 
     mwSize dims[] = {1, 1};
@@ -53,7 +52,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     /*%%%%%%%%%%%%%%%%% ARGUMENT LOADING &  CHECKING %%%%%%%%%%%%%%%%%%%%%*/
 
     /* CHECK CORRECT NUMBER OF INPUT/OUTPUTS */
-    if (nrhs != 5 || nlhs != 3)
+    if (nrhs != 6 || nlhs != 3)
         mexErrMsgTxt("Error in cutweird. Incorrect usage.\n");
 
     /* CHECK TYPES */
@@ -84,57 +83,48 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     bisec = (long *) mxGetPr(prhs[3]);
     size_bisec = mxGetM(prhs[3]);
-
-    lamda = mxGetScalar(prhs[4]);
+    weight = (long *) mxGetPr(prhs[4]);
+    lamda = mxGetScalar(prhs[5]);
 
 
     /*%%%%%%%%%%%%%%%%%%%%%%%%% MAIN BODY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     /* PREPARE CUT MASK  AND COMPUTE INTERSECT*/
-    mask_cut = calloc(sizeof(*mask_cut), n + 1);
-    if (mask_cut == NULL)
-        mexErrMsgTxt("Error allocating memory in cutweird.");
+    if (!(mask_cut = calloc(sizeof(*mask_cut), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
+    else for (i = 0; i < size_cut; i++) mask_cut[cut[i] - 1] = 1;
 
-    for (i = 0; i < size_cut; i++)
-        mask_cut[cut[i]] = 1;
+    if (!(reciprocal_mask_cut = calloc(sizeof(*reciprocal_mask_cut), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
+    else for (i = 0; i < reciprocal_size_cut; i++) reciprocal_mask_cut[reciprocal_cut[i] - 1] = 1;
 
-    reciprocal_mask_cut = calloc(sizeof(*reciprocal_mask_cut), n + 1);
-    if (reciprocal_mask_cut == NULL)
-        mexErrMsgTxt("Error allocating memory in cutweird.");
-
-    for (i = 0; i < reciprocal_size_cut; i++)
-        reciprocal_mask_cut[reciprocal_cut[i]] = 1;
-
-    size_intersect = 0;
-    size_overlap_intersect = 0;
-    for (i = 0; i < size_bisec; i++) {
-        if (mask_cut[bisec[i]] == 1) {
-            size_intersect++;
-            if (reciprocal_mask_cut[bisec[i]] == 1)
-                size_overlap_intersect++;
-        }
-    }
-
-    reciprocal_size_intersect = 0;
-    for (i = 0; i < size_bisec; i++)
-        if (reciprocal_mask_cut[bisec[i]] == 1)
-            reciprocal_size_intersect++;
-
+    if (!(mask_bisec = calloc(sizeof(*mask_bisec), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
+    else for (i = 0; i < size_bisec; i++) mask_bisec[bisec[i] - 1] = 1;
 
     /* COMPUTE WEIRD RATIO*/
     /* COMPUTE EDGES CUT */
-    for (i = 0; i < size_cut; i++) {
-        if (reciprocal_mask_cut[cut[i]] == 1)
-            continue;
-        for (j = col[cut[i] - 1]; j < col[cut[i]]; j++)
-            if (mask_cut[row[j] + 1] == 0)
-                cutedges += array_G[j];
+
+    for (i = 0; i < n; i++) {
+        if (mask_cut[i] && mask_bisec[i]) {                 // π(S && A)
+            denominator += weight[i];
+        }
+
+        if (mask_cut[i] && (!mask_bisec[i]) && (!reciprocal_mask_cut[i])) {     // - π(L && !A), L = S \ T
+            denominator -= weight[i];
+        }
+
+        if (mask_cut[i] && reciprocal_mask_cut[i] && (lamda > 0)) {     // λ π(C)
+            cutedges += weight[i] * lamda;
+        }
+
+        if (mask_cut[i] && !reciprocal_mask_cut[i]) {                   // w(E(L, R))
+            for (j = col[i]; j < col[i + 1]; j++) {
+                if (!mask_cut[row[j]]) {
+                    cutedges += array_G[j];
+                }
+            }
+        }
     }
 
-    if (lamda > 0) cutedges += lamda * (size_cut + reciprocal_size_cut - n);
-    // printf("cutedges: %lf\n", cutedges);
-    /* COMPUTE DENOMINATOR */
-    denominator = 2 * size_intersect - size_cut + (size_cut + reciprocal_size_cut - n - size_overlap_intersect);
+    // denominator = e2 * size_intersect - size_cut + (size_cut + reciprocal_size_cut - n - size_overlap_intersect);
     if (denominator < 0)
         denominator = denominator * (-1);
 
@@ -147,6 +137,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     *temp = denominator;
 
     free(mask_cut);
+    free(reciprocal_mask_cut);
+    free(mask_bisec);
 
 }
 

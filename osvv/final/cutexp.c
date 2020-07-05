@@ -33,10 +33,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long i, j;
     long n;
     long lamda;
+    long cut_vol = 0;
+    long reciprocal_cut_vol = 0;
     double cutedges = 0;
 
     int *mask_cut;
     int *reciprocal_mask_cut;
+    long *weight;
     mxArray *exp;
 
     mwSize dims[] = {1, 1};
@@ -45,7 +48,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     /*%%%%%%%%%%%%%%%%% ARGUMENT LOADING &  CHECKING %%%%%%%%%%%%%%%%%%%%%*/
 
     /* CHECK CORRECT NUMBER OF INPUT/OUTPUTS */
-    if (nrhs != 4 || nlhs != 3)
+    if (nrhs != 5 || nlhs != 3)
         mexErrMsgTxt("Error in cutexp. Incorrect usage.\n");
 
     /* CHECK TYPES */
@@ -66,11 +69,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     row = mxGetIr(G);
     array_G = mxGetPr(G);
     lamda = mxGetScalar(prhs[1]);
+    if (lamda < 0) lamda = 0;
 
-    cut = (long *) mxGetPr(prhs[2]);
-    reciprocal_cut = (long *) mxGetPr(prhs[3]);
-    size_cut = mxGetM(prhs[2]);
-    reciprocal_size_cut = mxGetM(prhs[3]);
+    weight = (long *) mxGetPr(prhs[2]);
+
+    cut = (long *) mxGetPr(prhs[3]);
+    reciprocal_cut = (long *) mxGetPr(prhs[4]);
+    size_cut = mxGetM(prhs[3]);
+    reciprocal_size_cut = mxGetM(prhs[4]);
 
     /* PREPARE MASK - COMPLEMENT CUT IF NECESSARY */
     mask_cut = calloc(sizeof(*mask_cut), n + 1);
@@ -83,38 +89,37 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 
     for (i = 0; i < size_cut; i++)
-        mask_cut[cut[i]] = 1;
+        mask_cut[cut[i] - 1] = 1;
 
     for (i = 0; i < reciprocal_size_cut; i++)
-        reciprocal_mask_cut[reciprocal_cut[i]] = 1;
+        reciprocal_mask_cut[reciprocal_cut[i] - 1] = 1;
 
-    long counter = 0;
-    /* COMPUTE EXPANSION */
-    for (i = 0; i < size_cut; i++) {
-        if (reciprocal_mask_cut[cut[i]] == 1)
-            continue;
-        long c = 0;
-        for (j = col[cut[i] - 1]; j < col[cut[i]]; j++) {
-            if (mask_cut[row[j] + 1] == 0) {
-                cutedges += array_G[j];
-                c = 1;
+    for (i = 0; i < n; i++) {
+        if (mask_cut[i]) {
+            cut_vol += weight[i];
+            if (!reciprocal_mask_cut[i]) {
+                for (j = col[i]; j < col[i + 1]; j++)
+                    if (!mask_cut[row[j]])
+                        cutedges += array_G[j];
+            }
+            else {
+                cutedges += lamda * weight[i];
             }
         }
-        counter += c;
+        if (reciprocal_mask_cut[i])
+            reciprocal_cut_vol += weight[i];
     }
-    // printf("Nodes at border: %ld\n", counter);
-    cutedges += lamda * (size_cut + reciprocal_size_cut - n);
 
+    long denominator = cut_vol < reciprocal_cut_vol ? cut_vol : reciprocal_cut_vol;
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
-    if (size_cut > reciprocal_size_cut)
-        size_cut = reciprocal_size_cut;
     plhs[0] = mxCreateDoubleScalar(cutedges);
     plhs[1] = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
-    plhs[2] = mxCreateDoubleScalar(cutedges / size_cut);
+    plhs[2] = mxCreateDoubleScalar(cutedges / denominator);
     temp = (long *) mxGetPr(plhs[1]);
-    temp[0] = size_cut;
+    temp[0] = denominator;
 
     free(mask_cut);
+    free(reciprocal_mask_cut);
 
 } 
 

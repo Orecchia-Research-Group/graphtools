@@ -13,6 +13,7 @@ INPUTS: Note: vertex indices start at 1
  - cap_add: a 64 bit integer representing the capacity to put for edges between source
  and bisec and between sink and complement of bisec
  - cap-orig: capacity to assign to edges in G
+ - lambda: percentage of degree flow that can pass through the node
 
 OUTPUTS:
  - flow: value of flow routed
@@ -21,6 +22,7 @@ OUTPUTS:
  if no matching is required by MATLAB the flow computation does not waste time computing it.
 */
 
+#include <math.h>
 #include "mex.h"
 #include "matrix.h"
 #include "timer.h"
@@ -63,11 +65,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *col_G;
     long *row_G;
     double *pr_G;
-
+    long *volume;
 
     long *tails;
     long *heads;
     long *weights;
+    long *degrees;
 
 
     long i;
@@ -98,12 +101,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *temp_a;
 
     float t1, t2;
-    long lambda;
+    double lambda;
     int route_flag;
 
     /*  t1 =timer();*/
 
-    if (nrhs > 5 || nrhs < 4 || nlhs > 4 || nlhs < 3)
+    if (nrhs > 6 || nrhs < 5 || nlhs > 4 || nlhs < 3)
         mexErrMsgTxt("Error in usage of Pairing.\n");
 
 
@@ -111,10 +114,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     G = prhs[0];
     bisec = (long *) mxGetPr(prhs[1]);
     size_bisec = mxGetM(prhs[1]);
-    cap_add = ((long *) mxGetPr(prhs[2]))[0];
-    cap_orig = ((long *) mxGetPr(prhs[3]))[0];
-    if (nrhs > 4) {
-        lambda = mxGetScalar(prhs[4]);
+    cap_add = ((long *) mxGetPr(prhs[3]))[0];
+    cap_orig = ((long *) mxGetPr(prhs[4]))[0];
+    volume = (long *) mxGetPr(prhs[2]);
+    if (nrhs > 5) {
+        lambda = mxGetScalar(prhs[5]);
     }
 
     N = mxGetM(G);
@@ -125,9 +129,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     row_G = (long *) mxGetIr(G);
     pr_G = (double *) mxGetPr(G);
 
-    reciprocalOffset = N * (nrhs > 4);
+    reciprocalOffset = N * (nrhs > 5);
 
-    /* CONSTRUCT THE FLOW PROBLEM IN THW REPRESENTATION
+    /* CONSTRUCT THE FLOW PROBLEM IN THE REPRESENTATION
        NEED TO ADD SOURCE / SINK AND RELATIVE EDGES
     */
 
@@ -147,24 +151,32 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     tails = calloc(sizeof(*tails), M + N + reciprocalOffset);
     heads = calloc(sizeof(*heads), M + N + reciprocalOffset);
     weights = calloc(sizeof(*weights), M + N + reciprocalOffset);
+    degrees = calloc(sizeof(*degrees), N + 1);
     
-    if (!(tails || heads || weights)) {
+    if (!(tails && heads && weights && degrees)) {
         fprintf(stderr, "Error allocating memory for edge information\n");
     }
 
-    for (i = 0; i < N; i++)
-        for (j = col_G[i]; j < col_G[i+1]; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = col_G[i]; j < col_G[i + 1]; j++) {
             heads[k] = i + 1;
             tails[k] = row_G[j] + reciprocalOffset + 1;
             weights[k] = pr_G[j] * cap_orig;
-
+            degrees[i + 1] += weights[k];
             k++;
         }
+        if (degrees[i + 1] == 0) {
+            fprintf(stderr, "Node %6ld has degree 0.\n", i + 1);
+        }
+    }
 
     for (h = 0; h < reciprocalOffset; h++) {
         heads[k] = h + reciprocalOffset + 1;
         tails[k] = h + 1;
-        weights[k] = lambda * cap_orig;
+        weights[k] = (long) round(lambda * degrees[h + 1]);
+        if (weights[k] <= 0) {
+            fprintf(stderr, "Internal edge for node %6ld was reduced to 0.\n", h + 1);
+        }
         k++;
     }
 
@@ -176,7 +188,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             heads[k] = N + reciprocalOffset + 2;
             tails[k] = h + reciprocalOffset + 1;
         }
-        weights[k] = cap_add;
+        weights[k] = cap_add * volume[h];
         k++;
     }
 

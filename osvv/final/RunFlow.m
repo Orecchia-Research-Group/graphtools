@@ -5,6 +5,7 @@
 % INPUTS: 
 %    sparse matrix (double) G - instance graph
 %    vector (int64) bisec - bisection on which to run SODA improvement
+%    vector (int) weight - weight of each vertex
 %    (double) minweirdrat_num - starting weirdrat numerator
 %    (int64) minweirdrat_den - starting weirdrat denominator
 %    (double) minweirdrat - starting weirdrat
@@ -41,7 +42,7 @@
 % ISSUES: can do mincut at precision p too?
 %
 
-function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, reciprocalBestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag, varargin)
+function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, reciprocalBestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag, varargin)
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INITIALIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -66,6 +67,7 @@ weirdrat = minweirdrat;
 % PREPARE BISEC
 bisec = int64(sort(bisec));
 size_bisec = int64(size(bisec,1));
+bisec_vol = sum(weight(bisec));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%% SEARCH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,21 +81,21 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     cap_orig = weirdrat_den;
 
     if (lamda > 0)
-        [flow, cut, reciprocalCut] = Pairing(G, bisec, cap_add, cap_orig, lamda); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, cap_add / lamda, cap_orig / lamda, lamda); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
-        [flow, cut, reciprocalCut] = Pairing(G, bisec, cap_add, cap_orig); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, cap_add, cap_orig); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     end
       counter = counter + 1;
     if (flow == 0)
         fprintf(2, 'You disconnected: %f\n', flow);
     end
-    % fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(size_bisec) * weirdrat_num, weirdrat);
-    if(flow < double(size_bisec) * weirdrat_num) % IF BETTER CUT FOUND
+    fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(bisec_vol) * weirdrat_num / lamda, weirdrat);
+    if(flow < double(bisec_vol) * weirdrat_num / lamda) % IF BETTER CUT FOUND
         %CHANGES
         found_flag = int8(1);
-        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, lamda); % COMPUTE NEW WEIRDRAT
+        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, weight, lamda); % COMPUTE NEW WEIRDRAT
         % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
-        [newex_num, newex_den, newex] = cutexp(G, lamda, cut, reciprocalCut);
+        [newex_num, newex_den, newex] = cutexp(G, lamda, weight, cut, reciprocalCut);
         if(newex < ex)
             ex_num = newex_num;
             ex_den = int64(newex_den);
@@ -116,9 +118,9 @@ if(nomatching_flag == 0)
 
 %    fprintf(2, 'Match_num: %f\n', match_num);
    if (lamda > 0)
-        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, match_num, match_den, lamda);
+        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, match_num / lamda, match_den / lamda, lamda);
    else
-        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, match_num, match_den);
+        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, match_num, match_den);
    end
     
    % MATCHING SCALING
