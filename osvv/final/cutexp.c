@@ -17,6 +17,7 @@ mexFunction INPUTS;
    nlhs = 3
    
 */
+#include <math.h>
 #include "mex.h"
 #include "matrix.h"
 
@@ -32,7 +33,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long reciprocal_size_cut;
     long i, j;
     long n;
-    long lamda;
+    double lamda;
+    long lamda_inv;
     long cut_vol = 0;
     long reciprocal_cut_vol = 0;
     double cutedges = 0;
@@ -69,7 +71,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     row = mxGetIr(G);
     array_G = mxGetPr(G);
     lamda = mxGetScalar(prhs[1]);
-    if (lamda < 0) lamda = 0;
+    if (lamda > 0) lamda_inv = (long) round(1 / lamda);
+    else lamda_inv = 1l;
 
     weight = (long *) mxGetPr(prhs[2]);
 
@@ -96,18 +99,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     for (i = 0; i < n; i++) {
         if (mask_cut[i]) {
-            cut_vol += weight[i];
+            cut_vol += weight[i] * lamda_inv;
             if (!reciprocal_mask_cut[i]) {
                 for (j = col[i]; j < col[i + 1]; j++)
                     if (!mask_cut[row[j]])
-                        cutedges += array_G[j];
+                        cutedges += array_G[j] * lamda_inv;
             }
             else {
-                cutedges += lamda * weight[i];
+                cutedges += weight[i];
             }
         }
         if (reciprocal_mask_cut[i])
-            reciprocal_cut_vol += weight[i];
+            reciprocal_cut_vol += weight[i] * lamda_inv;
     }
 
     long denominator = cut_vol < reciprocal_cut_vol ? cut_vol : reciprocal_cut_vol;

@@ -76,9 +76,10 @@ counter = 0;
 
 
 while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
-    %%% [cap_add, cap_orig] = Farey(int64(cap_add), cap_orig, int64(100));
+    %%% [cap_add, cap_orig] = Farey(int64(cap_add), cap_orig, int64(10000));
     cap_add = int64(weirdrat_num);
     cap_orig = weirdrat_den;
+    % fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
 
     if (lamda > 0)
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, cap_add / lamda, cap_orig / lamda, lamda); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -89,7 +90,7 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     if (flow == 0)
         fprintf(2, 'You disconnected: %f\n', flow);
     end
-    fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(bisec_vol) * weirdrat_num / lamda, weirdrat);
+    % fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(bisec_vol) * weirdrat_num / lamda, weirdrat);
     if(flow < double(bisec_vol) * weirdrat_num / lamda) % IF BETTER CUT FOUND
         %CHANGES
         found_flag = int8(1);

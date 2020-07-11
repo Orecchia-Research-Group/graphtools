@@ -1070,7 +1070,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                             *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
                             if (NULL == *mtails)  {
                                 free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                fprintf(stderr, "Failed to allocate mtails for %ld places\n", matchingCapacity);
                                 exit(1);
                             }
 
@@ -1078,7 +1078,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                             *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
                             if (NULL == *mweights) {
                                 free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                fprintf(stderr, "Failed to allocate mweights for %ld places\n", matchingCapacity);
                                 exit(1);
                             }
                         }

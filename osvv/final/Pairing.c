@@ -173,7 +173,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     for (h = 0; h < reciprocalOffset; h++) {
         heads[k] = h + reciprocalOffset + 1;
         tails[k] = h + 1;
-        weights[k] = (long) round(lambda * degrees[h + 1]);
+        weights[k] = (long) round(volume[h] * cap_orig * lambda);
         if (weights[k] <= 0) {
             fprintf(stderr, "Internal edge for node %6ld was reduced to 0.\n", h + 1);
         }
@@ -201,7 +201,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     n = N + 2 + reciprocalOffset;
     m = M + N + reciprocalOffset;
 
-    if (nlhs == 2) {
+    if (nlhs == 3) {
         route_flag = 0;
     } else
         route_flag = 1;

@@ -17,6 +17,7 @@ mexFunction INPUTS;
    nlhs = 3
 
 */
+#include <math.h>
 #include "mex.h"
 #include "matrix.h"
 
@@ -39,7 +40,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     long n;
     double cutedges = 0;
     long denominator = 0;
-    long lamda;
+    double lamda;
+    long lamda_inv;
 
     int *mask_cut;
     int *reciprocal_mask_cut;
@@ -85,6 +87,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     size_bisec = mxGetM(prhs[3]);
     weight = (long *) mxGetPr(prhs[4]);
     lamda = mxGetScalar(prhs[5]);
+    if (lamda > 0) lamda_inv = (long) round(1 / lamda);
+    else lamda_inv = 1l;
 
 
     /*%%%%%%%%%%%%%%%%%%%%%%%%% MAIN BODY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -104,21 +108,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
 
     for (i = 0; i < n; i++) {
         if (mask_cut[i] && mask_bisec[i]) {                 // π(S && A)
-            denominator += weight[i];
+            denominator += weight[i] * lamda_inv;
         }
 
         if (mask_cut[i] && (!mask_bisec[i]) && (!reciprocal_mask_cut[i])) {     // - π(L && !A), L = S \ T
-            denominator -= weight[i];
+            denominator -= weight[i] * lamda_inv;
         }
 
         if (mask_cut[i] && reciprocal_mask_cut[i] && (lamda > 0)) {     // λ π(C)
-            cutedges += weight[i] * lamda;
+            cutedges += weight[i];
         }
 
         if (mask_cut[i] && !reciprocal_mask_cut[i]) {                   // w(E(L, R))
             for (j = col[i]; j < col[i + 1]; j++) {
                 if (!mask_cut[row[j]]) {
-                    cutedges += array_G[j];
+                    cutedges += array_G[j] * lamda_inv;
                 }
             }
         }
