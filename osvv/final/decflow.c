@@ -1,24 +1,45 @@
 #include "decflow.h"
 
 
-long before(node* v) {
-    return -1;
+
+void init(long nodes, long edges) {
+    dTree.n = nodes;
+    dTree.m = edges;
+    dTree.belongTo = (path_t *) calloc(dTree.n + 2, sizeof(path_t *));
+
+    for (int i = 0; i < dTree.n + 2; i++) {
+        dTree.belongTo[i] = calloc(1, sizeof(path_t));
+        dTree.belongTo[i]->id = i;
+    }
 }
 
-long after(node* v) {
-    return -1;
+void cleanUp() {
+
+}
+
+
+
+
+
+
+node* before(node* v) {
+    return NULL;
+}
+
+node* after(node* v) {
+    return NULL;
 }
 
 path_t* path(node* v) {
     return NULL;
 }
 
-long head(path_t* p) {
-    return -1;
+node* head(path_t* p) {
+    return NULL;
 }
 
-long tail(path_t* p) {
-    return -1;
+node* tail(path_t* p) {
+    return NULL;
 }
 
 long pCost(node* v) {
