@@ -1,15 +1,15 @@
 #include "decflow.h"
 
 
-long before(long v) {
+long before(node* v) {
     return -1;
 }
 
-long after(long v) {
+long after(node* v) {
     return -1;
 }
 
-path_t* path(long v) {
+path_t* path(node* v) {
     return NULL;
 }
 
@@ -21,7 +21,7 @@ long tail(path_t* p) {
     return -1;
 }
 
-long pCost(long v) {
+long pCost(node* v) {
     return -1;
 }
 
@@ -37,11 +37,11 @@ void pUpdate(path_t* p, long x) {
 
 }
 
-void split(long v) {
+void split(node* v) {
 
 }
 
-void savePath(long a, long b, long cost) {
+void savePath(node* a, node* b, long cost) {
 
 }
 
@@ -50,6 +50,6 @@ void splice(path_t* p) {
 
 }
 
-void expose(long v) {
-    
+void expose(node* v) {
+
 }
