@@ -1,15 +1,34 @@
 
 typedef struct {
 //naive
-    long id;
-    node* head;
-} path_t;
+    int id;
+    long cost;
+    node* node;
+    void* prev_node;
+    void* nex_node;
+    void* start_edge; // first adjacent edge in the adjacency list
+    void* cur_edge;
+} dt_node_t;
+
+typedef struct {
+    dt_node_t* from;
+    dt_node_t* to;
+    long cost;
+    void* nex_edge;
+} dt_edge_t;
+
+typedef struct {
+//naive
+    dt_node_t* head;
+    dt_node_t* tail;
+} dt_path_t;
 
 
 typedef struct {
 //naive
     long n,m;
-    path_t** belongTo;
+    dt_node_t** nodes;
+    dt_path_t** belongTo;
 
 } dynamic_tree_t;
 
@@ -28,17 +47,17 @@ void cleanUp();
 
 
 
-node* before(node* v);
-node* after(node* v);
-path_t* path(node* v);
-node* head(path_t* p);
-node* tail(path_t* p);
-long pCost(node* v);
-path_t* concatenate(path_t* p, path_t* q, long cost);
-long pMinCost(path_t* p);
-void pUpdate(path_t* p, long x);
-void split(node* v);
-void savePath(node* a, node* b, long cost);
+dt_node_t* before(dt_node_t* v);
+dt_node_t* after(dt_node_t* v);
+dt_path_t* path(dt_node_t* v);
+dt_node_t* head(dt_path_t* p);
+dt_node_t* tail(dt_path_t* p);
+long pCost(dt_node_t* v);
+dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost);
+long pMinCost(dt_path_t* p);
+void pUpdate(dt_path_t* p, long x);
+void split(dt_node_t* v);
+void savePath(dt_node_t* a, dt_node_t* b, long cost);
 
-void splice(path_t* p);
-void expose(node* v);
+void splice(dt_path_t* p);
+void expose(dt_node_t* v);
