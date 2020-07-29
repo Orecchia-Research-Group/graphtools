@@ -41,7 +41,7 @@ dt_node_t* after(dt_node_t* v) {
 }
 
 dt_path_t* path(dt_node_t* v) {
-    return (v != NULL)? dTree.belongTo[v.id] : NULL;
+    return (v != NULL)? dTree.belongTo[v->id] : NULL;
 }
 
 dt_node_t* head(dt_path_t* p) {
@@ -59,13 +59,16 @@ long pCost(dt_node_t* v) {
 dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost) {
     dt_node_t* p_tail = p->tail;
     dt_node_t* q_head = q->head;
+    dt_node_t* q_tail = q->tail;
     p_tail->nex_node = q_head;
+    p_tail->cost = cost;
     q_head->prev_node = p_tail;
     dt_node_t* q_node = q_head;
     while (q_node != NULL) {
         dTree.belongTo[q_node->id] = p;
         q_node = q_node->nex_node;
     }
+    p->tail = q_tail;
     free(q);
     //TODO, add cost information somewhere
     return NULL;
