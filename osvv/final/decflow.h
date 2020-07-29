@@ -14,7 +14,6 @@ typedef struct {
     dt_node_t* from;
     dt_node_t* to;
     long cost;
-    void* nex_edge;
 } dt_edge_t;
 
 typedef struct {
@@ -54,10 +53,12 @@ dt_node_t* head(dt_path_t* p);
 dt_node_t* tail(dt_path_t* p);
 long pCost(dt_node_t* v);
 dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost);
-long pMinCost(dt_path_t* p);
+dt_node_t* pMinCost(dt_path_t* p);
 void pUpdate(dt_path_t* p, long x);
 void split(dt_node_t* v);
+void cut(dt_node_t* v);
 void savePath(dt_node_t* a, dt_node_t* b, long cost);
+void cut_edges(dt_path_t* p);
 
 void splice(dt_path_t* p);
 void expose(dt_node_t* v);

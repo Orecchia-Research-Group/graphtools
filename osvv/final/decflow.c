@@ -66,18 +66,24 @@ dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost) {
         dTree.belongTo[q_node->id] = p;
         q_node = q_node->nex_node;
     }
+    free(q);
     //TODO, add cost information somewhere
     return NULL;
 }
 
-long pMinCost(dt_path_t* p) {
+dt_node_t* pMinCost(dt_path_t* p) {
     long min_cost = 0x3f3f3f3f3f3f3f3f;
+    dt_node_t* min_node = NULL;
     dt_node_t* node = p->head;
     dt_node_t* tail = p->tail;
     while(node != tail) {
-        min_cost = min(min_cost, node->cost);
+        if (min_cost >= node->cost) {
+            min_cost = node->cost;
+            min_node = node;
+        }
+        node = node->nex_node;
     }
-    return min_cost;
+    return min_node;
 }
 
 void pUpdate(dt_path_t* p, long x) {
@@ -90,18 +96,49 @@ void pUpdate(dt_path_t* p, long x) {
 }
 
 void split(dt_node_t* v) {
+    //not used
+}
 
+void cut(dt_node_t* v) {
+    dt_node_t* w = v->nex_node;
+    dt_path_t* v_path = dTree.belongTo[v->id];
+    dt_path_t* w_path = calloc(1, sizeof(dt_path_t));
+    dt_node_t* w_tail = v_path->tail;
+    v->nex_node = NULL;
+    w->prev_node = NULL;
+    v_path->tail = v;
+
+    w_path->head = w;
+    w_path->tail = w_tail;
+    dt_node_t* node = w;
+    while(node != NULL) {
+        dTree.belongTo[node->id] = w_path;
+        node = node->nex_node;
+    }
 }
 
 void savePath(dt_node_t* a, dt_node_t* b, long cost) {
 
 }
 
+void cut_edges(dt_path_t* p) {
+    while(true) {
+        dt_node_t* node = pMinCost(p);
+        if (node && node->cost == 0) {
+            cut(node);
+            last_node = node;
+        }
+        else {
+            break;
+        }
+    }
+}
+
 
 void splice(dt_path_t* p) {
-
+    //not used
 }
 
 void expose(dt_node_t* v) {
-
+    //not used
 }
