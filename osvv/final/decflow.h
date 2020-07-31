@@ -1,13 +1,16 @@
+#include "types.h"
+
 
 typedef struct {
 //naive
     long id;
-    long cost;
+    long cost;// replace this
+    arc* edge;
     node* node;
     void* prev_node;
     void* nex_node;
-    void* start_edge; // first adjacent edge in the adjacency list
-    void* cur_edge;
+    // void* start_edge; // first adjacent edge in the adjacency list
+    // void* cur_edge;
 } dt_node_t;
 
 typedef struct {
@@ -51,7 +54,7 @@ dt_path_t* path(long v);
 long head(dt_path_t* p);
 long tail(dt_path_t* p);
 long pCost(long v);
-dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost);
+dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, arc* edge);
 long pMinCost(dt_path_t* p);
 void pUpdate(dt_path_t* p, long x);
 void split(dt_node_t* v);

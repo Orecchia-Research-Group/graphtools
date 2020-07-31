@@ -13,7 +13,7 @@ void init(long nodes, long edges) {
     for (int i = 0; i < dTree.n + 2; i++) {
         // dTree.nodes[i] = calloc(1, sizeof(dt_node_t));
         dTree.nodes[i].id = i;
-        dTree.nodes[i].cost = -1;
+        dTree.nodes[i].arc = NULL;
         dTree.nodes[i].node = NULL; //TODO: link to nodes in flow.c
         dTree.nodes[i].prev_node = NULL;
         dTree.nodes[i].nex_node = NULL;
@@ -53,15 +53,16 @@ long tail(dt_path_t* p) {
 }
 
 long pCost(long v) {
-    return dTree.nodes[v].cost;
+    if(dTree.nodes[v].edge == NULL) return -1;
+    return dTree.nodes[v].edge->resCap;
 }
 
-dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost) {
+dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, arc* edge) {
     dt_node_t* p_tail = p->tail;
     dt_node_t* q_head = q->head;
     dt_node_t* q_tail = q->tail;
     p_tail->nex_node = q_head;
-    p_tail->cost = cost;
+    p_tail->edge = edge;
     q_head->prev_node = p_tail;
     dt_node_t* q_node = q_head;
     while (q_node != NULL) {
@@ -80,8 +81,8 @@ long pMinCost(dt_path_t* p) {
     dt_node_t* node = p->head;
     dt_node_t* tail = p->tail;
     while(node != tail) {
-        if (min_cost >= node->cost) {
-            min_cost = node->cost;
+        if (min_cost >= node->edge->resCap) {
+            min_cost = node->edge->resCap;
             min_node = node;
         }
         node = node->nex_node;
@@ -93,7 +94,7 @@ void pUpdate(dt_path_t* p, long x) {
     dt_node_t* node = p->head;
     dt_node_t* tail = p->tail;
     while(node != tail) {
-        node->cost += x;
+        node->edge->resCap += x;
         node = node->nex_node;
     }
 }
@@ -130,7 +131,7 @@ void cutEdges(dt_path_t* p) {
         if (node == p->tail) {
             break;
         }
-        if (node && node->cost == 0) {
+        if (node && node->edge->resCap == 0) {
             cut(node);
         }
         else {
@@ -144,7 +145,7 @@ void findPath(dt_path_t* p, long* a, long* b, long* cost) {
     *a = after(p->head->id);
     *b = before(p->tail->id);
     long min_node = pMinCost(p);
-    long flow = dTree.nodes[min_node].cost;
+    long flow = dTree.nodes[min_node].edge->resCap;
     *cost = flow;
     pUpdate(p, -flow);
     cutEdges(p);
