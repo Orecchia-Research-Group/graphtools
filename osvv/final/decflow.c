@@ -7,21 +7,21 @@
 void init(long nodes, long edges) {
     dTree.n = nodes;
     dTree.m = edges;
-    dTree.nodes = (dt_node_t**) calloc(dTree.n + 2, sizeof(dt_node_t*));
+    dTree.nodes = (dt_node_t*) calloc(dTree.n + 2, sizeof(dt_node_t));
     dTree.belongTo = (dt_path_t**) calloc(dTree.n + 2, sizeof(dt_path_t*));
 
     for (int i = 0; i < dTree.n + 2; i++) {
-        dTree.nodes[i] = calloc(1, sizeof(dt_node_t*));
-        dTree.nodes[i]->id = i;
-        dTree.nodes[i]->cost = -1;
-        dTree.nodes[i]->node = NULL; //TODO: link to nodes in flow.c
-        dTree.nodes[i]->prev_node = NULL;
-        dTree.nodes[i]->nex_node = NULL;
+        // dTree.nodes[i] = calloc(1, sizeof(dt_node_t));
+        dTree.nodes[i].id = i;
+        dTree.nodes[i].cost = -1;
+        dTree.nodes[i].node = NULL; //TODO: link to nodes in flow.c
+        dTree.nodes[i].prev_node = NULL;
+        dTree.nodes[i].nex_node = NULL;
         //TODO: implement adjacency list through start_edge, cur_edge
 
 
-        dTree.belongTo[i] = calloc(1, sizeof(dt_path_t*));
-        dTree.belongTo[i]->head = dTree.belongTo[i]-> tail = dTree.nodes[i];
+        dTree.belongTo[i] = calloc(1, sizeof(dt_path_t));
+        dTree.belongTo[i]->head = dTree.belongTo[i]-> tail = &dTree.nodes[i];
     }
 }
 
@@ -32,28 +32,28 @@ void cleanUp() {
 
 
 // TODO: add error and warning messages
-dt_node_t* before(dt_node_t* v) {
-    return (v != NULL)? v->prev_node : NULL;
+long before(long v) {
+    return dTree.nodes[v].prev_node->id;
 }
 
-dt_node_t* after(dt_node_t* v) {
-    return (v != NULL)? v->nex_node : NULL;
+long after(long v) {
+    return dTree.nodes[v].nex_node->id;
 }
 
-dt_path_t* path(dt_node_t* v) {
-    return (v != NULL)? dTree.belongTo[v->id] : NULL;
+dt_path_t* path(long v) {
+    return dTree.belongTo[v];
 }
 
-dt_node_t* head(dt_path_t* p) {
-    return (p != NULL)? p->head : NULL;
+long head(dt_path_t* p) {
+    return (p != NULL)? p->head->id : -1;
 }
 
-dt_node_t* tail(dt_path_t* p) {
-    return (p != NULL)? p->tail : NULL;
+long tail(dt_path_t* p) {
+    return (p != NULL)? p->tail->id : -1;
 }
 
-long pCost(dt_node_t* v) {
-    return (v != NULL)? v->cost : -1;
+long pCost(long v) {
+    return dTree.nodes[v].cost;
 }
 
 dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost) {
@@ -74,7 +74,7 @@ dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, long cost) {
     return NULL;
 }
 
-dt_node_t* pMinCost(dt_path_t* p) {
+long pMinCost(dt_path_t* p) {
     long min_cost = 0x3f3f3f3f3f3f3f3f;
     dt_node_t* min_node = NULL;
     dt_node_t* node = p->head;
@@ -86,7 +86,7 @@ dt_node_t* pMinCost(dt_path_t* p) {
         }
         node = node->nex_node;
     }
-    return min_node;
+    return min_node->id;
 }
 
 void pUpdate(dt_path_t* p, long x) {
@@ -124,18 +124,32 @@ void savePath(dt_node_t* a, dt_node_t* b, long cost) {
 
 }
 
-void cut_edges(dt_path_t* p) {
+void cutEdges(dt_path_t* p) {
     while(true) {
         dt_node_t* node = pMinCost(p);
+        if (node == p->tail) {
+            break;
+        }
         if (node && node->cost == 0) {
             cut(node);
-            last_node = node;
         }
         else {
             break;
         }
     }
 }
+
+
+void findPath(dt_path_t* p, long* a, long* b, long* cost) {
+    *a = after(p->head->id);
+    *b = before(p->tail->id);
+    long min_node = pMinCost(p);
+    long flow = dTree.nodes[min_node].cost;
+    *cost = flow;
+    pUpdate(p, -flow);
+    cutEdges(p);
+}
+
 
 
 void splice(dt_path_t* p) {
