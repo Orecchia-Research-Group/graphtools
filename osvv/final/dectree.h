@@ -1,14 +1,17 @@
 #include "types.h"
 
 
-typedef struct {
+
+
+
+typedef struct dt_node {
 //naive
     long id;
     long cost;// replace this
     arc* edge;
     node* node;
-    void* prev_node;
-    void* nex_node;
+    struct dt_node* prev_node;
+    struct dt_node* next_node;
     // void* start_edge; // first adjacent edge in the adjacency list
     // void* cur_edge;
 } dt_node_t;
