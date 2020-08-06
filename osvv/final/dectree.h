@@ -35,20 +35,20 @@ typedef struct {
     dt_node_t* nodes;
     dt_path_t** belongTo;
 
-} dynamic_tree_t;
+} dec_tree_t;
 
 
-dynamic_tree_t dTree;
-
-
-
+dec_tree_t dTree;
 
 
 
 
-void init(long nodes, long edges);
 
-void cleanUp();
+
+
+void decInit(long nodes, long edges);
+
+void decCleanUp();
 
 
 long before(long v);

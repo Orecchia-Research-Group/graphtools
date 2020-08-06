@@ -7,7 +7,7 @@
 #define min(a,b) ((a) < (b))? (a) : (b)
 
 
-void init(long nodes, long edges) {
+void decInit(long nodes, long edges) {
     dTree.n = nodes;
     dTree.m = edges;
     dTree.nodes = (dt_node_t*) calloc(dTree.n + 2, sizeof(dt_node_t));
@@ -29,7 +29,7 @@ void init(long nodes, long edges) {
 }
 
 
-void cleanUp() {
+void decCleanUp() {
 
 }
 
@@ -75,7 +75,7 @@ dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, arc* edge) {
     p->tail = q_tail;
     free(q);
     //TODO, add cost information somewhere
-    return NULL;
+    return p;
 }
 
 long pMinCost(dt_path_t* p) {
@@ -90,6 +90,7 @@ long pMinCost(dt_path_t* p) {
         }
         node = node->next_node;
     }
+    if (min_node == NULL) return -1;
     return min_node->id;
 }
 
@@ -130,11 +131,14 @@ void savePath(dt_node_t* a, dt_node_t* b, long cost) {
 
 void cutEdges(dt_path_t* p) {
     while(true) {
+        if (p->head == p->tail) {
+            break;
+        }
         long node = pMinCost(p);
         if (node == p->tail->id) {
             break;
         }
-        if (node && dTree.nodes[node]->edge->resCap == 0) {
+        if (dTree.nodes[node].edge->resCap == 0) {
             cut(&dTree.nodes[node]);
         }
         else {
@@ -148,7 +152,7 @@ void findPath(dt_path_t* p, long* a, long* b, long* cost) {
     *a = after(p->head->id);
     *b = before(p->tail->id);
     long min_node = pMinCost(p);
-    long flow = dTree.nodes[min_node].edge->resCap;
+    long flow = dTree.nodes[min_node].edge->resCap; //TODO: change to cap - resCap
     *cost = flow;
     pUpdate(p, -flow);
     cutEdges(p);
