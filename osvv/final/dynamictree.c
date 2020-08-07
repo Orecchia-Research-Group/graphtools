@@ -48,3 +48,131 @@ void update(dynamic_node_t* node) {
         else node->on += node->r->on;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void rotR (dynamic_node_t* p) {
+    dynamic_node_t* q = p->p;
+    dynamic_node_t* r = q->p;
+    normalize(q);
+    normalize(p);
+    if ((q->l=p->r) != NULL) {
+        q->l->p = q;
+    }
+    p->r = q;
+    q->p = p;
+    if ((p->p=r) != NULL) {
+        if (r->l == q) r->l = p;
+        else if (r->r == q) r->r = p;
+    }
+    update(q);
+}
+
+void rotL (dynamic_node_t* p) {
+    dynamic_node_t* q = p->p;
+    dynamic_node_t* r = q->p;
+    normalize(p);
+    normalize(q);
+    if ((q->r=p->l) != NULL) {
+        q->r->p = q;
+    }
+    p->l = q;
+    q->p = p;
+    if ((p->p=r) != NULL) {
+        if (r->l == q) r->l = p;
+        else if (r->r == q) r->r = p;
+    }
+    update(q);
+}
+
+void splay(dynamic_node_t* p) {
+    while (!isroot(p)) {
+        dynamic_node_t* q = p->p;
+        if (isroot(q)) {
+            if (q->l == p)
+                rotR(p);
+            else
+                rotL(p);
+        }
+        else {
+            dynamic_node_t* r = q->p;
+            if (r->l == q) {
+                if (q->l == p) {
+                    rotR(q);
+                    rotR(p);
+                }
+                else {
+                    rotL(p);
+                    rotR(p);
+                }
+            }
+            else {
+                if (q->r == p) {
+                    rotL(q);
+                    rotL(p);
+                }
+                else {
+                    rotR(p);
+                    rotL(p);
+                }
+            }
+        }
+    }
+    normalize(p); // only useful if p was already a root.
+    update(p);    // only useful if p was not already a root
+}
+
+/* This makes node q the root of the virtual tree, and also q is the
+   leftmost node in its splay tree */
+void expose(dynamic_node_t* q) {
+    dynamic_node_t* r = NULL;
+    for (dynamic_node_t* p=q; p != NULL; p=p->p) {
+        splay(p);
+        p->l = r;
+        update(p);
+        r = p;
+    }
+    splay(q);
+}
+
+/* assuming p and q are nodes in different trees and
+   that p is a root of its tree, this links p to q */
+void link(dynamic_node_t* p, dynamic_node_t* q) {
+    expose(p);
+    if (p->r != NULL) {
+        // p is not a root. Error
+        return;
+    }
+    p->p = q;
+}
+
+    /* Toggle all the edges on the path from p to the root
+       return the count after - count before */
+int toggle(dynamic_node_t* p) {
+    expose(p);
+    int before = p->on;
+    p->flip = !p->flip;
+    normalize(p);
+    int after = p->on;
+    return after - before;
+}
+
+/* this returns the id of the node that is the root of the tree containing p */
+int rootid(dynamic_node_t* p) {
+    expose(p);
+    while(p->r != NULL) p = p->r;
+    splay(p);
+    return p->id;
+}

@@ -21,3 +21,26 @@ void normalize(dynamic_node_t* node);
    child in a rotation).  This function fixes up the data fields
    in the node to maintain invariants. */
 void update(dynamic_node_t* node);
+
+
+
+void rotR (dynamic_node_t* p);
+
+void rotL (dynamic_node_t* p);
+
+void splay(dynamic_node_t* p);
+
+/* This makes node q the root of the virtual tree, and also q is the
+   leftmost node in its splay tree */
+void expose(dynamic_node_t* q);
+
+/* assuming p and q are nodes in different trees and
+   that p is a root of its tree, this links p to q */
+void link(dynamic_node_t* p, dynamic_node_t* q);
+
+    /* Toggle all the edges on the path from p to the root
+       return the count after - count before */
+int toggle(dynamic_node_t* p);
+
+/* this returns the id of the node that is the root of the tree containing p */
+int rootid(dynamic_node_t* p);
