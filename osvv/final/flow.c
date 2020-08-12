@@ -1043,7 +1043,6 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         dt_path_t *p, *q;
         
         while(sink->excess > 0){
-            
             forAllNodes(i){
                 i->d=-1;
             }
