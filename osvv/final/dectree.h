@@ -1,8 +1,7 @@
 #include "types.h"
 
-
-
-
+#ifndef FILE_DECTREE_SEEN
+#define FILE_DECTREE_SEEN 
 
 typedef struct dt_node {
 //naive
@@ -87,3 +86,5 @@ void expose(dt_node_t* v);
 //
 // void splice(dt_path_t* p);
 // void expose(dt_node_t* v);
+
+#endif
