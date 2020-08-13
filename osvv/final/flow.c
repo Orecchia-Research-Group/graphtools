@@ -44,7 +44,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include "types.h"          /* type definitions */
 /* #include "flow.h" */
 #include "timer.h"        /* timing routine */
-
+#include "dectree.h"
 /* MATLAB INTEGRATION LIBS */
 
 
@@ -92,10 +92,10 @@ bucket *buckets;             /* array of buckets */
 cType *cap;                 /* array of capacities */
 node *source;              /* source node pointer */
 node *sink;                /* sink node pointer */
-/*node   **queue;             */ /* queue for BFS */
-/* node   **qHead, **qTail, **qLast;*/     /* queue pointers */
+node   **queue;              /* queue for BFS */
+node   **qHead, **qTail, **qLast;     /* queue pointers */
 long dMax;                 /* maximum label */
-long aMax;                 /* maximum actie node label */
+long aMax;                 /* maximum active node label */
 long aMin;                 /* minimum active node label */
 double flow;                 /* flow value */
 long pushCnt = 0;           /* number of pushes */
@@ -136,10 +136,11 @@ float globUpdtFreq;          /* global update frequency */
 #define min(a, b) ( ( (a) < (b) ) ? a : b )
 
 /* FIFO queue for BFS macros */
-/*
-#define qInit() \
+
+#define qInit(n) \
 {\
   qHead = qTail = queue;\
+  qLast = queue + (n)-1;\
 }
 
 #define qEmpty ( qHead == qTail )
@@ -153,11 +154,11 @@ float globUpdtFreq;          /* global update frequency */
 
 #define qDequeue(i) \
 {\
-  i = *qHead;\
+  i = qHead;\
   if ( qHead == qLast ) qHead = queue;\
   else qHead++;\
 }
-*/
+
 
 /* 
    bucket macros:
@@ -1036,78 +1037,159 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 //    *mtails = calloc(sizeof(**mtails),2*(*fflow));
 //    *mweights = calloc(sizeof(**mweights),2*(*fflow));
 //    k = 0;
-
-        forAllNodes(i) {
-            i->d = 0;
-        }
-
-
-        forAllArcs(source, a) {
-            int na = nArc(a);
-            source->d = -1;  /*mark on path for cycle detection. */
-            /*
-            // printf("StopA %ld, %ld \n", nNode((source+1)->first->rev->head),nNode((source+1)->first->head));
-            // printf("StopA %ld, %ld \n", nNode(stopA->rev->head),nNode(stopA->head));
-            // printf ("Processing arc %ld, %ld\n", nNode(a->rev->head), nNode(a->head)); */
-            if (cap[na] > 0) {
-                while (a->resCap < cap[na]) {
-                    minCap = cap[na] - a->resCap;
-
-
-                    last = decomposePathInternal(a->head, &minCap);
-
-
-                    a->resCap += minCap;
-                    if (last != NULL) { /*// printf ( "%7ld %7ld %12ld\n",
-		    //   nNode( a -> head ), nNode(last), minCap); */
-                        if (k >= matchingCapacity) {
-                            if (!matchingCapacity) matchingCapacity = 2 * n;
-                            else matchingCapacity = 2 * matchingCapacity;
-                            reallocPtr = *mheads;
-                            *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
-                            if (NULL == *mheads) {
-                                free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                                exit(1);
-                            }
-
-                            reallocPtr = *mtails;
-                            *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
-                            if (NULL == *mtails) {
-                                free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                                exit(1);
-                            }
-
-                            reallocPtr = *mweights;
-                            *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
-                            if (NULL == *mweights) {
-                                free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                                exit(1);
-                            }
-                        }
-
-                        (*mheads)[k] = nNode(a->head);
-                        (*mtails)[k] = nNode(last);
-                        (*mweights)[k] = minCap;
-
-                        (*mtails)[k + 1] = nNode(a->head);
-                        (*mheads)[k + 1] = nNode(last);
-                        (*mweights)[k + 1] = minCap;
-
-
-                        k = k + 2;
-                    } else {
-                        printf("cycle with source detected marked %ld should be -2\n", source->d);
-                        source->d = -1;
-                    }
-
-                }
+        
+        node *u, *v, *qTail, *qHead, *qLast;
+        node *queue[n+3];
+        dt_path_t *p, *q;
+        
+        while(sink->excess > 0){
+            forAllNodes(i){
+                i->d=-1;
             }
+
+            bfs();
+
+            decInit(n, m);
+            p = path (n-1);
+            u = tail(p);
+
+            while(u != sink){
+                forAllArcs (u, a){
+                    v = a->head;
+                    if ((u->d+1) == (v->d)) {
+                        int na = nArc(a);
+                        q = path(p);
+                        p = concatenate(p, q, cap[na] - a->resCap); //suppose each edge is added only once
+                        u = tail(p);
+                            // mark edges as deleted from pupdate
+                            // mark edges as present to not add them again
+                            // if an edge is considered twice, the second time the flow might stay the same
+                    }
+                }
+                node *k = after(head(p));
+                k->first = tail(p);
+                cut(before(tail(p)));
+            }
+            int minCost = pMinCost(p);
+
+            if(minCost==0);
+            else 
+            if (k >= matchingCapacity) {
+                if (!matchingCapacity) matchingCapacity = 2 * n;
+                else matchingCapacity = 2 * matchingCapacity;
+                reallocPtr = *mheads;
+                *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+                if (NULL == *mheads) {
+                    free(reallocPtr);
+                    fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                    exit(1);
+                }
+
+                reallocPtr = *mtails;
+                *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+                if (NULL == *mtails) {
+                    free(reallocPtr);
+                    fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                    exit(1);
+                }
+
+                reallocPtr = *mweights;
+                *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+                if (NULL == *mweights) {
+                    free(reallocPtr);
+                    fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                    exit(1);
+                }
+                //if cost is zero dont add to mtails, mweights, mheads
+                (*mheads)[k] = nNode(after(q->head));
+                (*mtails)[k] = nNode(before(q->tail));
+                (*mweights)[k] = minCost;
+
+                (*mtails)[k + 1] = nNode(after(q->head));
+                (*mheads)[k + 1] = nNode(before(q->tail));
+                (*mweights)[k + 1] = minCost;
+
+
+                k = k + 2;
+            } else {
+                printf("cycle with source detected marked %ld should be -2\n", source->d);
+                source->d = -1;
+            }
+            pUpdate(p,-minCost);
         }
 
-        *nedges = k;
+        
+//        forAllNodes(i) {
+//            i->d = 0;
+//        }
+//
+//
+//        forAllArcs(source, a) {
+//            int na = nArc(a);
+//            source->d = -1;  /*mark on path for cycle detection. */
+//            /*
+//            // printf("StopA %ld, %ld \n", nNode((source+1)->first->rev->head),nNode((source+1)->first->head));
+//            // printf("StopA %ld, %ld \n", nNode(stopA->rev->head),nNode(stopA->head));
+//            // printf ("Processing arc %ld, %ld\n", nNode(a->rev->head), nNode(a->head)); */
+//            if (cap[na] > 0) {
+//                while (a->resCap < cap[na]) {
+//                    minCap = cap[na] - a->resCap;
+//
+//
+//                    last = decomposePathInternal(a->head, &minCap);
+//
+//
+//                    a->resCap += minCap;
+//                    if (last != NULL) { /*// printf ( "%7ld %7ld %12ld\n",
+//		    //   nNode( a -> head ), nNode(last), minCap); */
+//                        if (k >= matchingCapacity) {
+//                            if (!matchingCapacity) matchingCapacity = 2 * n;
+//                            else matchingCapacity = 2 * matchingCapacity;
+//                            reallocPtr = *mheads;
+//                            *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+//                            if (NULL == *mheads) {
+//                                free(reallocPtr);
+//                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+//                                exit(1);
+//                            }
+//
+//                            reallocPtr = *mtails;
+//                            *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+//                            if (NULL == *mtails) {
+//                                free(reallocPtr);
+//                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+//                                exit(1);
+//                            }
+//
+//                            reallocPtr = *mweights;
+//                            *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+//                            if (NULL == *mweights) {
+//                                free(reallocPtr);
+//                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+//                                exit(1);
+//                            }
+//                        }
+//
+//                        (*mheads)[k] = nNode(a->head);
+//                        (*mtails)[k] = nNode(last);
+//                        (*mweights)[k] = minCap;
+//
+//                        (*mtails)[k + 1] = nNode(a->head);
+//                        (*mheads)[k + 1] = nNode(last);
+//                        (*mweights)[k + 1] = minCap;
+//
+//
+//                        k = k + 2;
+//                    } else {
+//                        printf("cycle with source detected marked %ld should be -2\n", source->d);
+//                        source->d = -1;
+//                    }
+//
+//                }
+//            }
+//        }
+//
+//        *nedges = k;
     }
 
     /*  fprintf(stderr, "rem tm: %f//\n",  timer() - t1);		*/
@@ -1120,7 +1202,28 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     free(buckets);              /* address of the array of capasities */
 }
 
+void bfs(){
+    arc *a;
+    
+    qInit(n+3);
 
+    source->d=0;
+    qEnqueue(source);
+
+    while(!qEmpty){
+        node *current;
+        qDequeue(current);
+
+        if(current == sink)
+            break;
+        forAllArcs(current, a){
+            if(nodes[nNode(a->head)].d == -1){
+                nodes[nNode(a->head)].d = current->d + 1;
+                qEnqueue(nNode(a->head));
+            }
+        }
+    }
+}
 
 int loadflowproblem(n, m, tails, heads, weights, s, t,
                     n_ad, m_ad, nodes_ad, arcs_ad, cap_ad,
