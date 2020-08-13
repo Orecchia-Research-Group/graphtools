@@ -1,18 +1,20 @@
 #include "dynamictree.h"
 
+#define min(a,b) ((a) < (b)) ? (a) : (b)
+#define max(a,b) ((a) > (b)) ? (a) : (b)
 
 
-
-void init(dynamic_node_t* node, int c, int i) {
+void init(dynamic_node_t* node, long c, long i) {
     node->id = i;
     node->s = node->my_s = c;
     node->on = 0;
     node->l = node->r = node->p = NULL;
     node->flip = node->my_flip = false;
+    node->delmin = node->delcost = 0;
 }
 
 bool isroot(dynamic_node_t* node) {
-       return (node->p==NULL) || (node->p->l != node && node->p->r != node);
+    return (node->p==NULL) || (node->p->l != node && node->p->r != node);
 }
 
 /* If this node is flipped, we unflip it, and push the change
@@ -149,7 +151,7 @@ void expose(dynamic_node_t* q) {
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(dynamic_node_t* p, dynamic_node_t* q) {
+void link(dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
     expose(p);
     if (p->r != NULL) {
         // p is not a root. Error
@@ -160,19 +162,101 @@ void link(dynamic_node_t* p, dynamic_node_t* q) {
 
     /* Toggle all the edges on the path from p to the root
        return the count after - count before */
-int toggle(dynamic_node_t* p) {
+long toggle(dynamic_node_t* p) {
     expose(p);
-    int before = p->on;
+    long before = p->on;
     p->flip = !p->flip;
     normalize(p);
-    int after = p->on;
+    long after = p->on;
     return after - before;
 }
 
 /* this returns the id of the node that is the root of the tree containing p */
-int rootid(dynamic_node_t* p) {
+long rootid(dynamic_node_t* p) {
     expose(p);
     while(p->r != NULL) p = p->r;
     splay(p);
     return p->id;
+}
+
+
+
+
+
+
+
+
+// cost implementation
+
+dt_path_t* concatenate(dynamic_path_t* p, dynamic_path_t* q, arc* edge) {
+    dynamic_node_t* phead = p->head, ptail = p->tail, qhead = q->head, qtail = q->tail;
+    dynamic_node_t* proot = p->root, qroot = q->root;
+    // link(proot, qhead, edge);
+
+    // update vals for ptail
+    long min_cost = (ptail->l != NULL) ? minCost(ptail->l) : 0x3f3f3f3f3f3f3f3f;
+    ptail->delcost += edge->resCap;
+    long cost = nCost(ptail);
+    ptail->delmin = cost - min(cost, min_cost);
+
+
+    // structural change
+    proot->p = qhead;
+    qhead->l = proot;
+    p->root = qroot;
+    ptail->edge = edge;
+    p->tail = qtail;
+    free(q);
+
+    // update delmin
+    for (dynamic_node_t* u = ptail; u != NULL; u = u->p) {
+
+    }
+}
+
+
+
+
+long pMinCost(dynamic_path_t* p) {
+    return nCost(p->root) - p->root->delmin;
+}
+
+
+long nMinCost(dynamic_node_t* v) {
+    return nCost(v) - v->delmin;
+}
+
+
+long nCost(dynamic_node_t* v) {
+    long cost = 0;
+    for(dynamic_node_t* u = v; u != NULL; u = u->p) {
+        cost += u->delcost;
+    }
+    return cost;
+}
+
+
+void pUpdate(dynamic_path_t* p, long x) {
+    dynamic_node_t* proot = p->root;
+    proot->delcost += x;
+    long cost = nCost(proot);
+    long min_cost = 0x3f3f3f3f3f3f3f3f;
+    if (proot->l != NULL) {
+        min_cost = min(min_cost, nMinCost(proot->l));
+    }
+    if (proot->r != NULL) {
+        min_cost = min(min_cost, nMinCost(proot->r));
+    }
+    proot->delmin = cost - min(cost, min_cost);
+}
+
+
+void cut(dynamic_node_t* v) {
+
+}
+
+
+void findPath(dynamic_path_t* p, long* a, long* b, long* cost) {
+
+
 }
