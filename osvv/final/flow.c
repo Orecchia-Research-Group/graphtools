@@ -853,6 +853,8 @@ void bfs(){
     }
 }
 
+
+
 void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag)
         long ninput;
         long minput;
@@ -1096,7 +1098,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
             if(minCost==0);
             else 
-            if (k >= matchingCapacity)w {
+            if (k >= matchingCapacity) {
                 if (!matchingCapacity) matchingCapacity = 2 * n;
                 else matchingCapacity = 2 * matchingCapacity;
                 reallocPtr = *mheads;
