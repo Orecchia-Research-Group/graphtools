@@ -10,6 +10,8 @@ typedef struct dynamic_tree_node {
 
 } dynamic_node_t;
 
+dynamic_node_t* nodes;
+
 
 typedef struct dynamic_tree_path {
     dynamic_node_t* root;
@@ -46,11 +48,11 @@ void expose(dynamic_node_t* q);
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(dynamic_node_t* p, dynamic_node_t* q, arc* edge);
+void link(dynamic_node_t* p, dynamic_node_t* q);
 
     /* Toggle all the edges on the path from p to the root
        return the count after - count before */
-long toggle(dynamic_node_t* p);
+// long toggle(dynamic_node_t* p);
 
 /* this returns the id of the node that is the root of the tree containing p */
 long rootid(dynamic_node_t* p);
@@ -67,6 +69,6 @@ dynamic_node_t* after(dynamic_node_t* v);
 long pMinCost(dynamic_path_t* p);
 long nMinCost(dynamic_node_t* v);
 long nCost(dynamic_node_t* v);
-void pUpdate(dynamic_path_t* p, long x);
+void pUpdate(dynamic_node_t* p, long x);
 void cut(dynamic_node_t* v);
 void findPath(dynamic_path_t* p, long* a, long* b, long* cost);

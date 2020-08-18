@@ -206,7 +206,7 @@ void expose(dynamic_node_t* q) {
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
+void link(dynamic_node_t* p, dynamic_node_t* q) {
     expose(p);
     if (p->r != NULL) {
         // p is not a root. Error
@@ -217,14 +217,14 @@ void link(dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
 
     /* Toggle all the edges on the path from p to the root
        return the count after - count before */
-long toggle(dynamic_node_t* p) {
-    expose(p);
-    long before = p->on;
-    p->flip = !p->flip;
-    normalize(p);
-    long after = p->on;
-    return after - before;
-}
+// long toggle(dynamic_node_t* p) {
+//     expose(p);
+//     long before = p->on;
+//     p->flip = !p->flip;
+//     normalize(p);
+//     long after = p->on;
+//     return after - before;
+// }
 
 /* this returns the id of the node that is the root of the tree containing p */
 long rootid(dynamic_node_t* p) {
@@ -330,18 +330,20 @@ long nCost(dynamic_node_t* v) {
 }
 
 
-void pUpdate(dynamic_path_t* p, long x) {
-    dynamic_node_t* proot = p->root;
-    proot->delcost += x;
-    long cost = nCost(proot);
-    long min_cost = 0x3f3f3f3f3f3f3f3f;
-    if (proot->l != NULL) {
-        min_cost = min(min_cost, nMinCost(proot->l));
-    }
-    if (proot->r != NULL) {
-        min_cost = min(min_cost, nMinCost(proot->r));
-    }
-    proot->delmin = cost - min(cost, min_cost);
+void pUpdate(dynamic_node_t* p, long x) {
+    expose(p);
+    p->delcost += x;
+    // dynamic_node_t* proot = p->root;
+    // proot->delcost += x;
+    // long cost = nCost(proot);
+    // long min_cost = 0x3f3f3f3f3f3f3f3f;
+    // if (proot->l != NULL) {
+    //     min_cost = min(min_cost, nMinCost(proot->l));
+    // }
+    // if (proot->r != NULL) {
+    //     min_cost = min(min_cost, nMinCost(proot->r));
+    // }
+    // proot->delmin = cost - min(cost, min_cost);
 }
 
 
@@ -349,6 +351,7 @@ void cut(dynamic_node_t* v) {
     splay(v);
     v->l->p = NULL;
     v->r->p = NULL;
+    v->l = v->r = NULL;
 
     // update cost
     v->l->delcost += v->delcost;
