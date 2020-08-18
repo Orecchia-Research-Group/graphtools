@@ -11,7 +11,7 @@ typedef struct dynamic_tree_node {
 } dynamic_node_t;
 
 
-typedef stuct dynamic_tree_path {
+typedef struct dynamic_tree_path {
     dynamic_node_t* root;
     dynamic_node_t* head, tail;
 
@@ -59,7 +59,11 @@ long rootid(dynamic_node_t* p);
 
 /* each node in dynamic_path_t stores the cost of the edge to its parent,
    except for the leftmost node, i.e., the head of the path*/
-dt_path_t* concatenate(dynamic_path_t* p, dynamic_path_t* q, arc* edge);
+// dt_path_t* concatenate(dynamic_path_t* p, dynamic_path_t* q, arc* edge);
+dynamic_node_t* concatenate(dynamic_node_t* p, dynamic_node_t* q, dynamic_node_t* r);
+dynamic_node_t* before(dynamic_node_t* v);
+dynamic_node_t* after(dynamic_node_t* v);
+
 long pMinCost(dynamic_path_t* p);
 long nMinCost(dynamic_node_t* v);
 long nCost(dynamic_node_t* v);

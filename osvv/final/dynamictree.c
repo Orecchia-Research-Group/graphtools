@@ -68,8 +68,25 @@ void update(dynamic_node_t* node) {
 void rotR (dynamic_node_t* p) {
     dynamic_node_t* q = p->p;
     dynamic_node_t* r = q->p;
-    normalize(q);
-    normalize(p);
+    // normalize(q);
+    // normalize(p);
+
+    // update cost
+    long p_delcost = p->delcost + q->delcost;
+    long q_delcost = -p->delcost;
+    if (p->r != NULL) {
+        p->r->delcost = p->delcost + p->r->delcost;
+    }
+    long q_delmin = max(0, p->r->delmin - pr_delcost);
+    if (q->r != NULL) {
+        q_delmin = max(q_delmin, q->r->delmin - q->r->delcost);
+    }
+    long p_delmin = max(0, q_delmin - q_delcost);
+    if (p->l != NULL) {
+        p_delmin = max(p_delmin, p->l->delmin - p->l->delcost);
+    }
+
+
     if ((q->l=p->r) != NULL) {
         q->l->p = q;
     }
@@ -79,14 +96,33 @@ void rotR (dynamic_node_t* p) {
         if (r->l == q) r->l = p;
         else if (r->r == q) r->r = p;
     }
+
+
     update(q);
 }
 
 void rotL (dynamic_node_t* p) {
     dynamic_node_t* q = p->p;
     dynamic_node_t* r = q->p;
-    normalize(p);
-    normalize(q);
+    // normalize(p);
+    // normalize(q);
+
+    // update cost
+    long p_delcost = p->delcost + q->delcost;
+    long q_delcost = -p->delcost;
+    if (p->l != NULL) {
+        p->l->delcost = p->delcost + p->l->delcost;
+    }
+    long q_delmin = max(0, p->r->delmin - pr_delcost);
+    if (q->l != NULL) {
+        q_delmin = max(q_delmin, q->l->delmin - q->l->delcost);
+    }
+    long p_delmin = max(0, q_delmin - q_delcost);
+    if (p->r != NULL) {
+        p_delmin = max(p_delmin, p->r->delmin - p->r->delcost);
+    }
+
+
     if ((q->r=p->l) != NULL) {
         q->r->p = q;
     }
@@ -142,7 +178,26 @@ void expose(dynamic_node_t* q) {
     dynamic_node_t* r = NULL;
     for (dynamic_node_t* p=q; p != NULL; p=p->p) {
         splay(p);
+
+        dynamic_node_t* s = p->l;
+        if (s != NULL) {
+            s->delcost += p->delcost;
+        }
+
         p->l = r;
+
+
+        p->delmin = 0;
+        if (r != NULL) {
+            r->delcost -= p->delcost;
+            p->delmin = max(p->delmin, r->delmin - r->delcost);
+        }
+
+        if (p->r != NULL) {
+            p->delmin = max(p->delmin, p->r->delmin - p->r->delcost);
+        }
+
+
         update(p);
         r = p;
     }
@@ -188,33 +243,70 @@ long rootid(dynamic_node_t* p) {
 
 // cost implementation
 
-dt_path_t* concatenate(dynamic_path_t* p, dynamic_path_t* q, arc* edge) {
-    dynamic_node_t* phead = p->head, ptail = p->tail, qhead = q->head, qtail = q->tail;
-    dynamic_node_t* proot = p->root, qroot = q->root;
-    // link(proot, qhead, edge);
+// dt_path_t* concatenate(dynamic_path_t* p, dynamic_path_t* q, arc* edge) {
+//     dynamic_node_t* phead = p->head, ptail = p->tail, qhead = q->head, qtail = q->tail;
+//     dynamic_node_t* proot = p->root, qroot = q->root;
+//     // link(proot, qhead, edge);
+//
+//     // update vals for ptail
+//     long min_cost = (ptail->l != NULL) ? minCost(ptail->l) : 0x3f3f3f3f3f3f3f3f;
+//     ptail->delcost += edge->resCap;
+//     long cost = nCost(ptail);
+//     ptail->delmin = cost - min(cost, min_cost);
+//
+//
+//     // structural change
+//     proot->p = qhead;
+//     qhead->l = proot;
+//     p->root = qroot;
+//     ptail->edge = edge;
+//     p->tail = qtail;
+//     free(q);
+//
+//     // update delmin
+//     for (dynamic_node_t* u = ptail; u != NULL; u = u->p) {
+//
+//     }
+// }
 
-    // update vals for ptail
-    long min_cost = (ptail->l != NULL) ? minCost(ptail->l) : 0x3f3f3f3f3f3f3f3f;
-    ptail->delcost += edge->resCap;
-    long cost = nCost(ptail);
-    ptail->delmin = cost - min(cost, min_cost);
+dynamic_node_t* concatenate(dynamic_node_t* p, dynamic_node_t* q, dynamic_node_t* r) {
+
+}
 
 
-    // structural change
-    proot->p = qhead;
-    qhead->l = proot;
-    p->root = qroot;
-    ptail->edge = edge;
-    p->tail = qtail;
-    free(q);
-
-    // update delmin
-    for (dynamic_node_t* u = ptail; u != NULL; u = u->p) {
-
+dynamic_node_t* before(dynamic_node_t* v) {
+    if (v->l != NULL) {
+        dynamic_node_t* u = v->l;
+        for (;u->r;) {
+            u = u->r;
+        }
+        return u;
+    }
+    else if (v->p != NULL && v->p->r == v) {
+        return v->p;
+    }
+    else {
+        return NULL; // v is the head of the path, the leftmost node of the splay tree
     }
 }
 
 
+
+dynamic_node_t* after(dynamic_node_t* v) {
+    if (v->r != NULL) {
+        dynamic_node_t* u = v->r;
+        for (;u->l;) {
+            u = u->l;
+        }
+        return u;
+    }
+    else if (v->p != NULL && v->p->l == v) {
+        return v->p;
+    }
+    else {
+        return NULL; // v is the tail of the path, the rightmost node of the splay tree
+    }
+}
 
 
 long pMinCost(dynamic_path_t* p) {
@@ -223,11 +315,13 @@ long pMinCost(dynamic_path_t* p) {
 
 
 long nMinCost(dynamic_node_t* v) {
+    // TODO: splay
     return nCost(v) - v->delmin;
 }
 
 
 long nCost(dynamic_node_t* v) {
+    // TODO: splay
     long cost = 0;
     for(dynamic_node_t* u = v; u != NULL; u = u->p) {
         cost += u->delcost;
@@ -252,7 +346,13 @@ void pUpdate(dynamic_path_t* p, long x) {
 
 
 void cut(dynamic_node_t* v) {
+    splay(v);
+    v->l->p = NULL;
+    v->r->p = NULL;
 
+    // update cost
+    v->l->delcost += v->delcost;
+    v->r->delcost += v->delcost;
 }
 
 
