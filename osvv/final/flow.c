@@ -830,6 +830,30 @@ void stageOne() {
 
 node *decomposePathInternal(node *n, long int *minCap);
 
+void bfs(){
+    arc *a;
+    
+    qInit(n+3);
+
+    source->d=0;
+    qEnqueue(source);
+
+    while(!qEmpty){
+        node **current;
+        qDequeue(current);
+
+        if(current == sink)
+            break;
+        forAllArcs(current, a){
+            if(nodes[nNode(a->head)].d == -1){
+                nodes[nNode(a->head)].d = current->d + 1;
+                qEnqueue(nNode(a->head));
+            }
+        }
+    }
+}
+
+
 
 void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag)
         long ninput;
@@ -1051,24 +1075,24 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
             decInit(n, m);
             p = path (n-1);
-            u = tail(p);
+            u = nodes[tail(p)];
 
             while(u != sink){
                 forAllArcs (u, a){
                     v = a->head;
                     if ((u->d+1) == (v->d)) {
                         int na = nArc(a);
-                        q = path(p);
-                        p = concatenate(p, q, cap[na] - a->resCap); //suppose each edge is added only once
-                        u = tail(p);
+                        q = path(nNode(v));
+                        p = concatenate(p, q, &a); //suppose each edge is added only once
+                        u = nodes[tail(p)];
                             // mark edges as deleted from pupdate
                             // mark edges as present to not add them again
                             // if an edge is considered twice, the second time the flow might stay the same
                     }
                 }
                 node *k = after(head(p));
-                k->first = tail(p);
-                cut(before(tail(p)));
+                k->first = nodes[tail(p)];
+                cut(before(nodes[tail(p)]));
             }
             int minCost = pMinCost(p);
 
@@ -1101,12 +1125,12 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                     exit(1);
                 }
                 //if cost is zero dont add to mtails, mweights, mheads
-                (*mheads)[k] = nNode(after(q->head));
-                (*mtails)[k] = nNode(before(q->tail));
+                (*mheads)[k] = after(q->head);
+                (*mtails)[k] = before(q->tail);
                 (*mweights)[k] = minCost;
 
-                (*mtails)[k + 1] = nNode(after(q->head));
-                (*mheads)[k + 1] = nNode(before(q->tail));
+                (*mtails)[k + 1] = after(q->head);
+                (*mheads)[k + 1] = before(q->tail);
                 (*mweights)[k + 1] = minCost;
 
 
@@ -1200,29 +1224,6 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     free(arcs);             /* address of the array of arcs */
     free(cap);              /* address of the array of capasities */
     free(buckets);              /* address of the array of capasities */
-}
-
-void bfs(){
-    arc *a;
-    
-    qInit(n+3);
-
-    source->d=0;
-    qEnqueue(source);
-
-    while(!qEmpty){
-        node *current;
-        qDequeue(current);
-
-        if(current == sink)
-            break;
-        forAllArcs(current, a){
-            if(nodes[nNode(a->head)].d == -1){
-                nodes[nNode(a->head)].d = current->d + 1;
-                qEnqueue(nNode(a->head));
-            }
-        }
-    }
 }
 
 int loadflowproblem(n, m, tails, heads, weights, s, t,
