@@ -1,7 +1,7 @@
 #include "types.h"
 
 #ifndef FILE_DECTREE_SEEN
-#define FILE_DECTREE_SEEN 
+#define FILE_DECTREE_SEEN
 
 typedef struct dt_node {
 //naive
@@ -60,7 +60,7 @@ dt_path_t* concatenate(dt_path_t* p, dt_path_t* q, arc* edge);
 long pMinCost(dt_path_t* p);
 void pUpdate(dt_path_t* p, long x);
 void split(dt_node_t* v);
-void cut(dt_node_t* v);
+void cut(long id);
 void savePath(dt_node_t* a, dt_node_t* b, long cost);
 void cutEdges(dt_path_t* p);
 void findPath(dt_path_t* p, long* a, long* b, long* cost);

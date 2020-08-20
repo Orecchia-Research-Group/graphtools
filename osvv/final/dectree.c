@@ -107,7 +107,8 @@ void split(dt_node_t* v) {
     //not used
 }
 
-void cut(dt_node_t* v) {
+void cut(long id) {
+    dt_node_t* v = &dTree.nodes[id];
     dt_node_t* w = v->next_node;
     dt_path_t* v_path = dTree.belongTo[v->id];
     dt_path_t* w_path = calloc(1, sizeof(dt_path_t));
@@ -139,7 +140,7 @@ void cutEdges(dt_path_t* p) {
             break;
         }
         if (dTree.nodes[node].edge->resCap == 0) {
-            cut(&dTree.nodes[node]);
+            cut(node);
         }
         else {
             break;
