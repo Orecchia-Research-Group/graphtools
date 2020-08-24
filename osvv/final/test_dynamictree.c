@@ -17,7 +17,7 @@ int main() {
     edges[4].resCap = 1;
     edges[5].resCap = 4;
 
-    init(5);
+    init(5, 0);
 
 
 
@@ -27,25 +27,33 @@ int main() {
 
     link(0, 1, &edges[0]);
     printf("link done\n");
+    assert(dTree.cur_node == 1);
     link(1, 4, &edges[5]);
     printf("link done\n");
+    assert(dTree.cur_node == 4);
     findPath(0, &match_a[0], &match_b[0], &match_cost[0]);
     printf("%ld %ld %ld\n", match_a[0], match_b[0], match_cost[0]);
+    assert(dTree.cur_node == 0);
 
     link(0, 2, &edges[1]);
     printf("link done\n");
+    assert(dTree.cur_node == 2);
     link(2, 1, &edges[2]);
     printf("link done\n");
+    assert(dTree.cur_node == 4);
     findPath(0, &match_a[1], &match_b[1], &match_cost[1]);
     printf("%ld %ld %ld\n", match_a[1], match_b[1], match_cost[1]);
+    assert(dTree.cur_node == 2);
 
     link(2, 3, &edges[3]);
     printf("link done\n");
+    assert(dTree.cur_node == 3);
     link(3, 1, &edges[4]);
     printf("link done\n");
+    assert(dTree.cur_node == 4);
     findPath(0, &match_a[2], &match_b[2], &match_cost[2]);
     printf("%ld %ld %ld\n", match_a[2], match_b[2], match_cost[2]);
-
+    assert(dTree.cur_node == 0);
 
 
     // link(&nodes[5], &nodes[0]);

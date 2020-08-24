@@ -9,12 +9,13 @@
 #define inf (0x3f3f3f3f3f3f3f3fL)
 
 
-void init(long nodes) {
+void init(long nodes, long start_node) {
     dTree.sz = nodes;
     dTree.nodes = calloc(nodes, sizeof(dynamic_node_t));
     for (long i = 0; i < dTree.sz; i++) { // (TODO: int or long)
         initNode(&dTree.nodes[i], i);
     }
+    dTree.cur_node = start_node;
 }
 
 void initNode(dynamic_node_t* node, long i) {
@@ -215,6 +216,9 @@ void link(long pid, long qid, arc* edge) {
     }
 
     p->p = q;
+
+    // find the root
+    dTree.cur_node = root(q->id);
 }
 
 
@@ -335,6 +339,8 @@ void cut(long vid) {
         l->delcost += v->delcost;
     }
     v->delcost = v->delmin = 0;
+
+    dTree.cur_node = vid;
 }
 
 
@@ -367,6 +373,7 @@ void cutEdge(long vid) {
         // printf("cut = %ld\n", u->id);
         cut(u->id);
     }
+    //dTree.cur_node = root(vid);
 }
 
 
