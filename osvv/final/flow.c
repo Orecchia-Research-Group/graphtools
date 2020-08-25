@@ -128,7 +128,7 @@ float globUpdtFreq;          /* global update frequency */
 }
 
 #define forAllNodes(i) for ( i = nodes; i != sentinelNode; i++ )
-#define forAllArcs(i, a) for (a = i->first, stopA = (i+1)->first; a != stopA; a++)
+#define forAllArcs(i, a) for (a = (i)->first, stopA = (i+1)->first; a != stopA; a++)
 
 #define nNode(i) ( (i) - nodes + nMin )
 #define nArc(a)  ( ( a == NULL )? -1 : (a) - arcs )
@@ -842,12 +842,13 @@ void bfs(){
         node **current;
         qDequeue(current);
 
-        if(current == sink)
+        if(current == &sink)
             break;
-        forAllArcs(current, a){
+        
+        forAllArcs(*current, a){
             if(nodes[nNode(a->head)].d == -1){
-                nodes[nNode(a->head)].d = current->d + 1;
-                qEnqueue(nNode(a->head));
+                nodes[nNode(a->head)].d = (*current)->d + 1;
+                qEnqueue(a->head);
             }
         }
     }
@@ -909,7 +910,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     init();
     stageOne();
-
+    
     /*
     t2 = timer() - t2;
     */
@@ -1075,7 +1076,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
             decInit(n, m);
             p = path (n-1);
-            u = nodes[tail(p)];
+            u = &nodes[tail(p)];
 
             while(u != sink){
                 forAllArcs (u, a){
@@ -1083,16 +1084,16 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                     if ((u->d+1) == (v->d)) {
                         int na = nArc(a);
                         q = path(nNode(v));
-                        p = concatenate(p, q, &a); //suppose each edge is added only once
-                        u = nodes[tail(p)];
+                        p = concatenate(p, q, a); //suppose each edge is added only once
+                        u = &nodes[tail(p)];
                             // mark edges as deleted from pupdate
                             // mark edges as present to not add them again
                             // if an edge is considered twice, the second time the flow might stay the same
                     }
                 }
-                node *k = after(head(p));
-                k->first = nodes[tail(p)];
-                cut(before(nodes[tail(p)]));
+                node *k = &nodes[after(head(p))];
+                k->first = nodes[tail(p)].first;
+                cut(before(tail(p)));
             }
             int minCost = pMinCost(p);
 
@@ -1124,13 +1125,12 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                     fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
                     exit(1);
                 }
-                //if cost is zero dont add to mtails, mweights, mheads
-                (*mheads)[k] = after(q->head);
-                (*mtails)[k] = before(q->tail);
+                (*mheads)[k] = after(head(p));
+                (*mtails)[k] = before(tail(p));
                 (*mweights)[k] = minCost;
 
-                (*mtails)[k + 1] = after(q->head);
-                (*mheads)[k + 1] = before(q->tail);
+                (*mtails)[k + 1] = after(head(p));
+                (*mheads)[k + 1] = before(tail(p));
                 (*mweights)[k + 1] = minCost;
 
 
