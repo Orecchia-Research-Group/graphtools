@@ -61,12 +61,12 @@ long before(long vid);
 long after(long vid);
 
 // long pMinCost(dynamic_path_t* p);
-long nMinCost(long vid, dynamic_node_t** rootptr);
+long nMinCost(long vid);
 long nCost(long vid);
 void pUpdate(long pid, long x);
 void cut(long vid);
 void cutEdge(long vid);
-void findPath(long pidi, long* a, long* b, long* cost);
+void findPath(long pid, long* a, long* b, long* cost);
 
 
 #endif

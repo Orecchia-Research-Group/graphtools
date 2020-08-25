@@ -6,7 +6,7 @@
 #define min(a,b) ((a) < (b)) ? (a) : (b)
 #define max(a,b) ((a) > (b)) ? (a) : (b)
 
-#define inf (0x3f3f3f3f3f3f3f3fL)
+#define inf (0x1f1f1f1f1f1f1f1fL)
 
 
 void init(long nodes, long start_node) {
@@ -21,7 +21,8 @@ void init(long nodes, long start_node) {
 void initNode(dynamic_node_t* node, long i) {
     node->id = i;
     node->l = node->r = node->p = NULL;
-    node->delmin = node->delcost = 0;
+    node->delmin = 0;
+    node->delcost = inf;
     node->edge = NULL;
 }
 
@@ -283,21 +284,10 @@ long after(long vid) {
 // }
 
 
-long nMinCost(long vid, dynamic_node_t** rootptr) {
+long nMinCost(long vid) {
     dynamic_node_t* v = &dTree.nodes[vid];
-    long rootid = root(vid);
-    dynamic_node_t* r = &dTree.nodes[rootid];
-    if (rootptr != NULL) {
-        *rootptr = r;
-    }
-    if (v == r) {
-        // the path contains a single node
-        return inf;
-    }
-    splay(r);
-    // expose(v);
-    dynamic_node_t* l = r->l;
-    return r->delcost + l->delcost - l->delmin;
+    expose(v);
+    return v->delcost - v->delmin;
     // return v->delcost - v->delmin;
 }
 
@@ -311,13 +301,8 @@ long nCost(long vid) {
 
 void pUpdate(long pid, long x) {
     dynamic_node_t* p = &dTree.nodes[pid];
-    long rootid = root(pid);
-    dynamic_node_t* r = &dTree.nodes[rootid];
-    splay(r);
-    dynamic_node_t* l = r->l;
-    if (l != NULL) {
-        l->delcost += x;
-    }
+    expose(p);
+    p->delcost += x;
 }
 
 
@@ -335,10 +320,13 @@ void cut(long vid) {
 
     v->edge->resCap = v->delcost;
 
+    v->delmin = 0;
     if (l != NULL) {
         l->delcost += v->delcost;
+        l->delcost -= inf;
+        v->delmin = max(v->delmin, l->delmin - l->delcost);
     }
-    v->delcost = v->delmin = 0;
+    v->delcost = inf;
 
     dTree.cur_node = vid;
 }
@@ -346,16 +334,14 @@ void cut(long vid) {
 
 void cutEdge(long vid) {
     dynamic_node_t* v = &dTree.nodes[vid];
-    dynamic_node_t* u;
-    while(nMinCost(vid, &u) == 0) {
-        if (u == v) {
-            //error
-            break;
-        }
+    while(nMinCost(vid) == 0) {
+        // if (u == v) {
+        //     //error
+        //     break;
+        // }
+        dynamic_node_t* u = v;
         dynamic_node_t* w;
         long cost = u->delcost;
-        u = u->l;
-        cost += u->delcost;
         while(true) {
             if ((w = u->r) != NULL && cost + w->delcost - w->delmin == 0) {
                 u = w;
@@ -373,14 +359,14 @@ void cutEdge(long vid) {
         // printf("cut = %ld\n", u->id);
         cut(u->id);
     }
-    //dTree.cur_node = root(vid);
+    // dTree.cur_node = root(vid);
 }
 
 
 // store the path from p to the root
 void findPath(long pid, long* a, long* b, long* cost) {
-    dynamic_node_t* p = &dTree.nodes[pid];
-    long pcost = nMinCost(pid, NULL);
+    // dynamic_node_t* p = &dTree.nodes[pid];
+    long pcost = nMinCost(pid);
     *b = before(root(pid));
     *a = after(pid);
     *cost = pcost;
