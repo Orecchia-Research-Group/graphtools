@@ -143,6 +143,7 @@ degree = int64(full(sum(G)));
 weight = ones(1, n, 'int64');
 weight(:) = degree;
 vol = sum(weight);
+factor = sqrt(spdiags(1 / double(weight)', 0, n, n));
 
 % Check that the graph is strongly connected
 [S, C] = graphconncomp(G);
@@ -256,11 +257,11 @@ for i=1:double(t)
         opts.tol = 0.001;
         % opts.sigma = 'SM';
         
-        [temp, trash ] = eigs(D-H, 2, 'SA', opts);
+        [temp, trash ] = eigs(factor * (D-H) * factor, 2, 'SA', opts);
         u=temp([1:n],2);
     else
         %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
-        u = expv((-1)*current_eta, (D - H), v);
+        u = expv((-1)*current_eta, factor * (D - H) * factor, v);
         %%%                   %%%
     end
     spectime = spectime + toc(tSpectral);
