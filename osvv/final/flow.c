@@ -1315,9 +1315,11 @@ int loadflowproblem(n, m, tails, heads, weights, s, t,
         arc_tail[pos_current + 1] = head;
         arc_current->head = nodes + head;
         arc_current->resCap = cap;
+        arc_current->cap = cap;
         arc_current->rev = arc_current + 1;
         (arc_current + 1)->head = nodes + tail;
         (arc_current + 1)->resCap = 0;
+        (arc_current + 1)->cap = 0;
         (arc_current + 1)->rev = arc_current;
 
 
