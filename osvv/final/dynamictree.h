@@ -8,7 +8,7 @@ typedef struct dynamic_tree_node {
     long id;
     long delmin, delcost;
     arc* edge; // edge going out from this vertex
-    struct dynamic_tree_node *l, *r, *p;
+    struct dynamic_tree_node *left, *right, *parent;
 } dynamic_node_t;
 
 

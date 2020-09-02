@@ -20,7 +20,7 @@ void init(long nodes, long start_node) {
 
 void initNode(dynamic_node_t* node, long i) {
     node->id = i;
-    node->l = node->r = node->p = NULL;
+    node->left = node->right = node->parent = NULL;
     node->delmin = 0;
     node->delcost = inf;
     node->edge = NULL;
@@ -31,7 +31,7 @@ void cleanUp() {
 }
 
 bool isroot(dynamic_node_t* node) {
-    return (node->p==NULL) || (node->p->l != node && node->p->r != node);
+    return (node->parent==NULL) || (node->parent->left != node && node->p->right != node);
 }
 
 
@@ -45,11 +45,11 @@ bool isroot(dynamic_node_t* node) {
  *     a     b              b     c
  */
 void rotR (dynamic_node_t* p) {
-    dynamic_node_t* q = p->p;
-    dynamic_node_t* r = q->p;
-    dynamic_node_t* a = p->l;
-    dynamic_node_t* b = p->r;
-    dynamic_node_t* c = q->r;
+    dynamic_node_t* q = p->parent;
+    dynamic_node_t* r = q->parent;
+    dynamic_node_t* a = p->left;
+    dynamic_node_t* b = p->right;
+    dynamic_node_t* c = q->right;
     long p_delcost = p->delcost + q->delcost;
     long q_delcost = -p->delcost;
     long q_delmin = 0;
@@ -70,14 +70,14 @@ void rotR (dynamic_node_t* p) {
     q->delmin = q_delmin;
 
 
-    if ((q->l=b) != NULL) {
-        b->p = q;
+    if ((q->left=b) != NULL) {
+        b->parent = q;
     }
-    p->r = q;
-    q->p = p;
-    if ((p->p=r) != NULL) {
-        if (r->l == q) r->l = p;
-        else if (r->r == q) r->r = p;
+    p->right = q;
+    q->parent = p;
+    if ((p->parent=r) != NULL) {
+        if (r->left == q) r->left = p;
+        else if (r->right == q) r->right = p;
     }
 }
 
@@ -89,11 +89,11 @@ void rotR (dynamic_node_t* p) {
  *       b     c       a     b
  */
 void rotL (dynamic_node_t* p) {
-    dynamic_node_t* q = p->p;
-    dynamic_node_t* r = q->p;
-    dynamic_node_t* a = q->l;
-    dynamic_node_t* b = p->l;
-    dynamic_node_t* c = p->r;
+    dynamic_node_t* q = p->parent;
+    dynamic_node_t* r = q->parent;
+    dynamic_node_t* a = q->left;
+    dynamic_node_t* b = p->left;
+    dynamic_node_t* c = p->right;
     long p_delcost = p->delcost + q->delcost;
     long q_delcost = -p->delcost;
     long q_delmin = 0;
@@ -114,30 +114,30 @@ void rotL (dynamic_node_t* p) {
     q->delmin = q_delmin;
 
 
-    if ((q->r=b) != NULL) {
-        q->r->p = q;
+    if ((q->right=b) != NULL) {
+        q->right->p = q;
     }
-    p->l = q;
-    q->p = p;
-    if ((p->p=r) != NULL) {
-        if (r->l == q) r->l = p;
-        else if (r->r == q) r->r = p;
+    p->left = q;
+    q->parent = p;
+    if ((p->parent=r) != NULL) {
+        if (r->left == q) r->left = p;
+        else if (r->right == q) r->right = p;
     }
 }
 
 void splay(dynamic_node_t* p) {
     while (!isroot(p)) {
-        dynamic_node_t* q = p->p;
+        dynamic_node_t* q = p->parent;
         if (isroot(q)) {
-            if (q->l == p)
+            if (q->left == p)
                 rotR(p);
             else
                 rotL(p);
         }
         else {
-            dynamic_node_t* r = q->p;
-            if (r->l == q) {
-                if (q->l == p) {
+            dynamic_node_t* r = q->parent;
+            if (r->left == q) {
+                if (q->left == p) {
                     rotR(q);
                     rotR(p);
                 }
@@ -147,7 +147,7 @@ void splay(dynamic_node_t* p) {
                 }
             }
             else {
-                if (q->r == p) {
+                if (q->right == p) {
                     rotL(q);
                     rotL(p);
                 }
@@ -164,15 +164,15 @@ void splay(dynamic_node_t* p) {
    leftmost node in its splay tree*/
 void expose(dynamic_node_t* q) {
     dynamic_node_t* r = NULL;
-    for (dynamic_node_t* p=q; p != NULL; p=p->p) {
+    for (dynamic_node_t* p=q; p != NULL; p=p->parent) {
         splay(p);
 
-        dynamic_node_t* s = p->l;
+        dynamic_node_t* s = p->left;
         if (s != NULL) {
             s->delcost += p->delcost;
         }
 
-        p->l = r;
+        p->left = r;
 
 
         p->delmin = 0;
@@ -181,7 +181,7 @@ void expose(dynamic_node_t* q) {
             p->delmin = max(p->delmin, r->delmin - r->delcost);
         }
 
-        dynamic_node_t* t = p->r;
+        dynamic_node_t* t = p->right;
         if (t != NULL) {
             p->delmin = max(p->delmin, t->delmin - t->delcost);
         }
@@ -199,24 +199,24 @@ void link(long pid, long qid, arc* edge) {
     dynamic_node_t* q = &dTree.nodes[qid];
 
     expose(p);
-    if (p->r != NULL) {
+    if (p->right != NULL) {
         // p is not a root. Error
         return;
     }
 
-    dynamic_node_t* a = p->l;
+    dynamic_node_t* a = p->left;
     if (a != NULL) {
         a->delcost += p->delcost;
     }
     p->edge = edge;
-    p->delcost = edge->resCap;
+    p->delcost = edge->cap - edge->resCap;
     p->delmin = 0;
     if (a != NULL) {
         a->delcost -= p->delcost;
         p->delmin = max(p->delmin, a->delmin - a->delcost);
     }
 
-    p->p = q;
+    p->parent = q;
 
     // find the root
     dTree.cur_node = root(q->id);
@@ -227,7 +227,7 @@ void link(long pid, long qid, arc* edge) {
 long root(long pid) {
     dynamic_node_t* p = &dTree.nodes[pid];
     expose(p);
-    while(p->r != NULL) p = p->r;
+    while(p->right != NULL) p = p->right;
     splay(p);
     return p->id;
 }
@@ -244,15 +244,15 @@ long root(long pid) {
 // TODO: use splay inside before and after, not sure if it's needed
 long before(long vid) {
     dynamic_node_t* v = &dTree.nodes[vid];
-    if (v->l != NULL) {
-        dynamic_node_t* u = v->l;
-        for (;u->r != NULL;) {
-            u = u->r;
+    if (v->left != NULL) {
+        dynamic_node_t* u = v->left;
+        for (;u->right != NULL;) {
+            u = u->right;
         }
         return u->id;
     }
-    else if (v->p != NULL && v->p->r == v) {
-        return v->p->id;
+    else if (v->parent != NULL && v->p->right == v) {
+        return v->parent->id;
     }
     else {
         return -1; // v is the head of the path, the leftmost node of the splay tree
@@ -263,15 +263,15 @@ long before(long vid) {
 
 long after(long vid) {
     dynamic_node_t* v = &dTree.nodes[vid];
-    if (v->r != NULL) {
-        dynamic_node_t* u = v->r;
-        for (;u->l != NULL;) {
-            u = u->l;
+    if (v->right != NULL) {
+        dynamic_node_t* u = v->right;
+        for (;u->left != NULL;) {
+            u = u->left;
         }
         return u->id;
     }
-    else if (v->p != NULL && v->p->l == v) {
-        return v->p->id;
+    else if (v->parent != NULL && v->parent->left == v) {
+        return v->parent->id;
     }
     else {
         return -1; // v is the tail of the path, the rightmost node of the splay tree
@@ -310,15 +310,15 @@ void cut(long vid) {
     dynamic_node_t* v = &dTree.nodes[vid];
     expose(v);
 
-    dynamic_node_t* r = v->r;
-    dynamic_node_t* l = v->l;
+    dynamic_node_t* r = v->right;
+    dynamic_node_t* l = v->left;
     if (r != NULL) {
-        r->p = NULL;
-        v->r = NULL;
+        r->parent = NULL;
+        v->right = NULL;
         r->delcost += v->delcost;
     }
 
-    v->edge->resCap = v->delcost;
+    v->edge->resCap = v->edge->cap - v->delcost;
 
     v->delmin = 0;
     if (l != NULL) {
@@ -335,43 +335,33 @@ void cut(long vid) {
 void cutEdge(long vid) {
     dynamic_node_t* v = &dTree.nodes[vid];
     while(nMinCost(vid) == 0) {
-        // if (u == v) {
-        //     //error
-        //     break;
-        // }
         dynamic_node_t* u = v;
         dynamic_node_t* w;
         long cost = u->delcost;
         while(true) {
-            if ((w = u->r) != NULL && cost + w->delcost - w->delmin == 0) {
+            if ((w = u->right) != NULL && cost + w->delcost - w->delmin == 0) {
                 u = w;
                 cost += u->delcost;
             }
             else if (cost == 0) {
                 break;
             }
-            else if ((w = u->l) != NULL && cost + w->delcost - w->delmin == 0) {
+            else if ((w = u->left) != NULL && cost + w->delcost - w->delmin == 0) {
                 u = w;
                 cost += u->delcost;
             }
-            // printf("while loop, uid = %ld, cost = %ld\n", u->id, cost);
         }
-        // printf("cut = %ld\n", u->id);
         cut(u->id);
     }
-    // dTree.cur_node = root(vid);
 }
 
 
 // store the path from p to the root
 void findPath(long pid, long* a, long* b, long* cost) {
-    // dynamic_node_t* p = &dTree.nodes[pid];
     long pcost = nMinCost(pid);
     *b = before(root(pid));
     *a = after(pid);
     *cost = pcost;
-    // printf("cost = %ld\n", pcost);
     pUpdate(pid, -pcost);
-    // printf("update done\n");
     cutEdge(pid);
 }
