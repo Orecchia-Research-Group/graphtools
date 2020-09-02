@@ -31,7 +31,7 @@ void cleanUp() {
 }
 
 bool isroot(dynamic_node_t* node) {
-    return (node->parent==NULL) || (node->parent->left != node && node->p->right != node);
+    return (node->parent==NULL) || (node->parent->left != node && node->parent->right != node);
 }
 
 
@@ -115,7 +115,7 @@ void rotL (dynamic_node_t* p) {
 
 
     if ((q->right=b) != NULL) {
-        q->right->p = q;
+        q->right->parent = q;
     }
     p->left = q;
     q->parent = p;
@@ -251,7 +251,7 @@ long before(long vid) {
         }
         return u->id;
     }
-    else if (v->parent != NULL && v->p->right == v) {
+    else if (v->parent != NULL && v->parent->right == v) {
         return v->parent->id;
     }
     else {
