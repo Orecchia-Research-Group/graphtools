@@ -10,12 +10,18 @@ int main() {
     // nodes are 0,1,2,3,4
     // edges are (0, 1, 1), (0, 2, 3), (2, 1, 2), (2, 3, 1), (3, 1, 1), (1, 4, 4)
     arc* edges = calloc(6, sizeof(arc));
-    edges[0].resCap = 1;
-    edges[1].resCap = 3;
-    edges[2].resCap = 2;
-    edges[3].resCap = 1;
-    edges[4].resCap = 1;
-    edges[5].resCap = 4;
+    edges[0].cap = 1;
+    edges[1].cap = 3;
+    edges[2].cap = 2;
+    edges[3].cap = 1;
+    edges[4].cap = 1;
+    edges[5].cap = 4;
+    edges[0].resCap = 0;
+    edges[1].resCap = 0;
+    edges[2].resCap = 0;
+    edges[3].resCap = 0;
+    edges[4].resCap = 0;
+    edges[5].resCap = 0;
 
     init(5, 0);
 
