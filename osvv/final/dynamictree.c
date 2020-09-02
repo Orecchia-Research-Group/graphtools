@@ -9,13 +9,15 @@
 #define inf (0x1f1f1f1f1f1f1f1fL)
 
 
-void init(long nodes, long start_node) {
-    dTree.sz = nodes;
-    dTree.nodes = calloc(nodes, sizeof(dynamic_node_t));
-    for (long i = 0; i < dTree.sz; i++) { // (TODO: int or long)
-        initNode(&dTree.nodes[i], i);
+dynamic_tree_t* init(long nodes, long start_node) {
+    dynamic_tree_t* dTree = calloc(1, sizeof(dynamic_tree_t));
+    dTree->sz = nodes;
+    dTree->nodes = calloc(nodes, sizeof(dynamic_node_t));
+    for (long i = 0; i < dTree->sz; i++) { // (TODO: int or long)
+        initNode(&dTree->nodes[i], i);
     }
-    dTree.cur_node = start_node;
+    dTree->cur_node = start_node;
+    return dTree;
 }
 
 void initNode(dynamic_node_t* node, long i) {
@@ -26,8 +28,9 @@ void initNode(dynamic_node_t* node, long i) {
     node->edge = NULL;
 }
 
-void cleanUp() {
-
+void cleanUp(dynamic_tree_t* dTree) {
+    free(dTree->nodes);
+    free(dTree);
 }
 
 bool isroot(dynamic_node_t* node) {
@@ -194,9 +197,9 @@ void expose(dynamic_node_t* q) {
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(long pid, long qid, arc* edge) {
-    dynamic_node_t* p = &dTree.nodes[pid];
-    dynamic_node_t* q = &dTree.nodes[qid];
+void link(dynamic_tree_t* dTree, long pid, long qid, arc* edge) {
+    dynamic_node_t* p = &dTree->nodes[pid];
+    dynamic_node_t* q = &dTree->nodes[qid];
 
     expose(p);
     if (p->right != NULL) {
@@ -219,13 +222,13 @@ void link(long pid, long qid, arc* edge) {
     p->parent = q;
 
     // find the root
-    dTree.cur_node = root(q->id);
+    dTree->cur_node = root(dTree, q->id);
 }
 
 
 /* this returns the id of the node that is the root of the tree containing p */
-long root(long pid) {
-    dynamic_node_t* p = &dTree.nodes[pid];
+long root(dynamic_tree_t* dTree, long pid) {
+    dynamic_node_t* p = &dTree->nodes[pid];
     expose(p);
     while(p->right != NULL) p = p->right;
     splay(p);
@@ -242,8 +245,8 @@ long root(long pid) {
 
 
 // TODO: use splay inside before and after, not sure if it's needed
-long before(long vid) {
-    dynamic_node_t* v = &dTree.nodes[vid];
+long before(dynamic_tree_t* dTree, long vid) {
+    dynamic_node_t* v = &dTree->nodes[vid];
     if (v->left != NULL) {
         dynamic_node_t* u = v->left;
         for (;u->right != NULL;) {
@@ -261,8 +264,8 @@ long before(long vid) {
 
 
 
-long after(long vid) {
-    dynamic_node_t* v = &dTree.nodes[vid];
+long after(dynamic_tree_t* dTree, long vid) {
+    dynamic_node_t* v = &dTree->nodes[vid];
     if (v->right != NULL) {
         dynamic_node_t* u = v->right;
         for (;u->left != NULL;) {
@@ -284,30 +287,30 @@ long after(long vid) {
 // }
 
 
-long nMinCost(long vid) {
-    dynamic_node_t* v = &dTree.nodes[vid];
+long nMinCost(dynamic_tree_t* dTree, long vid) {
+    dynamic_node_t* v = &dTree->nodes[vid];
     expose(v);
     return v->delcost - v->delmin;
     // return v->delcost - v->delmin;
 }
 
 
-long nCost(long vid) {
-    dynamic_node_t* v = &dTree.nodes[vid];
+long nCost(dynamic_tree_t* dTree, long vid) {
+    dynamic_node_t* v = &dTree->nodes[vid];
     splay(v);
     return v->delcost;
 }
 
 
-void pUpdate(long pid, long x) {
-    dynamic_node_t* p = &dTree.nodes[pid];
+void pUpdate(dynamic_tree_t* dTree, long pid, long x) {
+    dynamic_node_t* p = &dTree->nodes[pid];
     expose(p);
     p->delcost += x;
 }
 
 
-void cut(long vid) {
-    dynamic_node_t* v = &dTree.nodes[vid];
+void cut(dynamic_tree_t* dTree, long vid) {
+    dynamic_node_t* v = &dTree->nodes[vid];
     expose(v);
 
     dynamic_node_t* r = v->right;
@@ -328,13 +331,13 @@ void cut(long vid) {
     }
     v->delcost = inf;
 
-    dTree.cur_node = vid;
+    dTree->cur_node = vid;
 }
 
 
-void cutEdge(long vid) {
-    dynamic_node_t* v = &dTree.nodes[vid];
-    while(nMinCost(vid) == 0) {
+void cutEdge(dynamic_tree_t* dTree, long vid) {
+    dynamic_node_t* v = &dTree->nodes[vid];
+    while(nMinCost(dTree, vid) == 0) {
         dynamic_node_t* u = v;
         dynamic_node_t* w;
         long cost = u->delcost;
@@ -351,17 +354,17 @@ void cutEdge(long vid) {
                 cost += u->delcost;
             }
         }
-        cut(u->id);
+        cut(dTree, u->id);
     }
 }
 
 
 // store the path from p to the root
-void findPath(long pid, long* a, long* b, long* cost) {
-    long pcost = nMinCost(pid);
-    *b = before(root(pid));
-    *a = after(pid);
+void findPath(dynamic_tree_t* dTree, long pid, long* a, long* b, long* cost) {
+    long pcost = nMinCost(dTree, pid);
+    *b = before(dTree, root(dTree, pid));
+    *a = after(dTree, pid);
     *cost = pcost;
-    pUpdate(pid, -pcost);
-    cutEdge(pid);
+    pUpdate(dTree, pid, -pcost);
+    cutEdge(dTree, pid);
 }
