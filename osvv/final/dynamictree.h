@@ -15,7 +15,7 @@ typedef struct dynamic_tree_node {
 typedef struct dynamic_tree {
     long sz;
     dynamic_node_t* nodes;
-    long cur_node;
+    long cur_node;  // the root of the tree containing source
 
 } dynamic_tree_t;
 
