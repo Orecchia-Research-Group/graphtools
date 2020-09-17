@@ -9,7 +9,7 @@
 #define inf (0x1f1f1f1f1f1f1f1fL)
 
 
-dynamic_tree_t* init(long nodes, long start_node) {
+dynamic_tree_t* dec_init(long nodes, long start_node) {
     dynamic_tree_t* dTree = calloc(1, sizeof(dynamic_tree_t));
     dTree->sz = nodes;
     dTree->nodes = calloc(nodes, sizeof(dynamic_node_t));

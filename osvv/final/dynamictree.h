@@ -21,7 +21,7 @@ typedef struct dynamic_tree {
 
 
 
-dynamic_tree_t* init(long nodes, long start_node);
+dynamic_tree_t* dec_init(long nodes, long start_node);
 
 void initNode(dynamic_node_t* node, long i);
 
