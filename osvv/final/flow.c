@@ -44,7 +44,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include "types.h"          /* type definitions */
 /* #include "flow.h" */
 #include "timer.h"        /* timing routine */
-#include "dectree.h"
+#include "dynamictree.h"
 /* MATLAB INTEGRATION LIBS */
 
 
@@ -831,13 +831,15 @@ void stageOne() {
 node *decomposePathInternal(node *n, long int *minCap);
 
 void bfs(){
+    printf("good1\n");
     arc *a;
     
     qInit(n+3);
-
+    printf("good2\n");
     source->d=0;
+    printf("good3\n");
     qEnqueue(source);
-
+    printf("good4\n");
     while(!qEmpty){
         node **current;
         qDequeue(current);
@@ -848,6 +850,7 @@ void bfs(){
         forAllArcs(*current, a){
             if(nodes[nNode(a->head)].d == -1){
                 nodes[nNode(a->head)].d = (*current)->d + 1;
+                printf("%li\n",(*current)->d);
                 qEnqueue(a->head);
             }
         }
@@ -1062,26 +1065,101 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 //    *mtails = calloc(sizeof(**mtails),2*(*fflow));
 //    *mweights = calloc(sizeof(**mweights),2*(*fflow));
 //    k = 0;
+    
+        node * u, *v;
+        node *queue[n+3]; 
+        long mhead, mtail, mweight;
+        dynamic_tree_t *p, *q;
+        bool linked;
         
-        node *u, *v, *qTail, *qHead, *qLast;
-        node *queue[n+3];
-        dt_path_t *p, *q;
+        //bfs();
+        while(source->excess > 0) {
+            forAllNodes(i) {
+                i->d = -1;
+                i->current = i->first;
+            }
+            
+            p = dec_init(n, s);
+            
+            while(source->current < nodes[s+1].first){
+                while(p->cur_node != nNode(sink)){
+                    for(; nodes[(p->cur_node)].current < nodes[(p->cur_node) + 1].first; nodes[(p->cur_node)].current++){   // Find suitable edge or exhaust edges
+                        if(nodes[(p->cur_node)].current->resCap <= 0 || (nodes[(p->cur_node)].d + 1 != nodes[(p->cur_node)].current->head->d)){
+                            if(nodes[(p->cur_node)].d + 1 == nodes[(p->cur_node)].current->head->d) {        // if no suitable edges cut tail
+                                link(p, p->cur_node, nNode(nodes[(p->cur_node)].current->head), nodes[(p->cur_node)].current);
+                                linked = true;
+                            }
+                            if(linked==false){
+                                cut(p, before(p, p->cur_node));
+                            }
+                        }
+                    }
+                
+                    findPath(p, p->cur_node, &mhead, &mtail, &mweight);
+
+                    if(mweight==0);
+                    else 
+                    if (k >= matchingCapacity) {
+                        if (!matchingCapacity) matchingCapacity = 2 * n;
+                        else matchingCapacity = 2 * matchingCapacity;
+                        reallocPtr = *mheads;
+                        *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+                        if (NULL == *mheads) {
+                            free(reallocPtr);
+                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                            exit(1);
+                        }
+
+                        reallocPtr = *mtails;
+                        *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+                        if (NULL == *mtails) {
+                            free(reallocPtr);
+                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                            exit(1);
+                        }
+
+                        reallocPtr = *mweights;
+                        *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+                        if (NULL == *mweights) {
+                            free(reallocPtr);
+                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                            exit(1);
+                        }
+                    }
+
+                    (*mheads)[k] = mhead;
+                    (*mtails)[k] = mtail;
+                    (*mweights)[k] = mweight;
+
+                    (*mtails)[k + 1] = mhead;
+                    (*mheads)[k + 1] = mtail;
+                    (*mweights)[k + 1] = mweight;
+
+                k = k + 2;
+                
+                }
+            }
+        }
         
-        while(sink->excess > 0){
+     
+        
+        /*
+        unsigned long long int test = source->excess;
+        printf("%llu\n", test);
+        while(source->excess > 0){
+            printf("success!\n");
             forAllNodes(i){
                 i->d=-1;
             }
-
             bfs();
-
             decInit(n, m);
-            p = path (n-1);
+            p = path (s);
             u = &nodes[tail(p)];
-
             while(u != sink){
                 forAllArcs (u, a){
                     v = a->head;
                     if ((u->d+1) == (v->d)) {
+                        printf("%d\n", nNode(u));
                         int na = nArc(a);
                         q = path(nNode(v));
                         p = concatenate(p, q, a); //suppose each edge is added only once
@@ -1091,9 +1169,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                             // if an edge is considered twice, the second time the flow might stay the same
                     }
                 }
-                node *k = &nodes[after(head(p))];
-                k->first = nodes[tail(p)].first;
-                cut(before(tail(p)));
+                //conditional if no outoging edges cut(before(tail(p)));
             }
             int minCost = pMinCost(p);
 
@@ -1125,24 +1201,21 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                     fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
                     exit(1);
                 }
-                (*mheads)[k] = after(head(p));
-                (*mtails)[k] = before(tail(p));
-                (*mweights)[k] = minCost;
-
-                (*mtails)[k + 1] = after(head(p));
-                (*mheads)[k + 1] = before(tail(p));
-                (*mweights)[k + 1] = minCost;
-
-
-                k = k + 2;
-            } else {
-                printf("cycle with source detected marked %ld should be -2\n", source->d);
-                source->d = -1;
             }
-            pUpdate(p,-minCost);
-        }
+            
+            (*mheads)[k] = after(head(p));
+            (*mtails)[k] = before(tail(p));
+            (*mweights)[k] = minCost;
 
-        
+            (*mtails)[k + 1] = after(head(p));
+            (*mheads)[k + 1] = before(tail(p));
+            (*mweights)[k + 1] = minCost;
+            
+            k = k + 2;
+            
+            pUpdate(p, -minCost);
+        }
+  */
 //        forAllNodes(i) {
 //            i->d = 0;
 //        }
