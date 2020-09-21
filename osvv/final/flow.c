@@ -1076,16 +1076,13 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             
             p = dec_init(n, s);
             while(source->current < nodes[s+1].first){
-                while(p->cur_node != nNode(sink)){
-                    linked = false;
+                while(p->cur_node != nNode(sink));
                     for(; nodes[(p->cur_node)].current < nodes[(p->cur_node) + 1].first; nodes[(p->cur_node)].current++){   // Find suitable edge or exhaust edges
-                        if(nodes[(p->cur_node)].excess <= 0 || (nodes[(p->cur_node)].d + 1 != nodes[(p->cur_node)].current->head->d))
+                        if(nodes[(p->cur_node)].excess <= 0 || (nodes[(p->cur_node)].d + 1 != nodes[(p->cur_node)].current->head->d)){
                             if(nodes[(p->cur_node)].current < nodes[p->cur_node+1].first) {        // if no suitable edges cut tail
                                 cut(p, before(p, p->cur_node));
                             }
-                            if(linked==false){
-                                cut(p, before(p, p->cur_node));
-                            }
+                            link(p, p->cur_node, nNode(nodes[(p->cur_node)].current->head), nodes[(p->cur_node)].current);
                         }
                     }
                 
