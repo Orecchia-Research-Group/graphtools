@@ -689,7 +689,7 @@ void discharge(i)
 
 {
 
-    node *j;                 /* sucsessor of i */
+    node *j;                 /* successor of i */
     long jD;                 /* d of the next bucket */
     bucket *lj;               /* j's bucket */
     bucket *l;                /* i's bucket */
@@ -831,26 +831,21 @@ void stageOne() {
 node *decomposePathInternal(node *n, long int *minCap);
 
 void bfs(){
-    printf("good1\n");
+    node *queue[n+3];
     arc *a;
     
     qInit(n+3);
-    printf("good2\n");
     source->d=0;
-    printf("good3\n");
     qEnqueue(source);
-    printf("good4\n");
     while(!qEmpty){
         node **current;
         qDequeue(current);
 
-        if(current == &sink)
-            break;
+        if(nNode(*current) == nNode(sink)) break;
         
         forAllArcs(*current, a){
-            if(nodes[nNode(a->head)].d == -1){
-                nodes[nNode(a->head)].d = (*current)->d + 1;
-                printf("%li\n",(*current)->d);
+            if(a->head->d == -1){
+                a->head->d = (*current)->d + 1;
                 qEnqueue(a->head);
             }
         }
@@ -1067,27 +1062,26 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 //    k = 0;
     
         node * u, *v;
-        node *queue[n+3]; 
         long mhead, mtail, mweight;
         dynamic_tree_t *p, *q;
         bool linked;
         
-        //bfs();
         while(source->excess > 0) {
             forAllNodes(i) {
                 i->d = -1;
                 i->current = i->first;
             }
             
-            p = dec_init(n, s);
+            bfs();
             
+            p = dec_init(n, s);
             while(source->current < nodes[s+1].first){
                 while(p->cur_node != nNode(sink)){
+                    linked = false;
                     for(; nodes[(p->cur_node)].current < nodes[(p->cur_node) + 1].first; nodes[(p->cur_node)].current++){   // Find suitable edge or exhaust edges
-                        if(nodes[(p->cur_node)].current->resCap <= 0 || (nodes[(p->cur_node)].d + 1 != nodes[(p->cur_node)].current->head->d)){
-                            if(nodes[(p->cur_node)].d + 1 == nodes[(p->cur_node)].current->head->d) {        // if no suitable edges cut tail
-                                link(p, p->cur_node, nNode(nodes[(p->cur_node)].current->head), nodes[(p->cur_node)].current);
-                                linked = true;
+                        if(nodes[(p->cur_node)].excess <= 0 || (nodes[(p->cur_node)].d + 1 != nodes[(p->cur_node)].current->head->d))
+                            if(nodes[(p->cur_node)].current < nodes[p->cur_node+1].first) {        // if no suitable edges cut tail
+                                cut(p, before(p, p->cur_node));
                             }
                             if(linked==false){
                                 cut(p, before(p, p->cur_node));
