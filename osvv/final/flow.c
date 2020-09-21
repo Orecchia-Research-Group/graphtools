@@ -1076,7 +1076,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             
             p = dec_init(n, s);
             while(source->current < nodes[s+1].first){
-                while(p->cur_node != nNode(sink));
+                while(p->cur_node != nNode(sink)){
                     for(; nodes[(p->cur_node)].current < nodes[(p->cur_node) + 1].first; nodes[(p->cur_node)].current++){   // Find suitable edge or exhaust edges
                         if(nodes[(p->cur_node)].excess <= 0 || (nodes[(p->cur_node)].d + 1 != nodes[(p->cur_node)].current->head->d)){
                             if(nodes[(p->cur_node)].current < nodes[p->cur_node+1].first) {        // if no suitable edges cut tail
@@ -1085,52 +1085,51 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                             link(p, p->cur_node, nNode(nodes[(p->cur_node)].current->head), nodes[(p->cur_node)].current);
                         }
                     }
-                
-                    findPath(p, p->cur_node, &mhead, &mtail, &mweight);
+                }
+                findPath(p, p->cur_node, &mhead, &mtail, &mweight);
 
-                    if(mweight==0);
-                    else 
-                    if (k >= matchingCapacity) {
-                        if (!matchingCapacity) matchingCapacity = 2 * n;
-                        else matchingCapacity = 2 * matchingCapacity;
-                        reallocPtr = *mheads;
-                        *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
-                        if (NULL == *mheads) {
-                            free(reallocPtr);
-                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                            exit(1);
-                        }
-
-                        reallocPtr = *mtails;
-                        *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
-                        if (NULL == *mtails) {
-                            free(reallocPtr);
-                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                            exit(1);
-                        }
-
-                        reallocPtr = *mweights;
-                        *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
-                        if (NULL == *mweights) {
-                            free(reallocPtr);
-                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                            exit(1);
-                        }
+                if(mweight==0);
+                else 
+                if (k >= matchingCapacity) {
+                    if (!matchingCapacity) matchingCapacity = 2 * n;
+                    else matchingCapacity = 2 * matchingCapacity;
+                    reallocPtr = *mheads;
+                    *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+                    if (NULL == *mheads) {
+                        free(reallocPtr);
+                        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                        exit(1);
                     }
 
-                    (*mheads)[k] = mhead;
-                    (*mtails)[k] = mtail;
-                    (*mweights)[k] = mweight;
+                    reallocPtr = *mtails;
+                    *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+                    if (NULL == *mtails) {
+                        free(reallocPtr);
+                        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                        exit(1);
+                    }
 
-                    (*mtails)[k + 1] = mhead;
-                    (*mheads)[k + 1] = mtail;
-                    (*mweights)[k + 1] = mweight;
+                    reallocPtr = *mweights;
+                    *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+                    if (NULL == *mweights) {
+                        free(reallocPtr);
+                        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                        exit(1);
+                    }
+                }
+
+                (*mheads)[k] = mhead;
+                (*mtails)[k] = mtail;
+                (*mweights)[k] = mweight;
+
+                (*mtails)[k + 1] = mhead;
+                (*mheads)[k + 1] = mtail;
+                (*mweights)[k + 1] = mweight;
 
                 k = k + 2;
-                
+
                 }
             }
-        }
         
      
         
