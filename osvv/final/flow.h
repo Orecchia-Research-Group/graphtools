@@ -16,6 +16,10 @@ INPUTS: Note that vertex indices go from 1 to n.
  - fflow: pointer to long which becomes equal to flow routed.
 */
 
+#ifndef FLOW_SEEN
+#define FLOW_SEEN
+
+
 void hipr 
 ( 
    long n, 
@@ -32,3 +36,4 @@ void hipr
    long* fflow
 );
 
+#endif

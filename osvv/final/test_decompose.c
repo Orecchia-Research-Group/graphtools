@@ -1,9 +1,8 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "stdbool.h"
-#include "assert.h"
-#include "flow.c"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <assert.h>
 
 
 int main() {
@@ -22,11 +21,11 @@ int main() {
     
     int **output_set[8];
     long *mheads[10], *mtails[10], *mweights[10];
-    long *nedges, *fflow;
+    long nedges, fflow;
     int route_flag = 1;
     
     //call of function, hipr that is being tested, :
-    hipr(10, 14, tails, heads, flows, s, t, output_set, &mheads, &mtails, &mweights, nedges, fflow, route_flag);
+    hipr(10, 14, tails, heads, flows, s, t, output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag);
     //testing the mheads, mtails, mweights which is what was changed by the decomposition of the paths
     
     //
