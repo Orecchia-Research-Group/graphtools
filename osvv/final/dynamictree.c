@@ -387,10 +387,10 @@ void cutEdge(dynamic_tree_t* dTree, node* p) {
 
 // store the path from p to the root
 void findPath(dynamic_tree_t* dTree, node* p, node** a, node** b, long* cost) {
-    long pcost = nMinCost(p);
+    long pcost = nMinCost(to_d_node(dTree, p));
     *b = before(dTree, root(dTree, p));
     *a = after(dTree, p);
     *cost = pcost;
-    pUpdate(p, -pcost);
+    pUpdate(to_d_node(dTree, p), -pcost);
     cutEdge(dTree, p);
 }
