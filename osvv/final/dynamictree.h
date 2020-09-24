@@ -14,14 +14,16 @@ typedef struct dynamic_tree_node {
 
 typedef struct dynamic_tree {
     long sz;
-    dynamic_node_t* nodes;
-    long cur_node;  // the root of the tree containing source
-
+    long offset; //d_nodes - nodes
+    dynamic_node_t* d_nodes;
+    node* nodes;
+    dynamic_node_t* d_cur_node;  // the root of the tree containing source
+    node* cur_node;
 } dynamic_tree_t;
 
 
 
-dynamic_tree_t* dec_init(long nodes, long start_node);
+dynamic_tree_t* dec_init(long num_nodes, node* nodes, node* start_node);
 
 void initNode(dynamic_node_t* node, long i);
 
@@ -43,25 +45,31 @@ void expose(dynamic_node_t* q);
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(dynamic_tree_t* dTree, long pid, long qid, arc* edge);
+void link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
 
 
 /* this returns the id of the node that is the root of the tree containing p */
-long root(dynamic_tree_t* dTree, long pid);
+dynamic_node_t* d_root(dynamic_node_t* p);
+node* root(dynamic_tree_t* dTree, node* p);
 
 
 
 
-long before(dynamic_tree_t* dTree, long vid);
-long after(dynamic_tree_t* dTree, long vid);
+dynamic_node_t* d_before(dynamic_node_t* p);
+dynamic_node_t* d_after(dynamic_node_t* p);
+node* before(dynamic_tree_t* dTree, node* p);
+node* after(dynamic_tree_t* dTree, node* p);
 
-// long pMinCost(dynamic_path_t* p);
-long nMinCost(dynamic_tree_t* dTree, long vid);
-long nCost(dynamic_tree_t* dTree, long vid);
-void pUpdate(dynamic_tree_t* dTree, long pid, long x);
-void cut(dynamic_tree_t* dTree, long vid);
-void cutEdge(dynamic_tree_t* dTree, long vid);
-void findPath(dynamic_tree_t* dTree, long pid, long* a, long* b, long* cost);
+long nMinCost(dynamic_node_t* p);
+long nCost(dynamic_node_t* p);
+void pUpdate(dynamic_node_t* p, long x);
+
+void d_cut(dynamic_tree_t* dTree, dynamic_node_t* p);
+void cut(dynamic_tree_t* dTree, node* p);
+
+void d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p);
+void cutEdge(dynamic_tree_t* dTree, node* p);
+void findPath(dynamic_tree_t* dTree, node* p, node** a, node** b, long* cost);
 
 
 #endif
