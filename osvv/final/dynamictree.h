@@ -14,7 +14,6 @@ typedef struct dynamic_tree_node {
 
 typedef struct dynamic_tree {
     long sz;
-    long offset; //d_nodes - nodes
     dynamic_node_t* d_nodes;
     node* nodes;
     dynamic_node_t* d_cur_node;  // the root of the tree containing source
@@ -28,6 +27,10 @@ dynamic_tree_t* dec_init(long num_nodes, node* nodes, node* start_node);
 void initNode(dynamic_node_t* node, long i);
 
 void cleanUp(dynamic_tree_t* dTree);
+
+dynamic_node_t* to_d_node(dynamic_tree_t* dTree, node* p);
+
+node* to_node(dynamic_tree_t* dTree, dynamic_node_t* p);
 
 bool isroot(dynamic_node_t* node);
 

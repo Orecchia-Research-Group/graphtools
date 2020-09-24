@@ -17,9 +17,8 @@ dynamic_tree_t* dec_init(long num_nodes, node* nodes, node* start_node) {
         initNode(&dTree->d_nodes[i], i);
     }
     dTree->nodes = nodes;
-    dTree->offset = (long)dTree->d_nodes - (long)dTree->nodes;
-    dTree->d_cur_node = (dynamic_node_t*)((long)start_node + (long)dTree->offset);
     dTree->cur_node = start_node;
+    dTree->d_cur_node = to_d_node(dTree, dTree->cur_node);
     return dTree;
 }
 
@@ -34,6 +33,14 @@ void initNode(dynamic_node_t* node, long i) {
 void cleanUp(dynamic_tree_t* dTree) {
     free(dTree->d_nodes);
     free(dTree);
+}
+
+dynamic_node_t* to_d_node(dynamic_tree_t* dTree, node* p) {
+    return dTree->d_nodes + (p - dTree->nodes);
+}
+
+node* to_node(dynamic_tree_t* dTree, dynamic_node_t* p) {
+    return dTree->nodes + (p - dTree->d_nodes);
 }
 
 bool isroot(dynamic_node_t* node) {
@@ -223,7 +230,7 @@ void link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge
 
     // find the root
     dTree->d_cur_node = d_root(q);
-    dTree->cur_node = (node*)((long)dTree->d_cur_node - dTree->offset);
+    dTree->cur_node = to_node(dTree, dTree->d_cur_node);
 }
 
 
@@ -236,9 +243,9 @@ dynamic_node_t* d_root(dynamic_node_t* p) {
 }
 
 node* root(dynamic_tree_t* dTree, node* p) {
-    dynamic_node_t* d_p = (dynamic_node_t)((long)p + dTree->offset);
+    dynamic_node_t* d_p = to_d_node(dTree, p);
     d_p = d_root(d_p);
-    p = (node*)((long)d_p - dTree->offset);
+    p = to_node(dTree, d_p);
     return p;
 }
 
@@ -287,16 +294,16 @@ dynamic_node_t* d_after(dynamic_node_t* p) {
 
 
 node* before(dynamic_tree_t* dTree, node* p) {
-    dynamic_node_t* d_p = (dynamic_node_t*)((long)p + dTree->offset);
+    dynamic_node_t* d_p = to_d_node(dTree, p);
     d_p = d_before(d_p);
-    p = (node*)((long)d_p - dTree->offset);
+    p = to_node(dTree, d_p);
     return p;
 }
 
 node* after(dynamic_tree_t* dTree, node* p) {
-    dynamic_node_t* d_p = (dynamic_node_t*)((long)p + dTree->offset);
+    dynamic_node_t* d_p = to_d_node(dTree, p);
     d_p = d_after(d_p);
-    p = (node*)((long)d_p - dTree->offset);
+    p = to_node(dTree, d_p);
     return p;
 }
 
@@ -341,11 +348,11 @@ void d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
     p->delcost = inf;
 
     dTree->d_cur_node = p;
-    dTree->cur_node = (node*)((long)p - dTree->offset);
+    dTree->cur_node = to_node(dTree, dTree->d_cur_node);
 }
 
 void cut(dynamic_tree_t* dTree, node* p) {
-    dynamic_node_t* d_p = (dynamic_node_t*)((long)p + dTree->offset);
+    dynamic_node_t* d_p = to_d_node(dTree, p);
     d_cut(dTree, d_p);
 }
 
@@ -373,7 +380,7 @@ void d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p) {
 }
 
 void cutEdge(dynamic_tree_t* dTree, node* p) {
-    dynamic_node_t* d_p = p + dTree->offset;
+    dynamic_node_t* d_p = to_d_node(dTree, p);
     d_cutEdge(dTree, d_p);
 }
 
