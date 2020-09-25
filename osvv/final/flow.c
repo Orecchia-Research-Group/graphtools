@@ -1107,7 +1107,7 @@ void hipr(
                     break;
                 }
 
-                findPath(p, p->cur_node, &mhead, &mtail, &mweight);
+                findPath(p, &mhead, &mtail, &mweight);
 
                 if(!mweight) continue;
 
