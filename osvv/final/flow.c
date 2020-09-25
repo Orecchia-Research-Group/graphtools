@@ -859,21 +859,21 @@ void bfs(){
 
 
 
-void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag)
-        long ninput;
-        long minput;
-        long *tails;
-        long *heads;
-        long *weights;
-        long s;
-        long t;
-        int **output_set;
-        long **mheads;
-        long **mtails;
-        long **mweights;
-        long *nedges;
-        long *fflow;
-        int route_flag;
+void hipr(
+        long ninput,
+        long minput,
+        long *tails,
+        long *heads,
+        long *weights,
+        long s,
+        long t,
+        int **output_set,
+        long **mheads,
+        long **mtails,
+        long **mweights,
+        long *nedges,
+        long *fflow,
+        int route_flag)
 {
 #if (defined(PRINT_FLOW) || defined(CHECK_SOLUTION))
     node *i;
@@ -1055,10 +1055,17 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         matchingCapacity = 0;
         k = 0;
     
-        long mhead, mtail, mweight;
+        node* mhead;
+        node* mtail;
+        long mweight;
         dynamic_tree_t *p;
 
         fprintf(stderr, "nMin %ld\n", nMin);
+
+
+        forAllNodes(i)
+            forAllArcs(i, a)
+                fprintf(stderr, "Arc %ld --> %ld: cap %ld resCap %ld\n", nNode(i), nNode(a->head), a->cap, a->resCap);
 
         while(source->excess > 0) {
             forAllNodes(i) {
@@ -1067,7 +1074,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             }
             bfs();
             
-            p = dec_init(n, source);
+            p = dec_init(n, nodes, source);
             while (source->current < nodes[s+1].first) {
                 p->cur_node = source;
                 while (p->cur_node != sink) {
@@ -1075,16 +1082,18 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                     getchar();
                     for (; p->cur_node->current < (p->cur_node + 1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
                         arc* cur_arc = p->cur_node->current;
+                        fprintf(stderr, "Arc %ld --> %ld: cap %ld resCap %ld", nNode(p->cur_node), nNode(cur_arc->head), cur_arc->cap, cur_arc->resCap);
+                        getchar();
                         if ((cur_arc->cap == cur_arc->resCap) ||
                             (p->cur_node->d + 1 != cur_arc->head->d)) {
                             continue;
                         }
-                        link(p, p->cur_node, cur_arc->head, cur_arc);
+                        link(p, to_d_node(p, p->cur_node), to_d_node(p, cur_arc->head), cur_arc);
                         break;
                     }
                     if (p->cur_node->current == (p->cur_node + 1)->first) {             // if no suitable edges cut tail
                         node* previous;
-                        if ((previous = before(p, p->cur_node)) != NULL) {                // Checks that a previous exists.
+                        if ((previous = before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
                                                                                         // The alternative is that p is the source.
                             cut(p, previous);
                             p->cur_node->current++;
@@ -1130,12 +1139,12 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                     }
                 }
 
-                (*mheads)[k] = mhead;
-                (*mtails)[k] = mtail;
+                (*mheads)[k] = nNode(mhead);
+                (*mtails)[k] = nNode(mtail);
                 (*mweights)[k] = mweight;
 
-                (*mtails)[k + 1] = mhead;
-                (*mheads)[k + 1] = mtail;
+                (*mtails)[k + 1] = nNode(mhead);
+                (*mheads)[k + 1] = nNode(mtail);
                 (*mweights)[k + 1] = mweight;
 
                 k = k + 2;
@@ -1314,6 +1323,10 @@ int loadflowproblem(n, m, tails, heads, weights, s, t,
                 cap = arc_new->resCap;
                 arc_new->resCap = arc_current->resCap;
                 arc_current->resCap = cap;
+
+                cap = arc_new->cap;
+                arc_new->cap = arc_current->cap;
+                arc_current->cap = cap;
 
                 if (arc_new != arc_current->rev) {
                     arc_tmp = arc_new->rev;

@@ -20,20 +20,21 @@ INPUTS: Note that vertex indices go from 1 to n.
 #define FLOW_SEEN
 
 
-void hipr 
-( 
-   long n, 
-   long m, 
-   long *tails, 
-   long *heads, 
-   long *weights, 
-   long s, 
-   long t,
-   long *output_set,
-   long *mheads;
-   long *mtails;
-   long *mweights;
-   long* fflow
+void hipr(
+        long ninput,
+        long minput,
+        long *tails,
+        long *heads,
+        long *weights,
+        long s,
+        long t,
+        int **output_set,
+        long **mheads,
+        long **mtails,
+        long **mweights,
+        long *nedges,
+        long *fflow,
+        int route_flag
 );
 
 #endif

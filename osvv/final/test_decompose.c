@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <assert.h>
+#include "flow.h"
 
 
 int main() {
@@ -19,13 +20,15 @@ int main() {
     long tempF[14] = {2, 1, 2, 0, 2, 1, 1, 2, 0, 1, 2, 2, 1, 2};
     long *flows = tempF;
     
-    int **output_set[8];
-    long *mheads[10], *mtails[10], *mweights[10];
+    int *output_set = NULL;
+    long *mheads = NULL;
+    long *mtails = NULL;
+    long *mweights = NULL;
     long nedges, fflow;
     int route_flag = 1;
     
     //call of function, hipr that is being tested, :
-    hipr(10, 14, tails, heads, flows, s, t, output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag);
+    hipr(10, 14, tails, heads, flows, s, t, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag);
     //testing the mheads, mtails, mweights which is what was changed by the decomposition of the paths
     
     //
@@ -36,9 +39,9 @@ int main() {
         printf("%li\n", (*mheads)[i]);
     }*/
     
-    assert((*mheads)[0]==1);
-    assert((*mtails)[0]==5);
-    assert((*mweights)[0]==2);
+    assert(mheads[0]==1);
+    assert(mtails[0]==5);
+    assert(mweights[0]==2);
     
     /*
     assert(*mheads[2]==1);
