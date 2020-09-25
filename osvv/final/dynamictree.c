@@ -207,10 +207,13 @@ void expose(dynamic_node_t* q) {
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
+void d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
     expose(p);
     if (p->right != NULL) {
         // p is not a root. Error
+        long pid = p - dTree->d_nodes;
+        long qid = q - dTree->d_nodes;
+        fprintf(stderr, "Linking from node %ld to node %ld failed, because node %ld is not a root\n", pid, qid, pid);
         return;
     }
 
@@ -231,6 +234,10 @@ void link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge
     // find the root
     dTree->d_cur_node = d_root(q);
     dTree->cur_node = to_node(dTree, dTree->d_cur_node);
+}
+
+void link(dynamic_tree_t* dTree, node* p, node* q, arc* edge) {
+    d_link(dTree, to_d_node(dTree, p), to_d_node(dTree, q), edge);
 }
 
 

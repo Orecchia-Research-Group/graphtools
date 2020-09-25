@@ -1,6 +1,6 @@
 /*
 C function: hipr
- 
+
 PURPOSE: run maxflow computation on directed graph.
 
 This function includes modifications by Reid Andersen and Satish Rao to output
@@ -160,7 +160,7 @@ float globUpdtFreq;          /* global update frequency */
 }
 
 
-/* 
+/*
    bucket macros:
    bucket's active node list is singly-linked
      operations aAdd, aRemove (from the front)
@@ -443,7 +443,7 @@ void stageTwo()
 */
 
 /*
-   i->d is used for dfs labels 
+   i->d is used for dfs labels
    i->bNext is used for topological order list
    buckets[i-nodes]->firstActive is used for DSF tree
 */
@@ -833,7 +833,7 @@ node *decomposePathInternal(node *n, long int *minCap);
 void bfs(){
     node *queue[n+3];
     arc *a;
-    
+
     qInit(n+3);
     source->d=0;
     qEnqueue(source);
@@ -842,7 +842,7 @@ void bfs(){
         qDequeue(current);
 
         if(nNode(*current) == nNode(sink)) break;
-        
+
         forAllArcs(*current, a){
             if(a->head->d == -1){
                 a->head->d = (*current)->d + 1;
@@ -911,7 +911,7 @@ void hipr(
 
     init();
     stageOne();
-    
+
     /*
     t2 = timer() - t2;
     */
@@ -1054,7 +1054,7 @@ void hipr(
 
         matchingCapacity = 0;
         k = 0;
-    
+
         node* mhead;
         node* mtail;
         long mweight;
@@ -1073,10 +1073,10 @@ void hipr(
                 i->current = i->first;
             }
             bfs();
-            
+
             p = dec_init(n, nodes, source);
             while (source->current < nodes[s+1].first) {
-                p->cur_node = source;
+                // p->cur_node = source;
                 while (p->cur_node != sink) {
                     fprintf(stderr, "Node id: %ld. Current d: %ld", nNode(p->cur_node), p->cur_node->d);
                     getchar();
@@ -1088,7 +1088,7 @@ void hipr(
                             (p->cur_node->d + 1 != cur_arc->head->d)) {
                             continue;
                         }
-                        link(p, to_d_node(p, p->cur_node), to_d_node(p, cur_arc->head), cur_arc);
+                        link(p, p->cur_node, cur_arc->head, cur_arc);
                         break;
                     }
                     if (p->cur_node->current == (p->cur_node + 1)->first) {             // if no suitable edges cut tail
@@ -1279,7 +1279,7 @@ int loadflowproblem(n, m, tails, heads, weights, s, t,
     (nodes + node_min)->first = arcs;
 
 /* before below loop arc_first[i+1] is the number of arcs outgoing from i;
-   after this loop arc_first[i] is the position of the first 
+   after this loop arc_first[i] is the position of the first
    outgoing from node i arcs after they would be ordered;
    this value is transformed to pointer and written to node.first[i]
    */

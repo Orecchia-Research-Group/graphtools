@@ -48,7 +48,8 @@ void expose(dynamic_node_t* q);
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
+void d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
+void link(dynamic_tree_t* dTree, node* p, node* q, arc* edge);
 
 
 /* this returns the id of the node that is the root of the tree containing p */
