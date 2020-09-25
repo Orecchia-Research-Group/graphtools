@@ -17,6 +17,7 @@ dynamic_tree_t* dec_init(long num_nodes, node* nodes, node* start_node) {
         initNode(&dTree->d_nodes[i], i);
     }
     dTree->nodes = nodes;
+    dTree->source = start_node;
     dTree->cur_node = start_node;
     dTree->d_cur_node = to_d_node(dTree, dTree->cur_node);
     return dTree;
@@ -393,7 +394,8 @@ void cutEdge(dynamic_tree_t* dTree, node* p) {
 
 
 // store the path from p to the root
-void findPath(dynamic_tree_t* dTree, node* p, node** a, node** b, long* cost) {
+void findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost) {
+    node* p = dTree->source;
     long pcost = nMinCost(to_d_node(dTree, p));
     *b = before(dTree, root(dTree, p));
     *a = after(dTree, p);
