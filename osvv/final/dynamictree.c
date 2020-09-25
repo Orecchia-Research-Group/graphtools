@@ -278,6 +278,7 @@ dynamic_node_t* d_before(dynamic_node_t* p) {
         return p->parent;
     }
     else {
+        fprintf(stderr, "node %ld is the head, before(head) == NULL\n", p->dTree->d_nodes);
         return NULL; // p is the head of the path, the leftmost node of the splay tree
     }
 }
@@ -296,6 +297,7 @@ dynamic_node_t* d_after(dynamic_node_t* p) {
         return p->parent;
     }
     else {
+        fprintf(stderr, "node %ld is the tail, after(tail) == NULL\n", p - dTree->d_nodes);
         return NULL; // p is the tail of the path, the rightmost node of the splay tree
     }
 }
