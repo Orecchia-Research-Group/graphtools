@@ -1068,6 +1068,7 @@ void hipr(
                 fprintf(stderr, "Arc %ld --> %ld: cap %ld resCap %ld\n", nNode(i), nNode(a->head), a->cap, a->resCap);
 
         while(source->excess > 0) {
+            fprintf(stderr, "source_excess = %lld\n", source->excess);
             forAllNodes(i) {
                 i->d = -1;
                 i->current = i->first;
@@ -1076,6 +1077,7 @@ void hipr(
 
             p = dec_init(n, nodes, source);
             while (source->current < nodes[s+1].first) {
+                fprintf(stderr, "source_current = %ld, nex_first = %ld\n", source->current - arcs, nodes[s+1].first - arcs);
                 // p->cur_node = source;
                 while (p->cur_node != sink) {
                     fprintf(stderr, "Node id: %ld. Current d: %ld", nNode(p->cur_node), p->cur_node->d);
@@ -1088,6 +1090,7 @@ void hipr(
                             (p->cur_node->d + 1 != cur_arc->head->d)) {
                             continue;
                         }
+                        p->cur_node->current++; // added by Xifan
                         link(p, p->cur_node, cur_arc->head, cur_arc);
                         break;
                     }
@@ -1096,7 +1099,8 @@ void hipr(
                         if ((previous = before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
                                                                                         // The alternative is that p is the source.
                             cut(p, previous);
-                            p->cur_node->current++;
+                            // following line commented out by Xifan
+                            // p->cur_node->current++; // TODO: this update is problematic. It should be previous->current++
                         } else {
                             break;
                         }

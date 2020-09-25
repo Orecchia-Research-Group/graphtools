@@ -18,6 +18,7 @@ dynamic_tree_t* dec_init(long num_nodes, node* nodes, node* start_node) {
     }
     dTree->nodes = nodes;
     dTree->source = start_node;
+    dTree->d_source = to_d_node(dTree, dTree->source);
     dTree->cur_node = start_node;
     dTree->d_cur_node = to_d_node(dTree, dTree->cur_node);
     return dTree;
@@ -37,10 +38,14 @@ void cleanUp(dynamic_tree_t* dTree) {
 }
 
 dynamic_node_t* to_d_node(dynamic_tree_t* dTree, node* p) {
+    fprintf(stderr, "nodes = %p, d_nodes = %p, node p = %p\n", dTree->nodes, dTree->d_nodes, p);
+    if (p == NULL) return NULL;
     return dTree->d_nodes + (p - dTree->nodes);
 }
 
 node* to_node(dynamic_tree_t* dTree, dynamic_node_t* p) {
+    fprintf(stderr, "nodes = %p, d_nodes = %p, d_node p = %p\n", dTree->nodes, dTree->d_nodes, p);
+    if (p == NULL) return NULL;
     return dTree->nodes + (p - dTree->d_nodes);
 }
 
@@ -278,7 +283,7 @@ dynamic_node_t* d_before(dynamic_node_t* p) {
         return p->parent;
     }
     else {
-        fprintf(stderr, "node %ld is the head, before(head) == NULL\n", p->dTree->d_nodes);
+        fprintf(stderr, "node %p is the head, before(head) == NULL\n", p);
         return NULL; // p is the head of the path, the leftmost node of the splay tree
     }
 }
@@ -297,13 +302,14 @@ dynamic_node_t* d_after(dynamic_node_t* p) {
         return p->parent;
     }
     else {
-        fprintf(stderr, "node %ld is the tail, after(tail) == NULL\n", p - dTree->d_nodes);
+        fprintf(stderr, "node %p is the tail, after(tail) == NULL\n", p);
         return NULL; // p is the tail of the path, the rightmost node of the splay tree
     }
 }
 
 
 node* before(dynamic_tree_t* dTree, node* p) {
+    expose(dTree->d_source);
     dynamic_node_t* d_p = to_d_node(dTree, p);
     d_p = d_before(d_p);
     p = to_node(dTree, d_p);
@@ -311,6 +317,7 @@ node* before(dynamic_tree_t* dTree, node* p) {
 }
 
 node* after(dynamic_tree_t* dTree, node* p) {
+    expose(dTree->d_source);
     dynamic_node_t* d_p = to_d_node(dTree, p);
     d_p = d_after(d_p);
     p = to_node(dTree, d_p);
