@@ -38,13 +38,13 @@ void cleanUp(dynamic_tree_t* dTree) {
 }
 
 dynamic_node_t* to_d_node(dynamic_tree_t* dTree, node* p) {
-    fprintf(stderr, "nodes = %p, d_nodes = %p, node p = %p\n", dTree->nodes, dTree->d_nodes, p);
+    // fprintf(stderr, "nodes = %p, d_nodes = %p, node p = %p\n", dTree->nodes, dTree->d_nodes, p);
     if (p == NULL) return NULL;
     return dTree->d_nodes + (p - dTree->nodes);
 }
 
 node* to_node(dynamic_tree_t* dTree, dynamic_node_t* p) {
-    fprintf(stderr, "nodes = %p, d_nodes = %p, d_node p = %p\n", dTree->nodes, dTree->d_nodes, p);
+    // fprintf(stderr, "nodes = %p, d_nodes = %p, d_node p = %p\n", dTree->nodes, dTree->d_nodes, p);
     if (p == NULL) return NULL;
     return dTree->nodes + (p - dTree->d_nodes);
 }
@@ -52,10 +52,6 @@ node* to_node(dynamic_tree_t* dTree, dynamic_node_t* p) {
 bool isroot(dynamic_node_t* node) {
     return (node->parent==NULL) || (node->parent->left != node && node->parent->right != node);
 }
-
-
-
-
 
 /*             q              p
  *           /  \           /  \
@@ -99,7 +95,6 @@ void rotR (dynamic_node_t* p) {
         else if (r->right == q) r->right = p;
     }
 }
-
 
 /*         q                   p
  *       /  \                /  \
@@ -262,14 +257,6 @@ node* root(dynamic_tree_t* dTree, node* p) {
     return p;
 }
 
-
-
-
-
-
-
-
-
 // TODO: use splay inside before and after, not sure if it's needed
 dynamic_node_t* d_before(dynamic_node_t* p) {
     if (p->left != NULL) {
@@ -283,12 +270,10 @@ dynamic_node_t* d_before(dynamic_node_t* p) {
         return p->parent;
     }
     else {
-        fprintf(stderr, "node %p is the head, before(head) == NULL\n", p);
+        // fprintf(stderr, "node %p is the head, before(head) == NULL\n", p);
         return NULL; // p is the head of the path, the leftmost node of the splay tree
     }
 }
-
-
 
 dynamic_node_t* d_after(dynamic_node_t* p) {
     if (p->right != NULL) {
@@ -302,11 +287,10 @@ dynamic_node_t* d_after(dynamic_node_t* p) {
         return p->parent;
     }
     else {
-        fprintf(stderr, "node %p is the tail, after(tail) == NULL\n", p);
+        // fprintf(stderr, "node %p is the tail, after(tail) == NULL\n", p);
         return NULL; // p is the tail of the path, the rightmost node of the splay tree
     }
 }
-
 
 node* before(dynamic_tree_t* dTree, node* p) {
     expose(dTree->d_source);
@@ -324,24 +308,20 @@ node* after(dynamic_tree_t* dTree, node* p) {
     return p;
 }
 
-
 long nMinCost(dynamic_node_t* p) {
     expose(p);
     return p->delcost - p->delmin;
 }
-
 
 long nCost(dynamic_node_t* p) {
     splay(p);
     return p->delcost;
 }
 
-
 void pUpdate(dynamic_node_t* p, long x) {
     expose(p);
     p->delcost += x;
 }
-
 
 void d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
     expose(p);
@@ -373,7 +353,6 @@ void cut(dynamic_tree_t* dTree, node* p) {
     d_cut(dTree, d_p);
 }
 
-
 void d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p) {
     while(nMinCost(p) == 0) {
         dynamic_node_t* u = p;
@@ -400,7 +379,6 @@ void cutEdge(dynamic_tree_t* dTree, node* p) {
     dynamic_node_t* d_p = to_d_node(dTree, p);
     d_cutEdge(dTree, d_p);
 }
-
 
 // store the path from p to the root
 void findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost) {
