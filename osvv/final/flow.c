@@ -846,15 +846,15 @@ void bfs(){
         forAllArcs(*current, a){
             if(a->head->d == -1){
                 a->head->d = (*current)->d + 1;
-                fprintf(stderr, "Discovered node %ld at distance %ld\n", nNode(a->head), (*current)->d + 1);
+                // fprintf(stderr, "Discovered node %ld at distance %ld\n", nNode(a->head), (*current)->d + 1);
                 qEnqueue(a->head);
             }
         }
     }
-    node *u;
-    forAllNodes(u) {
-        fprintf(stderr, "Node %ld at distance %ld\n", nNode(u), u->d);
-    }
+    // node *u;
+    // forAllNodes(u) {
+    //     fprintf(stderr, "Node %ld at distance %ld\n", nNode(u), u->d);
+    // }
 }
 
 
@@ -1050,6 +1050,12 @@ void hipr(
 
         int k;
 
+        source->excess = 0;
+        forAllArcs(source, a) {
+            long na = nArc(a);
+            if (cap[na] == 0) continue;
+            source->excess += cap[na] - a->resCap;
+        }
         /* INITIALIZE MATCHING ARRAYS */
 
         matchingCapacity = 0;
@@ -1060,15 +1066,7 @@ void hipr(
         long mweight;
         dynamic_tree_t *p;
 
-        fprintf(stderr, "nMin %ld\n", nMin);
-
-
-        forAllNodes(i)
-            forAllArcs(i, a)
-                fprintf(stderr, "Arc %ld --> %ld: cap %ld resCap %ld\n", nNode(i), nNode(a->head), a->cap, a->resCap);
-
-        while(source->excess > 0) {
-            fprintf(stderr, "source_excess = %lld\n", source->excess);
+        while(source->excess != 0) {
             forAllNodes(i) {
                 i->d = -1;
                 i->current = i->first;
@@ -1077,15 +1075,11 @@ void hipr(
 
             p = dec_init(n, nodes, source);
             while (source->current < nodes[s+1].first) {
-                fprintf(stderr, "source_current = %ld, nex_first = %ld\n", source->current - arcs, nodes[s+1].first - arcs);
-                // p->cur_node = source;
                 while (p->cur_node != sink) {
-                    fprintf(stderr, "Node id: %ld. Current d: %ld", nNode(p->cur_node), p->cur_node->d);
-                    getchar();
                     for (; p->cur_node->current < (p->cur_node + 1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
                         arc* cur_arc = p->cur_node->current;
-                        fprintf(stderr, "Arc %ld --> %ld: cap %ld resCap %ld", nNode(p->cur_node), nNode(cur_arc->head), cur_arc->cap, cur_arc->resCap);
-                        getchar();
+                        if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
+
                         if ((cur_arc->cap == cur_arc->resCap) ||
                             (p->cur_node->d + 1 != cur_arc->head->d)) {
                             continue;
@@ -1114,6 +1108,8 @@ void hipr(
                 findPath(p, &mhead, &mtail, &mweight);
 
                 if(!mweight) continue;
+
+                source->excess -= mweight;
 
                 if (k >= matchingCapacity) {
                     if (!matchingCapacity) matchingCapacity = 2 * n;

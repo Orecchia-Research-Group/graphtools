@@ -42,27 +42,31 @@ int main() {
     assert(mheads[0]==1);
     assert(mtails[0]==5);
     assert(mweights[0]==2);
-    
+
+    assert(mheads[2]==2);
+    assert(mtails[2]==7);
+    assert(mweights[2]==1);
+
     /*
-    assert(*mheads[2]==1);
-    assert(*mtails[2]==6);
-    assert(*mweights[2]==1);
+    assert(mheads[2]==1);
+    assert(mtails[2]==6);
+    assert(mweights[2]==1);
     
-    assert(*mheads[4]==2);
-    assert(*mtails[4]==6);
-    assert(*mweights[4]==1);
+    assert(mheads[4]==2);
+    assert(mtails[4]==6);
+    assert(mweights[4]==1);
     
-    assert(*mheads[6]==2);
-    assert(*mtails[6]==7);
-    assert(*mweights[6]==1);
+    assert(mheads[6]==2);
+    assert(mtails[6]==7);
+    assert(mweights[6]==1);
     
-    assert(*mheads[8]==2);
-    assert(*mtails[8]==8);
-    assert(*mweights[8]==0);
+    assert(mheads[8]==2);
+    assert(mtails[8]==8);
+    assert(mweights[8]==0);
     
-    assert(*mheads[10]==3);
-    assert(*mtails[10]==8);
-    assert(*mweights[10]==1);
+    assert(mheads[10]==3);
+    assert(mtails[10]==8);
+    assert(mweights[10]==1);
     */
     
     return 0;
