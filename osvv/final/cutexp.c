@@ -103,7 +103,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   plhs[0] = mxCreateDoubleScalar(cutedges);
   plhs[1] = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
-  plhs[2] = mxCreateDoubleScalar(cutedges/min(size_cut, n - sizecut));
+  plhs[2] = mxCreateDoubleScalar(cutedges/min(size_cut, n - size_cut));
   temp = (long*) mxGetPr(plhs[1]);
   temp[0] = size_cut;
 
