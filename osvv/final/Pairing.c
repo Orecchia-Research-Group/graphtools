@@ -4,15 +4,16 @@ PURPOSE: prepares the flow problem and calls hipr which performs it.
          Obtains hipr output and converts it to MATLAB objects.
 
 USAGE: 
-function [flow, cut, matching]= Pairing(G, bisec, cap_add, cap_orig); 
+function [flow, cut, matching]= Pairing(G, bisec, source_modifier, sink_modifier, original_modifier);
 
 INPUTS: Note: vertex indices start at 1
  -G: a sparse graph
  -bisec: an array of 64bits integers, each representing an index of a node
  in the desired bisection
- - cap_add: a 64 bit integer representing the capacity to put for edges between source
- and bisec and between sink and complement of bisec
- - cap-orig: capacity to assign to edges in G
+ - source_modifier: a 64 bit integer representing the capacity to put for edges between source
+ and bisec
+ - sink_modifier: a 64 bit integer representing the capacity to put for edges between sink and complement of bisec
+ - original_modifier: capacity to multiply edges in G
  - lambda: percentage of degree flow that can pass through the node
 
 OUTPUTS:
@@ -28,7 +29,7 @@ OUTPUTS:
 #include "timer.h"
 
 /* PROTOTYPE
-function [flow, cut, matching]= Pairing(G, bisec, cap_add, cap_orig); 
+function [flow, cut, matching]= Pairing(G, bisec, source_modifier, sink_modifier, original_modifier);
 */
 
 void hipr 
@@ -56,8 +57,10 @@ mxArray* Sparse(long* heads, long* tails, long* weights, long m, long n );
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     const mxArray *G;
     long *bisec;
-    long cap_add;
-    long cap_orig;
+    long source_modifier;
+    long sink_modifier;
+    long original_modifier;
+    long internal_modifier;
 
     long N;
     long M;
@@ -71,7 +74,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *heads;
     long *weights;
     long *degrees;
-
+    long sideWeight[2] = {0, 0};
+    long sideNom = 1;
+    long sideDen = 1;
 
     long i;
     long j;
@@ -101,12 +106,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *temp_a;
 
     float t1, t2;
-    double lambda;
     int route_flag;
 
     /*  t1 =timer();*/
 
-    if (nrhs > 6 || nrhs < 5 || nlhs > 4 || nlhs < 3)
+    if (nrhs > 7 || nrhs < 6 || nlhs > 4 || nlhs < 3)
         mexErrMsgTxt("Error in usage of Pairing.\n");
 
 
@@ -114,12 +118,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     G = prhs[0];
     bisec = (long *) mxGetPr(prhs[1]);
     size_bisec = mxGetM(prhs[1]);
-    cap_add = ((long *) mxGetPr(prhs[3]))[0];
-    cap_orig = ((long *) mxGetPr(prhs[4]))[0];
     volume = (long *) mxGetPr(prhs[2]);
-    if (nrhs > 5) {
-        lambda = mxGetScalar(prhs[5]);
-    }
+    source_modifier = ((long *) mxGetPr(prhs[3]))[0];
+    sink_modifier = ((long *) mxGetPr(prhs[4]))[0];
+    original_modifier = ((long *) mxGetPr(prhs[5]))[0];
+
+    if (nrhs > 6) internal_modifier = ((long *) mxGetPr(prhs[6]))[0];
 
     N = mxGetM(G);
     mexCallMATLAB(1, &temp, 1, &G, "nnz");
@@ -129,7 +133,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     row_G = (long *) mxGetIr(G);
     pr_G = (double *) mxGetPr(G);
 
-    reciprocalOffset = N * (nrhs > 5);
+    reciprocalOffset = N * (nrhs > 6);
 
     /* CONSTRUCT THE FLOW PROBLEM IN THE REPRESENTATION
        NEED TO ADD SOURCE / SINK AND RELATIVE EDGES
@@ -152,50 +156,57 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     heads = calloc(sizeof(*heads), M + N + reciprocalOffset);
     weights = calloc(sizeof(*weights), M + N + reciprocalOffset);
     degrees = calloc(sizeof(*degrees), N + 1);
-    
+
     if (!(tails && heads && weights && degrees)) {
         fprintf(stderr, "Error allocating memory for edge information\n");
     }
 
+    long zero_degree = 0;
     for (i = 0; i < N; i++) {
         for (j = col_G[i]; j < col_G[i + 1]; j++) {
             heads[k] = i + 1;
             tails[k] = row_G[j] + reciprocalOffset + 1;
-            weights[k] = pr_G[j] * cap_orig;
+            weights[k] = pr_G[j] * original_modifier;
             degrees[i + 1] += weights[k];
             k++;
         }
         if (degrees[i + 1] == 0) {
-            fprintf(stderr, "Node %6ld has degree 0.\n", i + 1);
+            // fprintf(stderr, "Node %6ld has degree 0.\n", i + 1);
+            zero_degree++;
         }
+        if (i == 0 && degrees[i + 1] == 0) fprintf(stderr, "u: %ld. j: %ld. w: %lf. index: %ld. original_modifier: %ld\n",
+                i + 1, row_G[col_G[i]] + 1, pr_G[col_G[i]], col_G[i], original_modifier);
     }
+    if (zero_degree > 0) fprintf(stderr, "There are %ld with zero degree\n", zero_degree);
 
+    long zero_internal = 0;
     for (h = 0; h < reciprocalOffset; h++) {
         heads[k] = h + reciprocalOffset + 1;
         tails[k] = h + 1;
-        weights[k] = (long) round(volume[h] * cap_orig * lambda);
+        weights[k] = volume[h] * internal_modifier;
         if (weights[k] <= 0) {
-            fprintf(stderr, "Internal edge for node %6ld was reduced to 0.\n", h + 1);
+            // fprintf(stderr, "Internal edge for node %6ld was reduced to 0.\n", h + 1);
+            zero_internal++;
         }
         k++;
     }
+    if (zero_internal > 0) fprintf(stderr, "There are %ld whose internal edges were reduced to zero\n", zero_internal);
 
     for (h = 0; h < N; h++) {
         if (mask[h + 1] == 1) {
             heads[k] = h + 1;
             tails[k] = N + reciprocalOffset + 1;
+            weights[k] = source_modifier * volume[h];
         } else {
             heads[k] = N + reciprocalOffset + 2;
             tails[k] = h + reciprocalOffset + 1;
+            weights[k] = sink_modifier * volume[h];
         }
-        weights[k] = cap_add * volume[h];
+
         k++;
     }
 
-
-
     /* CALL HI_PR - modified to output flow - would prefer for hipr to allocate this memory*/
-
 
     /* m-arrays are initialized within hi_pr */
     n = N + 2 + reciprocalOffset;
@@ -271,9 +282,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
    /*   t2 = timer() -t2;
 	fprintf(stderr, "Oth tm: %f", t2 + t1);*/
+   free(mask);
    free(heads);
    free(tails);
    free(weights);
+   free(degrees);
    if(mheads) free(mheads);
    if(mtails) free(mtails);
    if(mweights) free(mweights);

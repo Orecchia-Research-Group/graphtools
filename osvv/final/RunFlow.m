@@ -46,6 +46,8 @@ function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, r
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INITIALIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+FAREY_PRECISION = 10000;
+
 % Mixed cut or edge cut?
 if (size(varargin, 2) > 0)
     lamda = varargin{1};
@@ -69,10 +71,12 @@ bisec = int64(sort(bisec));
 size_bisec = int64(size(bisec,1));
 bisec_vol = sum(weight(bisec));
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%% SEARCH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 found_flag = int8(1);
 counter = 0;
+
+vol = sum(weight);
+[side_nom, side_den] = Farey(int64(bisec_vol), int64(vol - bisec_vol), int64(FAREY_PRECISION));
 
 
 while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
@@ -80,18 +84,33 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     cap_add = int64(weirdrat_num);
     cap_orig = weirdrat_den;
     % fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
+    
+    source_modifier = int64(cap_add * side_nom);
+    sink_modifier = int64(cap_add * side_den);
+    internal_modifier = int64(cap_orig * side_nom);
+    original_modifier = int64(cap_orig * side_nom);
+
+    %fprintf(2, 'Source modifier %d\n', source_modifier);
+    %fprintf(2, 'Sink modifier %d\n', sink_modifier);
+    %fprintf(2, 'Internal modifier %d\n', internal_modifier);
+    %fprintf(2, 'Original modifier %d\n', original_modifier);
 
     if (lamda > 0)
-        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, cap_add / lamda, cap_orig / lamda, lamda); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        source_modifier = int64(source_modifier / lamda);
+        sink_modifier = int64(sink_modifier / lamda);
+        original_modifier = int64(original_modifier / lamda);
+        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
-        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, cap_add, cap_orig); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     end
-      counter = counter + 1;
+    
+    counter = counter + 1;
     if (flow == 0)
         fprintf(2, 'You disconnected: %f\n', flow);
-    end
-    % fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(bisec_vol) * weirdrat_num / lamda, weirdrat);
-    if(flow < double(bisec_vol) * weirdrat_num / lamda) % IF BETTER CUT FOUND
+    end 
+    
+    % fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(bisec_vol) * source_modifier, weirdrat);
+    if(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
         found_flag = int8(1);
         [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, weight, lamda); % COMPUTE NEW WEIRDRAT
@@ -118,15 +137,23 @@ if(nomatching_flag == 0)
    double(weirdrat_num);
 
 %    fprintf(2, 'Match_num: %f\n', match_num);
-   if (lamda > 0)
-        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, match_num / lamda, match_den / lamda, lamda);
-   else
-        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, match_num, match_den);
-   end
-    
+    source_modifier = int64(match_num * side_nom);
+    sink_modifier = int64(match_num * side_den);
+    internal_modifier = int64(match_den * side_nom);
+    original_modifier = int64(match_den * side_nom);
+
+    if (lamda > 0)
+        source_modifier = int64(source_modifier / lamda);
+        sink_modifier = int64(sink_modifier / lamda);
+        original_modifier = int64(original_modifier / lamda);
+        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+    else
+        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+    end
+   
    % MATCHING SCALING
    matching = matching/double(match_num);
-   matchrat= double(match_num)/double(match_den);
+   matchrat = double(match_num)/double(match_den);
    if(~issparse(matching))
         fprintf('Matching is not sparse...\n');
     end
@@ -141,14 +168,3 @@ flownumber = counter+1;
 % ALL OUTPUTS ARE READY
 
 end
-
-
-
-
-
-
-
-
-
-
-

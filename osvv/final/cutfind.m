@@ -143,7 +143,7 @@ degree = int64(full(sum(G)));
 weight = ones(1, n, 'int64');
 weight(:) = degree;
 vol = sum(weight);
-factor = sqrt(spdiags(1 / double(weight)', 0, n, n));
+factor = diag(sum(G).^(-1/2));
 
 % Check that the graph is strongly connected
 [S, C] = graphconncomp(G);
@@ -254,7 +254,7 @@ for i=1:double(t)
     %% SECOND EIGENVALUE
     if(strcmp(rate,'infty'))
         % opts.k = 2;
-        opts.tol = 0.001;
+        opts.tol = 1e-14;
         % opts.sigma = 'SM';
         
         [temp, trash ] = eigs(factor * (D-H) * factor, 2, 'SA', opts);
@@ -270,13 +270,13 @@ for i=1:double(t)
     % SORT VERTICES BY PROB. CHARGE AND DETERMINE BISECTION
     [ordered, index] = sort(u);
     index = int64(index);
-    i = floor(n / 2) + 1;
+    j = floor(n / 2) + 1;
     bisec=int64(index(1:floor(n/2)));
     bisec_vol = sum(weight(bisec));
     while bisec_vol < vol / 2.0
-        bisec(end + 1) = int64(index(i));
-        bisec_vol = bisec_vol + weight(index(i));
-        i = i + 1;
+        bisec(end + 1) = int64(index(j));
+        bisec_vol = bisec_vol + weight(index(j));
+        j = j + 1;
     end
     while bisec_vol > vol / 2.0
         bisec_vol = bisec_vol - weight(bisec(end));
