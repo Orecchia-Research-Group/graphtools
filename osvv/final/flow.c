@@ -844,22 +844,22 @@ void bfs(){
         // if(nNode(*current) == nNode(sink)) break;
 
         forAllArcs(*current, a){
-            if (a->cap == a->resCap) continue;
+            if ((a->cap == 0) || (a->cap == a->resCap)) continue;
             if (a->head->d == -1){
                 if (a->head == sink) {
                     fprintf(stderr, "Linked from %ld with cap=%ld and resCap=%ld\n", nNode(*current), a->cap, a->resCap);
                     fflush(stderr);
                 }
                 a->head->d = (*current)->d + 1;
-                // fprintf(stderr, "Discovered node %ld at distance %ld\n", nNode(a->head), (*current)->d + 1);
+                fprintf(stderr, "Discovered node %ld at distance %ld cap=%ld resCap=%ld\n", nNode(a->head), (*current)->d + 1, a->cap, a->resCap);
                 qEnqueue(a->head);
             }
         }
     }
-    // node *u;
-    // forAllNodes(u) {
-    //     fprintf(stderr, "Node %ld at distance %ld\n", nNode(u), u->d);
-    // }
+    node *u;
+    forAllNodes(u) {
+        fprintf(stderr, "Node %ld at distance %ld\n", nNode(u), u->d);
+    }
 }
 
 
@@ -979,7 +979,7 @@ void hipr(
                 printf("ERROR: conservation constraint violated\n");
                 exit(2);
             }
-        }
+            }
 
     /* check if mincut is saturated */
     aMax = dMax = 0;
@@ -1072,11 +1072,23 @@ void hipr(
         node* mtail;
         long mweight;
         dynamic_tree_t *p;
-
         while(source->excess != 0) {
             fprintf(stderr, "source->excess=%llu\n", source->excess);
             fflush(stderr);
-            getchar();
+            long sink_excess = 0;
+            forAllNodes(i) {
+                forAllArcs(i, a) {
+                    long na = nArc(a);
+                    if ((a->cap > 0) && (a->head == sink)) {
+                        sink_excess += cap[na] - a->resCap;
+                    }
+                }
+            }
+            fprintf(stderr, "sink->excess=%ld\n", sink_excess);
+            fflush(stderr);
+
+            sleep(2);
+
             forAllNodes(i) {
                 i->d = -1;
                 i->current = i->first;
