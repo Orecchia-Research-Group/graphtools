@@ -82,7 +82,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *mheads = NULL;
     long *mtails = NULL;
     long *mweights = NULL;
-    long nedges = NULL;
+    long nedges;
     long fflow;
     long size_cut;
 
