@@ -1086,6 +1086,7 @@ void hipr(
             p = dec_init(n, nodes, source);
             while (source->current < (source + 1)->first) {
                 while (p->cur_node != sink) {
+                    int link_flag = 0;
                     for (; p->cur_node->current < (p->cur_node + 1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
                         arc* cur_arc = p->cur_node->current;
                         if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
@@ -1104,7 +1105,11 @@ void hipr(
                         fprintf(stderr, "Linking %ld -> %ld\n", nNode(p->cur_node), nNode(cur_arc->head));
                         fflush(stderr);
                         link(p, p->cur_node, cur_arc->head, cur_arc);
+                        link_flag = 1;
                         break;
+                    }
+                    if (link_flag == 1) {
+                        continue;
                     }
                     if (p->cur_node->current == (p->cur_node + 1)->first) {             // if no suitable edges cut tail
                         node* previous;
