@@ -32,7 +32,31 @@ void initNode(dynamic_node_t* node, long i) {
     node->edge = NULL;
 }
 
+void cleanUp_d_node(dynamic_node_t* d_node, bool* flag, long parent_cost) {
+    flag[d_node->id] = true;
+    long cost;
+    if (d_node->edge != NULL) {
+        cost = parent_cost + d_node->delcost;
+        d_node->edge->resCap = d_node->edge->cap - cost;
+    }
+    if (d_node->left != NULL) {
+        cleanUp_d_node(d_node->left, flag, cost);
+    }
+    if (d_node->right != NULL) {
+        cleanUp_d_node(d_node->right, flag, cost);
+    }
+}
+
 void cleanUp(dynamic_tree_t* dTree) {
+    bool* flag = calloc(dTree->sz, sizeof(bool));
+    for (long i = 0; i < dTree->sz; i++) {
+        if (flag[i] == false) {
+            splay(dTree->d_node[i]);
+            cleanUp_d_node(dTree->d_nodes[i], flag, 0);
+        }
+    }
+    free(flag);
+
     free(dTree->d_nodes);
     free(dTree);
 }
@@ -335,6 +359,7 @@ void d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
     }
 
     p->edge->resCap = p->edge->cap - p->delcost;
+    p->edge = NULL;
 
     p->delmin = 0;
     if (l != NULL) {
