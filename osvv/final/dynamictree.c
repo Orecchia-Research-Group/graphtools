@@ -34,9 +34,8 @@ void initNode(dynamic_node_t* node, long i) {
 
 void cleanUp_d_node(dynamic_node_t* d_node, bool* flag, long parent_cost) {
     flag[d_node->id] = true;
-    long cost;
+    long cost = parent_cost + d_node->delcost;
     if (d_node->edge != NULL) {
-        cost = parent_cost + d_node->delcost;
         d_node->edge->resCap = d_node->edge->cap - cost;
     }
     if (d_node->left != NULL) {
@@ -51,8 +50,8 @@ void cleanUp(dynamic_tree_t* dTree) {
     bool* flag = calloc(dTree->sz, sizeof(bool));
     for (long i = 0; i < dTree->sz; i++) {
         if (flag[i] == false) {
-            splay(dTree->d_node[i]);
-            cleanUp_d_node(dTree->d_nodes[i], flag, 0);
+            splay(&dTree->d_nodes[i]);
+            cleanUp_d_node(&dTree->d_nodes[i], flag, 0);
         }
     }
     free(flag);
