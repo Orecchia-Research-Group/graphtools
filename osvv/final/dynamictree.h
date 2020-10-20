@@ -24,58 +24,58 @@ typedef struct dynamic_tree {
 
 
 
-dynamic_tree_t* dec_init(long num_nodes, node* nodes, node* start_node);
+dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node);
 
-void initNode(dynamic_node_t* node, long i);
+void dt_initNode(dynamic_node_t* node, long i);
 
-void cleanUp(dynamic_tree_t* dTree);
+void dt_cleanUp(dynamic_tree_t* dTree);
 
-dynamic_node_t* to_d_node(dynamic_tree_t* dTree, node* p);
+dynamic_node_t* dt_to_d_node(dynamic_tree_t* dTree, node* p);
 
-node* to_node(dynamic_tree_t* dTree, dynamic_node_t* p);
+node* dt_to_node(dynamic_tree_t* dTree, dynamic_node_t* p);
 
-bool isroot(dynamic_node_t* node);
+bool dt_isroot(dynamic_node_t* node);
 
 
 
-void rotR (dynamic_node_t* p);
+void dt_rotR (dynamic_node_t* p);
 
-void rotL (dynamic_node_t* p);
+void dt_rotL (dynamic_node_t* p);
 
-void splay(dynamic_node_t* p);
+void dt_splay(dynamic_node_t* p);
 
 /* This makes node q the root of the virtual tree, and also q is the
    leftmost node in its splay tree */
-void expose(dynamic_node_t* q);
+void dt_expose(dynamic_node_t* q);
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
-void d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
-void link(dynamic_tree_t* dTree, node* p, node* q, arc* edge);
+void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
+void dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge);
 
 
 /* this returns the id of the node that is the root of the tree containing p */
-dynamic_node_t* d_root(dynamic_node_t* p);
-node* root(dynamic_tree_t* dTree, node* p);
+dynamic_node_t* dt_d_root(dynamic_node_t* p);
+node* dt_root(dynamic_tree_t* dTree, node* p);
 
 
 
 
-dynamic_node_t* d_before(dynamic_node_t* p);
-dynamic_node_t* d_after(dynamic_node_t* p);
-node* before(dynamic_tree_t* dTree, node* p);
-node* after(dynamic_tree_t* dTree, node* p);
+dynamic_node_t* dt_d_before(dynamic_node_t* p);
+dynamic_node_t* dt_d_after(dynamic_node_t* p);
+node* dt_before(dynamic_tree_t* dTree, node* p);
+node* dt_after(dynamic_tree_t* dTree, node* p);
 
-long nMinCost(dynamic_node_t* p);
-long nCost(dynamic_node_t* p);
-void pUpdate(dynamic_node_t* p, long x);
+long dt_nMinCost(dynamic_node_t* p);
+long dt_nCost(dynamic_node_t* p);
+void dt_pUpdate(dynamic_node_t* p, long x);
 
-void d_cut(dynamic_tree_t* dTree, dynamic_node_t* p);
-void cut(dynamic_tree_t* dTree, node* p);
+void dt_d_cut(dynamic_tree_t* dTree, dynamic_node_t* p);
+void dt_cut(dynamic_tree_t* dTree, node* p);
 
-void d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p);
-void cutEdge(dynamic_tree_t* dTree, node* p);
-void findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost);
+void dt_d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p);
+void dt_cutEdge(dynamic_tree_t* dTree, node* p);
+void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost);
 
 
 #endif

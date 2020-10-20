@@ -1095,7 +1095,7 @@ void hipr(
             }
             bfs();
 
-            p = dec_init(n, nodes, source);
+            p = dt_init(n, nodes, source);
             while (source->current < (source + 1)->first) {
                 while (p->cur_node != sink) {
                     int link_flag = 0;
@@ -1116,7 +1116,7 @@ void hipr(
                         p->cur_node->current++; // added by Xifan
                         fprintf(stderr, "Linking %ld -> %ld\n", nNode(p->cur_node), nNode(cur_arc->head));
                         fflush(stderr);
-                        link(p, p->cur_node, cur_arc->head, cur_arc);
+                        dt_link(p, p->cur_node, cur_arc->head, cur_arc);
                         link_flag = 1;
                         break;
                     }
@@ -1125,11 +1125,11 @@ void hipr(
                     }
                     if (p->cur_node->current == (p->cur_node + 1)->first) {             // if no suitable edges cut tail
                         node* previous;
-                        if ((previous = before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
+                        if ((previous = dt_before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
                                                                                         // The alternative is that p is the source
                             fprintf(stderr, "About to cut to %ld\n", nNode(previous));
                             fflush(stderr);
-                            cut(p, previous);
+                            dt_cut(p, previous);
                             // following line commented out by Xifan
                             // p->cur_node->current++; // TODO: this update is problematic. It should be previous->current++
                         } else {
@@ -1142,7 +1142,7 @@ void hipr(
                     break;
                 }
 
-                findPath(p, &mhead, &mtail, &mweight);
+                dt_findPath(p, &mhead, &mtail, &mweight);
 
                 fprintf(stderr, "Current mweight = %ld\n", mweight);
                 fflush(stderr);
@@ -1190,7 +1190,7 @@ void hipr(
                 k = k + 2;
 
             }
-            cleanUp(p);
+            dt_cleanUp(p);
         }
         *nedges = k;
     }
