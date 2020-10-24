@@ -1,4 +1,4 @@
-#hiprtest graphs
+# hiprtest graphs
 The graph testhipr.eg2 and testhipr2.eg2 test the cutfind function.
 
 The following characteristics are tested for:
