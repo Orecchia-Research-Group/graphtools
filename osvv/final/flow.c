@@ -846,19 +846,10 @@ void bfs(){
         forAllArcs(*current, a){
             if ((a->cap == 0) || (a->cap == a->resCap)) continue;
             if (a->head->d == -1){
-                if (a->head == sink) {
-                    fprintf(stderr, "Linked from %ld with cap=%ld and resCap=%ld\n", nNode(*current), a->cap, a->resCap);
-                    fflush(stderr);
-                }
                 a->head->d = (*current)->d + 1;
-                fprintf(stderr, "Discovered node %ld at distance %ld cap=%ld resCap=%ld\n", nNode(a->head), (*current)->d + 1, a->cap, a->resCap);
                 qEnqueue(a->head);
             }
         }
-    }
-    node *u;
-    forAllNodes(u) {
-        fprintf(stderr, "Node %ld at distance %ld\n", nNode(u), u->d);
     }
 }
 
@@ -1048,10 +1039,7 @@ void hipr(
     *fflow = (long) flow;
 
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
-
     if (route_flag == 1) {
-        fprintf(stderr, "Ready for matching\n");
-        fflush(stderr);
         long int matchingCapacity;
         long *reallocPtr;
 
@@ -1072,9 +1060,8 @@ void hipr(
         node* mtail;
         long mweight;
         dynamic_tree_t *p;
+
         while(source->excess != 0) {
-            fprintf(stderr, "source->excess=%llu\n", source->excess);
-            fflush(stderr);
             long sink_excess = 0;
             forAllNodes(i) {
                 forAllArcs(i, a) {
@@ -1084,10 +1071,6 @@ void hipr(
                     }
                 }
             }
-            fprintf(stderr, "sink->excess=%ld\n", sink_excess);
-            fflush(stderr);
-
-            sleep(2);
 
             forAllNodes(i) {
                 i->d = -1;
@@ -1103,19 +1086,12 @@ void hipr(
                         arc* cur_arc = p->cur_node->current;
                         if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
 
-                        if (cur_arc->head == sink) {
-                            fprintf(stderr, "Found edge %ld -> %ld. cap=%ld. resCap=%ld. d=%ld. next d=%ld\n",
-                                    nNode(p->cur_node), nNode(cur_arc->head), cur_arc->cap, cur_arc->resCap, p->cur_node->d, cur_arc->head->d);
-                            fflush(stderr);
-                            getchar();
-                        }
                         if ((cur_arc->cap == cur_arc->resCap) ||
                             (p->cur_node->d + 1 != cur_arc->head->d)) {
                             continue;
                         }
                         p->cur_node->current++; // added by Xifan
-                        fprintf(stderr, "Linking %ld -> %ld\n", nNode(p->cur_node), nNode(cur_arc->head));
-                        fflush(stderr);
+                        
                         dt_link(p, p->cur_node, cur_arc->head, cur_arc);
                         link_flag = 1;
                         break;
@@ -1127,8 +1103,6 @@ void hipr(
                         node* previous;
                         if ((previous = dt_before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
                                                                                         // The alternative is that p is the source
-                            fprintf(stderr, "About to cut to %ld\n", nNode(previous));
-                            fflush(stderr);
                             dt_cut(p, previous);
                             // following line commented out by Xifan
                             // p->cur_node->current++; // TODO: this update is problematic. It should be previous->current++
@@ -1143,9 +1117,6 @@ void hipr(
                 }
 
                 dt_findPath(p, &mhead, &mtail, &mweight);
-
-                fprintf(stderr, "Current mweight = %ld\n", mweight);
-                fflush(stderr);
 
                 if(!mweight) continue;
 
