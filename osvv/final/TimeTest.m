@@ -45,6 +45,8 @@ tMatch = int64(tEnd);
 
 %PRINT CUTFIND TIMINGS
 tPercent = 100*(tMatch-tNoMatch)/tMatch;
+tDiff = tMatch-tNoMatch;
 fprintf("Runtime of Pairing without matching %u\n",tMatch);
 fprintf("Runtime of Pairing with matching %u\n", tNoMatch);
 fprintf("Percent that runtime of matching is slower than without matching %d\n", tPercent);
+fprintf("Difference in runtimes between matching and no matching %u\n", tDiff);
