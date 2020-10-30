@@ -47,4 +47,4 @@ tMatch = int64(tEnd);
 tPercent = 100*(tMatch-tNoMatch)/tMatch;
 fprintf("Runtime of Pairing without matching %u\n",tMatch);
 fprintf("Runtime of Pairing with matching %u\n", tNoMatch);
-fprintf("Percent that runtime of matching is slower than without matching" %d\n, tPercent);
+fprintf("Percent that runtime of matching is slower than without matching %d\n", tPercent);
