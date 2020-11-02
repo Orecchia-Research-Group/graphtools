@@ -26,27 +26,26 @@
 function [] = TimeTest(graphFileName, ptnFileName, weirdrat_num, weirdrat_den)
 
 %INTITIALIZATION OF VARIABLES
-partitions = int64(readPtn(ptnFilename));
-G = int64(loadeg2graph(graphFileName));
+partitions = readPtn(ptnFileName);
+partition = int64(partitions{1});
+[G, n, m] = loadeg2graph(graphFileName);
 cap_add = int64(weirdrat_num);
 cap_orig = weirdrat_den;
+[flow, cut] = Pairing(G, partition, cap_add, cap_orig);
 
 %RUNNING CUTFIND TIMINGS WITHOUT MATCHING
 tStart = (tic);
-[flow, cut] = Pairing(G, partitions, cap_add, cap_orig);
-tEnd = toc(tStart);
-tNoMatch = int64(tEnd);
+[flow, cut] = Pairing(G, partition, cap_add, cap_orig);
+tNoMatch = toc(tStart);
 
 %RUNNING CUTFIND TIMINGS WITH MATCHING
 tStart = tic;
-[flow, cut, matching] = Pairing(G, partitions, cap_add, cap_orig);
-tEnd = toc(tStart);
-tMatch = int64(tEnd);
+[flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig);
+tMatch = toc(tStart);
+
 
 %PRINT CUTFIND TIMINGS
 tPercent = 100*(tMatch-tNoMatch)/tMatch;
-tDiff = tMatch-tNoMatch;
-fprintf("Runtime of Pairing without matching %u\n",tMatch);
-fprintf("Runtime of Pairing with matching %u\n", tNoMatch);
-fprintf("Percent that runtime of matching is slower than without matching %d\n", tPercent);
-fprintf("Difference in runtimes between matching and no matching %u\n", tDiff);
+fprintf('Runtime of Pairing without matching %.3fs\n',tNoMatch);
+fprintf('Runtime of Pairing with matching %.3fs\n', tMatch);
+fprintf('Percent that runtime of matching is slower than without matching %.2f%%\n', tPercent);
