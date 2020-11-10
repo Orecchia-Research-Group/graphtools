@@ -53,7 +53,7 @@ for i=1:runNumber
     tMatch = toc(tStart);
     
     runTimeArr(i, 1) = tNoMatch;
-    runTimeArr(i, 2) = tNoMatch;
+    runTimeArr(i, 2) = tMatch;
 end
 
 avgNM = mean(runTimeArr(1:end, 1));
