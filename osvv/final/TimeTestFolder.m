@@ -1,5 +1,9 @@
 function[timeArr] = TimeTestFolder(folderPath, runNumber)
 
+if(~exist("runNumber", "var"))
+        runNumber = 1;
+end
+
 eg2 = dir(fullfile(folderPath, '*eg2'));
 ptn = dir(fullfile(folderPath, '*ptn'));
 
@@ -11,7 +15,9 @@ timeArr = zeros(length(eg2), 4);
 for i = 1 : length(eg2)
     eg2path = fullfile(eg2(i).folder, eg2(i).name);
     ptnpath = fullfile(ptn(i).folder, ptn(i).name);
-    [avgNM, stdNM, avgM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber);
+    fprintf("%s\n", eg2(i).name);
+    fprintf("%s\n", ptn(i).name);
+    [avgNM, avgM, stdNM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber);
     timeArr(i, 1) = avgNM;
     timeArr(i, 2) = stdNM;
     timeArr(i, 3) = avgM;

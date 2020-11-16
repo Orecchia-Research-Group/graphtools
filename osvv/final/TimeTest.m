@@ -30,7 +30,11 @@
 %    matrix (double) runTimeArr - matrix of runtimes
 %
 
-function [avgNM, stdNM, avgM, stdM] = TimeTest(graphFileName, ptnFileName, weirdrat_num, weirdrat_den, runNumber)
+function [avgNM, avgM, stdNM, stdM] = TimeTest(graphFileName, ptnFileName, weirdrat_num, weirdrat_den, runNumber)
+
+if(~exist("runNumber", "var"))
+	runNumber = 1;
+end
 
 %INTITIALIZATION OF VARIABLES
 partitions = readPtn(ptnFileName);
@@ -49,7 +53,9 @@ for i=1:runNumber
 
     %RUNNING CUTFIND TIMINGS WITH MATCHING
     tStart = tic;
+    fprintf("Start pairing\n");
     [flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig);
+    fprintf("End pairing\n");
     tMatch = toc(tStart);
     
     runTimeArr(i, 1) = tNoMatch;
