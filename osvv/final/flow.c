@@ -831,12 +831,11 @@ void stageOne() {
 node *decomposePathInternal(node *n, long int *minCap);
 
 void bfs(){
-    *queue = (node *) calloc(n+3, sizeof(node *));
-
+    queue = (node **) calloc(n + 3, sizeof(node **));
     arc *a;
 
     qInit(n+3);
-    source->d=0;
+    source->d = 0;
     qEnqueue(source);
     while(!qEmpty){
         node **current;
@@ -852,7 +851,7 @@ void bfs(){
             }
         }
     }
-    free(*queue);
+    free(queue);
 }
 
 
