@@ -834,7 +834,7 @@ void bfs(){
     queue = (node **) calloc(n + 3, sizeof(node **));
     arc *a;
 
-    qInit(n+3);
+    qInit(n + 3);
     source->d = 0;
     qEnqueue(source);
     while(!qEmpty){
