@@ -38,6 +38,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 /*#include <values.h>*/
 #define MAXLONG 1000000000
 
@@ -1041,6 +1042,9 @@ void hipr(
 
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
     if (route_flag == 1) {
+	clock_t  start, stop;
+	start = clock();
+
         long int matchingCapacity;
         long *reallocPtr;
 
@@ -1165,6 +1169,12 @@ void hipr(
             dt_cleanUp(p);
         }
         *nedges = k;
+	double total_t;
+        stop = clock();
+        total_t = ((double)(stop-start))/CLOCKS_PER_SEC;
+        fprintf(stderr, "runtime of matching %f\n", total_t);
+        fflush(stderr);
+
     }
 
 
