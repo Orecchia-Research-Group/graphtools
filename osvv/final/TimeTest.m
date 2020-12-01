@@ -40,8 +40,7 @@ end
 partitions = readPtn(ptnFileName);
 partition = int64(partitions{1});
 [G, n, m] = loadeg2graph(graphFileName);
-cap_add = int64(weirdrat_num);
-cap_orig = weirdrat_den;
+[cap_add, cap_orig, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, partition, int64(10), int64(1), 10, int64(10), 0);
 [flow, cut] = Pairing(G, partition, cap_add, cap_orig);
 runTimeArr = zeros(runNumber, 2);
 
