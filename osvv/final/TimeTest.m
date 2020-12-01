@@ -54,6 +54,7 @@ for i=1:runNumber
     %RUNNING CUTFIND TIMINGS WITH MATCHING
     tStart = tic;
     [flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig);
+    fprintf('flow value is equal to %f\n', flow);
     tMatch = toc(tStart);
     
     runTimeArr(i, 1) = tNoMatch;
