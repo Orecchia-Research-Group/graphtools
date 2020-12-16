@@ -9,6 +9,10 @@ typedef struct dynamic_tree_node {
     long delmin, delcost;
     arc* edge; // edge going out from this vertex
     struct dynamic_tree_node *left, *right, *parent;
+
+    long rot_cnt;
+    long splay_cnt;
+    long expose_cnt;
 } dynamic_node_t;
 
 
@@ -20,9 +24,12 @@ typedef struct dynamic_tree {
     node* cur_node;
     dynamic_node_t* d_source;
     node* source;
+
+    long link_cnt;
+    long cut_cnt;
 } dynamic_tree_t;
 
-
+void dt_print_op_stat(dynamic_tree_t* dTree);
 
 dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node);
 
