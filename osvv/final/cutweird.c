@@ -23,6 +23,17 @@ mexFunction INPUTS;
 
 #define abs(x) (x) > 0 ? (x) : -(x)
 
+long gcd(long a, long b)
+{
+    // Everything divides 0
+    if ((!a) || (!b))
+        return a + b;
+    // a is greater
+    if (a > b)
+        return gcd(a - b, b);
+    return gcd(a, b - a);
+}
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {       // TODO: Add weight vector argument
     const mxArray *G;
     mwIndex *col;
@@ -36,6 +47,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     long *bisec;
     long size_bisec;
     long *weight;
+    long weight_bisec = 0;
+    long weight_recip = 0;
     long i, j;
     long n;
     double cutedges = 0;
@@ -91,6 +104,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     else lamda_inv = 1l;
 
 
+
     /*%%%%%%%%%%%%%%%%%%%%%%%%% MAIN BODY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     /* PREPARE CUT MASK  AND COMPUTE INTERSECT*/
@@ -103,28 +117,36 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     if (!(mask_bisec = calloc(sizeof(*mask_bisec), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
     else for (i = 0; i < size_bisec; i++) mask_bisec[bisec[i] - 1] = 1;
 
+    for (i = 0; i < n; i++) {
+        if (mask_bisec[i]) weight_bisec += weight[i];
+        else weight_recip += weight[i];
+    }
+
     /* COMPUTE WEIRD RATIO*/
     /* COMPUTE EDGES CUT */
 
     for (i = 0; i < n; i++) {
         if (mask_cut[i] && mask_bisec[i]) {                 // π(S && A)
-            denominator += weight[i] * lamda_inv;
+            denominator += weight[i] * lamda_inv * weight_recip;
         }
 
         if (mask_cut[i] && (!mask_bisec[i]) && (!reciprocal_mask_cut[i])) {     // - π(L && !A), L = S \ T
-            denominator -= weight[i] * lamda_inv;
+            denominator -= weight[i] * lamda_inv * weight_bisec;
         }
 
         if (mask_cut[i] && reciprocal_mask_cut[i] && (lamda > 0)) {     // λ π(C)
-            cutedges += weight[i];
+            cutedges += weight[i] * weight_recip;
         }
 
         if (mask_cut[i] && !reciprocal_mask_cut[i]) {                   // w(E(L, R))
             for (j = col[i]; j < col[i + 1]; j++) {
                 if (!mask_cut[row[j]]) {
-                    cutedges += array_G[j] * lamda_inv;
+                    cutedges += array_G[j] * lamda_inv * weight_recip;
                 }
             }
+        }
+        if (cutedges < 0) {
+            printf("Overflow of cutedges detected\n");
         }
     }
 
@@ -134,6 +156,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
 
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
 
+    long g = gcd(abs(cutedges), abs(denominator));
+    if (g > 0) {
+        cutedges /= g;
+        denominator /= g;
+    }
     plhs[0] = mxCreateDoubleScalar(cutedges);
     plhs[1] = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
     plhs[2] = mxCreateDoubleScalar(cutedges / (double) denominator);
