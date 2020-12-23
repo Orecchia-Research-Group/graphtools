@@ -190,7 +190,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         k++;
     }
-    if (zero_internal > 0) fprintf(stderr, "There are %ld whose internal edges were reduced to zero\n", zero_internal);
+    if (zero_internal > 0) fprintf(stderr, "There are %ld nodes whose internal edges were reduced to zero\n", zero_internal);
 
     for (h = 0; h < N; h++) {
         if (mask[h + 1] == 1) {
@@ -214,8 +214,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     if (nlhs == 3) {
         route_flag = 0;
-    } else
+    } else {
         route_flag = 1;
+    }
     /*  t1 = timer() - t1;*/
     hipr(n, m, tails, heads, weights, N + reciprocalOffset + 1, N + reciprocalOffset + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
          route_flag);
