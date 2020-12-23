@@ -48,6 +48,10 @@ function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, r
 
 FAREY_PRECISION = 10000;
 
+if size(bisec, 2) == length(bisec)
+    error('RunFlow: bisec must be a column vector\n');
+end
+
 % Mixed cut or edge cut?
 if (size(varargin, 2) > 0)
     lamda = varargin{1};
@@ -76,25 +80,30 @@ found_flag = int8(1);
 counter = 0;
 
 vol = sum(weight);
-[side_nom, side_den] = Farey(int64(bisec_vol), int64(vol - bisec_vol), int64(FAREY_PRECISION));
-
+if abs(2 * bisec_vol - vol) / bisec_vol < 1e-3
+    side_nom = int64(1);
+    side_den = int64(1);
+else
+    [side_nom, side_den] = Farey(int64(bisec_vol), int64(vol - bisec_vol), int64(FAREY_PRECISION));
+end
+%fprintf(2, 'side_nom: %d. side_den: %d.\n', side_nom, side_den);
 
 while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     %%% [cap_add, cap_orig] = Farey(int64(cap_add), cap_orig, int64(10000));
     cap_add = int64(weirdrat_num);
-    cap_orig = weirdrat_den;
-    % fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
+    cap_orig = int64(weirdrat_den);
+    %fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
     
-    source_modifier = int64(cap_add * side_nom);
-    sink_modifier = int64(cap_add * side_den);
-    internal_modifier = int64(cap_orig * side_nom);
-    original_modifier = int64(cap_orig * side_nom);
+    source_modifier = int64(cap_add) * int64(side_den);
+    sink_modifier = int64(cap_add) * int64(side_nom);
+    internal_modifier = int64(cap_orig) * int64(side_den);
+    original_modifier = int64(cap_orig) * int64(side_den);
 
     %fprintf(2, 'Source modifier %d\n', source_modifier);
     %fprintf(2, 'Sink modifier %d\n', sink_modifier);
     %fprintf(2, 'Internal modifier %d\n', internal_modifier);
     %fprintf(2, 'Original modifier %d\n', original_modifier);
-
+    
     if (lamda > 0)
         source_modifier = int64(source_modifier / lamda);
         sink_modifier = int64(sink_modifier / lamda);
@@ -104,12 +113,15 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     end
     
+    % fprintf(2, 'Size of cut=%d\n', length(cut));
+    
     counter = counter + 1;
     if (flow == 0)
         fprintf(2, 'You disconnected: %f\n', flow);
     end 
     
-    % fprintf('flow: %d. weirdrat_num: %d. RHS: %d. weirdrat: %f\n', flow, weirdrat_num, double(bisec_vol) * source_modifier, weirdrat);
+    fprintf('flow: %d. weirdrat_num: %d. RHS: %d. Sink side: %d. weirdrat: %f\n', ...
+        flow, weirdrat_num, double(bisec_vol) * source_modifier, double(vol - bisec_vol) * sink_modifier, weirdrat);
     if(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
         found_flag = int8(1);
@@ -134,13 +146,12 @@ end
 % ONCE STOPPED, CONSTRUCT ROUTED UNION OF MATCHINGS - DO THIS AT PRECISION P
 if(nomatching_flag == 0)
    [match_num, match_den] = Farey(int64(weirdrat_num), weirdrat_den, p); % use Farey sequences to find best p-precision approximation to weirdrat
-   double(weirdrat_num);
 
 %    fprintf(2, 'Match_num: %f\n', match_num);
-    source_modifier = int64(match_num * side_nom);
-    sink_modifier = int64(match_num * side_den);
-    internal_modifier = int64(match_den * side_nom);
-    original_modifier = int64(match_den * side_nom);
+    source_modifier = int64(match_num) * side_nom;
+    sink_modifier = int64(match_num) * side_den;
+    internal_modifier = int64(match_den) * side_nom;
+    original_modifier = int64(match_den) * side_nom;
 
     if (lamda > 0)
         source_modifier = int64(source_modifier / lamda);
@@ -156,7 +167,8 @@ if(nomatching_flag == 0)
    matchrat = double(match_num)/double(match_den);
    if(~issparse(matching))
         fprintf('Matching is not sparse...\n');
-    end
+   end
+   fprintf(2, 'Size of cut=%d\n', length(cut));
 else
    matching = sparse(1:double(n), 1:double(n), 0);
    matchrat = 1;
