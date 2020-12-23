@@ -155,7 +155,7 @@ end
 
 %  INTIAL CERTIFICATE
 H = init*G;
-D =diag(sum(H));
+D = diag(sum(H));
 
 % INITIALIZE EXPANSION AND WEIRDEST RATIO TRACKER VARIABLES
 % MINEXP
@@ -273,6 +273,7 @@ for i=1:double(t)
     j = floor(n / 2) + 1;
     bisec=int64(index(1:floor(n/2)));
     bisec_vol = sum(weight(bisec));
+
     while bisec_vol < vol / 2.0
         bisec(end + 1) = int64(index(j));
         bisec_vol = bisec_vol + weight(index(j));
