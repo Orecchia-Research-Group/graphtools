@@ -17,14 +17,14 @@ void dt_print_op_stat(dynamic_tree_t* dTree) {
         tot_splay_cnt += dTree->d_nodes[i].splay_cnt;
         tot_expose_cnt += dTree->d_nodes[i].expose_cnt;
     }
-    printf("\n\n\n------------------------------------\n");
-    printf("Size of the dynamic tree = %ld\n", dTree->sz);
-    printf("Number of links = %ld\n", dTree->link_cnt);
-    printf("Number of cuts = %ld\n", dTree->cut_cnt);
-    printf("Number of rotations = %ld\n", tot_rot_cnt);
-    printf("Number of splay = %ld\n", tot_splay_cnt);
-    printf("Number of expose = %ld\n", tot_expose_cnt);
-    printf("\n------------------------------------\n\n\n");
+    fprintf(stderr, "\n\n\n------------------------------------\n");
+    fprintf(stderr, "Size of the dynamic tree = %ld\n", dTree->sz);
+    fprintf(stderr, "Number of links = %ld\n", dTree->link_cnt);
+    fprintf(stderr, "Number of cuts = %ld\n", dTree->cut_cnt);
+    fprintf(stderr, "Number of rotations = %ld\n", tot_rot_cnt);
+    fprintf(stderr, "Number of splay = %ld\n", tot_splay_cnt);
+    fprintf(stderr, "Number of expose = %ld\n", tot_expose_cnt);
+    fprintf(stderr, "\n------------------------------------\n\n\n");
 }
 
 dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node) {

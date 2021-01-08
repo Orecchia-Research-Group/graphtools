@@ -1092,7 +1092,7 @@ void hipr(
                             continue;
                         }
                         p->cur_node->current++; // added by Xifan
-                        
+
                         dt_link(p, p->cur_node, cur_arc->head, cur_arc);
                         link_flag = 1;
                         break;
@@ -1162,6 +1162,7 @@ void hipr(
                 k = k + 2;
 
             }
+            dt_print_op_stat(p);
             dt_cleanUp(p);
         }
         *nedges = k;
