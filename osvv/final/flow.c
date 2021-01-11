@@ -38,6 +38,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 /*#include <values.h>*/
 #define MAXLONG 1000000000
 
@@ -108,6 +109,9 @@ node *sentinelNode;        /* end of the node list marker */
 arc *stopA;                  /* used in forAllArcs */
 long workSinceUpdate = 0;      /* the number of arc scans since last update */
 float globUpdtFreq;          /* global update frequency */
+long PathLength = 0;
+long PathNumber = 0;
+long PathLengthSum = 0;
 
 /* macros */
 #define addedge(t, h, c)\
@@ -1018,6 +1022,10 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
 
     if (route_flag == 1) {
+	clock_t start, stop;
+	start = clock();
+
+
         long int minCap;
         long int matchingCapacity;
         long *reallocPtr;
@@ -1041,7 +1049,6 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             i->d = 0;
         }
 
-
         forAllArcs(source, a) {
             int na = nArc(a);
             source->d = -1;  /*mark on path for cycle detection. */
@@ -1052,10 +1059,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             if (cap[na] > 0) {
                 while (a->resCap < cap[na]) {
                     minCap = cap[na] - a->resCap;
-
-
+		    PathLength++;	
                     last = decomposePathInternal(a->head, &minCap);
-
+		    PathLength--;
 
                     a->resCap += minCap;
                     if (last != NULL) { /*// printf ( "%7ld %7ld %12ld\n",
@@ -1108,6 +1114,17 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         }
 
         *nedges = k;
+	double total_t;
+	stop = clock();
+	total_t = ((double)(stop-start))/CLOCKS_PER_SEC;
+	fprintf(stderr, "runtime of matching %f\n", total_t);
+	fflush(stderr);
+	double PathAverage;
+	fprintf(stderr, "PathNumber%li\n", PathNumber);
+	fflush(stderr);
+	PathAverage = ((double)(PathLengthSum))/PathNumber;
+	fprintf(stderr, "average path length %f\n", PathAverage);
+	fflush(stderr);
     }
 
     /*  fprintf(stderr, "rem tm: %f//\n",  timer() - t1);		*/
@@ -1385,10 +1402,13 @@ node *decomposePathInternal(node *n, long int *minCap) {
                 if (a->head == sink) {
                     a->resCap += *minCap;
                     n->d = 0;
+		    PathLengthSum+=PathLength;
+		    PathNumber++;
                     return n;
                 }
-
+		PathLength++;
                 i = decomposePathInternal(a->head, minCap);
+		PathLength--;
                 a->resCap = tempRes + *minCap;
                 if (((i == NULL) && (n->d == -2))) {
                     if (i == NULL)
