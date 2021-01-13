@@ -1022,8 +1022,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
 
     if (route_flag == 1) {
-	clock_t start, stop;
-	start = clock();
+	    clock_t start, stop;
+	    start = clock();
+	    PathNumber = 0;
 
 
         long int minCap;
@@ -1117,13 +1118,13 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 	double total_t;
 	stop = clock();
 	total_t = ((double)(stop-start))/CLOCKS_PER_SEC;
-	fprintf(stderr, "runtime of matching %f\n", total_t);
+	fprintf(stderr, "Runtime of matching: %7.3fs\n", total_t);
 	fflush(stderr);
 	double PathAverage;
-	fprintf(stderr, "PathNumber%li\n", PathNumber);
+	fprintf(stderr, "Path Number: %8li\n", PathNumber);
 	fflush(stderr);
 	PathAverage = ((double)(PathLengthSum))/PathNumber;
-	fprintf(stderr, "average path length %f\n", PathAverage);
+	fprintf(stderr, "Average path length: %11.6f\n", PathAverage);
 	fflush(stderr);
     }
 
