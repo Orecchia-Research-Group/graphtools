@@ -125,9 +125,9 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     if(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
         found_flag = int8(1);
-        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, weight, lamda); % COMPUTE NEW WEIRDRAT
+        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, int64(weight), lamda); % COMPUTE NEW WEIRDRAT
         % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
-        [newex_num, newex_den, newex] = cutexp(G, lamda, weight, cut, reciprocalCut);
+        [newex_num, newex_den, newex] = cutexp(G, lamda, int64(weight), cut, reciprocalCut);
         if(newex < ex)
             ex_num = newex_num;
             ex_den = int64(newex_den);
