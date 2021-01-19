@@ -8,6 +8,24 @@
 
 #define inf (0x1f1f1f1f1f1f1f1fL)
 
+void dt_print_op_stat(dynamic_tree_t* dTree) {
+    long tot_rot_cnt = 0;
+    long tot_splay_cnt = 0;
+    long tot_expose_cnt = 0;
+    for (int i = 0; i < dTree->sz; i++){
+        tot_rot_cnt += dTree->d_nodes[i].rot_cnt;
+        tot_splay_cnt += dTree->d_nodes[i].splay_cnt;
+        tot_expose_cnt += dTree->d_nodes[i].expose_cnt;
+    }
+    printf("\n\n\n------------------------------------\n");
+    printf("Size of the dynamic tree = %ld\n", dTree->sz);
+    printf("Number of links = %ld\n", dTree->link_cnt);
+    printf("Number of cuts = %ld\n", dTree->cut_cnt);
+    printf("Number of rotations = %ld\n", tot_rot_cnt);
+    printf("Number of splay = %ld\n", tot_splay_cnt);
+    printf("Number of expose = %ld\n", tot_expose_cnt);
+    printf("\n------------------------------------\n\n\n");
+}
 
 dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node) {
     dynamic_tree_t* dTree = calloc(1, sizeof(dynamic_tree_t));
@@ -21,6 +39,9 @@ dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node) {
     dTree->d_source = dt_to_d_node(dTree, dTree->source);
     dTree->cur_node = start_node;
     dTree->d_cur_node = dt_to_d_node(dTree, dTree->cur_node);
+
+    dTree->link_cnt = 0;
+    dTree->cut_cnt = 0;
     return dTree;
 }
 
@@ -30,6 +51,10 @@ void dt_initNode(dynamic_node_t* node, long i) {
     node->delmin = 0;
     node->delcost = inf;
     node->edge = NULL;
+
+    node->rot_cnt = 0;
+    node->splay_cnt = 0;
+    node->expose_cnt = 0;
 }
 
 void dt_cleanUp_d_node(dynamic_node_t* d_node, bool* flag, long parent_cost) {
@@ -83,6 +108,8 @@ bool dt_isroot(dynamic_node_t* node) {
  *     a     b              b     c
  */
 void dt_rotR (dynamic_node_t* p) {
+    p->rot_cnt++;
+
     dynamic_node_t* q = p->parent;
     dynamic_node_t* r = q->parent;
     dynamic_node_t* a = p->left;
@@ -126,6 +153,8 @@ void dt_rotR (dynamic_node_t* p) {
  *       b     c       a     b
  */
 void dt_rotL (dynamic_node_t* p) {
+    p->rot_cnt++;
+
     dynamic_node_t* q = p->parent;
     dynamic_node_t* r = q->parent;
     dynamic_node_t* a = q->left;
@@ -163,6 +192,7 @@ void dt_rotL (dynamic_node_t* p) {
 }
 
 void dt_splay(dynamic_node_t* p) {
+    p->splay_cnt++;
     while (!dt_isroot(p)) {
         dynamic_node_t* q = p->parent;
         if (dt_isroot(q)) {
@@ -200,6 +230,7 @@ void dt_splay(dynamic_node_t* p) {
 /* This makes node q the root of the virtual tree, and also q is the
    leftmost node in its splay tree*/
 void dt_expose(dynamic_node_t* q) {
+    q->expose_cnt++;
     dynamic_node_t* r = NULL;
     for (dynamic_node_t* p=q; p != NULL; p=p->parent) {
         dt_splay(p);
@@ -232,6 +263,7 @@ void dt_expose(dynamic_node_t* q) {
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q */
 void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
+    dTree->link_cnt++;
     dt_expose(p);
     if (p->right != NULL) {
         // p is not a root. Error
@@ -347,6 +379,7 @@ void dt_pUpdate(dynamic_node_t* p, long x) {
 }
 
 void dt_d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
+    dTree->cut_cnt++;
     dt_expose(p);
 
     dynamic_node_t* r = p->right;
