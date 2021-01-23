@@ -18,14 +18,14 @@ for i = 1 : length(eg2)
     for(k=1 : length(ptn))
 	    ptnname = ptn(i).name;
 	    ptnname = ptnname(1:end-3);
-	    if(eg2name == ptnname);
-		    eg2path = fullfile(eg2(i).folder, eg2(i).name);
-		    ptnpath = fullfile(ptn(i).folder, ptn(i).name);
-		    [avgNM, avgM, stdNM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber);
+	    if(eg2name == ptnname)
+            eg2path = fullfile(eg2(i).folder, eg2(i).name);
+            ptnpath = fullfile(ptn(i).folder, ptn(i).name);
+            [avgNM, avgM, stdNM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber);
 		    timeArr(i, 1) = avgNM;
-	    	    timeArr(i, 2) = stdNM;
-    		    timeArr(i, 3) = avgM;
-    	            timeArr(i, 4) = stdM;
+            timeArr(i, 2) = stdNM;
+            timeArr(i, 3) = avgM;
+            timeArr(i, 4) = stdM;
 		    break;
 	    end
     end
