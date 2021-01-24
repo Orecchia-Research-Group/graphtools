@@ -42,7 +42,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int *mask_cut;
     int *reciprocal_mask_cut;
     long *weight;
-    mxArray *exp;
 
     mwSize dims[] = {1, 1};
     long *temp;
@@ -105,7 +104,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     if (!mask_cut[row[j]])
                         cutedges += array_G[j] * lamda_inv;
             }
-            else {
+            else if (lamda != 0){
                 cutedges += weight[i];
             }
         }
