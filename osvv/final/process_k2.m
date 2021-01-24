@@ -35,6 +35,7 @@ end
 
 algos = {'Sweep Cut', 'Kernighan-Lin', 'METIS'};
 partitionExtensions = {'SweepCut', 'KernighanLin', 'metis'};
+color = [0 0 1; 1 0 0; 0 1 0];
 
 i = 1;
 graphFiles = dir(fullfile(graphDirectory, '*.eg2'));
@@ -42,11 +43,15 @@ for f=1:length(graphFiles)
     % Load graph;
     graphFilename = graphFiles(f).name;
     [~, datasetName, ~] = fileparts(graphFilename);
+%     if any(strcmp(datasetName, {'orkut', 'livejournal', 'youtube'}))
+%         fprintf('Skipping %s...\n', datasetName);
+%         continue;
+%     end
     fprintf('Processing %s.', datasetName);
     [G, n, m] = loadeg2graph(fullfile(graphDirectory, graphFilename));
     weight = full(sum(G));
     volume = sum(weight);
-    
+
     % Load embedding
     if embedding == 'spectral'
         vectorFilename = fullfile(inputDirectory, sprintf('%s.mat', datasetName));
@@ -72,38 +77,80 @@ for f=1:length(graphFiles)
         overlappingNodes = intersect(partitions{1}, partitions{2});
         overlap{i} = 100 * sum(weight(overlappingNodes)) / volume;
         
+        if (lambda{i} == 1) || (score{i} == 0)
+            fig = figure;
+            hold on;
+            colorIndex = ones(n, 1);
+            colorIndex(partitions{2}, :) = 2;
+            colorIndex(overlappingNodes, :) = 3;
+            scatter(vectors(:,2), vectors(:, 3), 4, color(colorIndex, :), 'filled');
+            axis off;
+            if lambda{i} == 1
+                title(sprintf('Non overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_nonoverlapping.png', dataset{i}, algorithm{i})));
+            else
+                title(sprintf('Overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_overlapping.png', dataset{i}, algorithm{i})));
+            end
+            hold off;
+            close(fig);
+        end
+
         i = i + 1;
     end
-    
+
     for j=1:length(algos)
         partitionFilename = fullfile(inputDirectory, ...
             sprintf('%s_%s_runOnce_*.ptn', datasetName, partitionExtensions{j}));
         competingResultFiles = dir(partitionFilename);
         for f_cmp=1:length(competingResultFiles)
-            resultFilename = fullfile(resultFiles(f_cmp).folder, resultFiles(f_cmp).name);
+            resultFilename = fullfile(competingResultFiles(f_cmp).folder, competingResultFiles(f_cmp).name);
             [~, filename, ~] = fileparts(resultFilename);
-            filenamePieces = split(filename, '_');        
+            filenamePieces = split(filename, '_');
             partitions = readPtn(resultFilename);
             
             dataset{i} = datasetName;
-            algorithm{i} = filenamePieces{2};
+            algorithm{i} = algos{j};
             lambda{i} = 100 / str2double(filenamePieces{4});
             [~, ~, score{i}] = cutexp(G, 0, int64(weight), partitions{1}, partitions{2});
             overlappingNodes = intersect(partitions{1}, partitions{2});
             overlap{i} = 100 * sum(weight(overlappingNodes)) / volume;
 
+            if (lambda{i} == 1) || (score{i} == 0)
+                fig = figure;
+                hold on;
+                colorIndex = ones(n, 1);
+                colorIndex(partitions{2}, :) = 2;
+                colorIndex(overlappingNodes, :) = 3;
+                scatter(vectors(:,2), vectors(:, 3), 4, color(colorIndex, :), 'filled');
+                axis off;
+                if lambda{i} == 1
+                    title(sprintf('Non overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                    exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_nonoverlapping.png', dataset{i}, algorithm{i})));
+                else
+                    title(sprintf('Overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                    exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_overlapping.png', dataset{i}, algorithm{i})));
+                end
+                hold off;
+                close(fig);
+            end
+
             i = i + 1;
         end
     end
-       
+
     fprintf(' Total results read %d.\n', i-1);
 end
 
 
 %% Plot results
 algs = {'ORC-SDP', algos{:}};
+color = {'b', 'r', 'g', 'k'};
+marker = {'o', 's', 'd', '+'};
+linestyle = {'-', ':', '-.', '--'};
+
 for ds=unique(dataset)
-    figure;
+    fig = figure;
     hold on;
     
     algMask = false(1, length(algs));
@@ -119,17 +166,17 @@ for ds=unique(dataset)
         ol = [overlap{mask}];
         la = [lambda{mask}];
         [~, id] = sort(la, 'descend');
-        plot(ol(id), sc(id));
+        plot(ol(id), sc(id), 'Color', color{k}, 'LineStyle', linestyle{k}, 'Marker', marker{k}, 'MarkerFaceColor', color{k});
+        k = k + 1;
     end
     
-    yl = ylim();
     xlabel('Overlap (%)');
     ylabel('Conductance');
-    t = title(sprintf('Conductance vs Overlap (%%) for %s', ds{1}));
-    %t.Position(2) = t.Position(2) + 0.05 * (yl(2) - yl(1));
+    title(sprintf('Conductance vs Overlap (%%) for %s', ds{1}));
     legend({algs{algMask}});
     exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_lambda.png', ds{1})));
     hold off;
 
 end
+
 end
