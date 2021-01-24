@@ -24,17 +24,17 @@ def create_graph(nodes, cluster_prob, p, q, e):
 
     gmean = np.sqrt(np.outer(cluster_sizes, cluster_sizes))
 
-    probability_matrix = np.array([[p, e, p], [e, q, q], [p, q, p + q]]) * np.log(gmean) / (2 * gmean)
+    probability_matrix = np.array([[p, e, p], [e, p, p], [p, p, q]]) * np.log(gmean) / (2 * gmean)
     print(probability_matrix)
     G = nx.stochastic_block_model(cluster_sizes, probability_matrix)
     return G
 
 
-nodes = [10000, 30000, 100000, 300000, 1000000]
+nodes = [10000, 30000, 100000]
 e = 0.005
 for n in nodes:
     for cluster_probs in np.array([(0.49, 0.49, 0.02), (0.74, 0.24, 0.02)]):
-        for p, q in [(2, 2), (3, 2), (3, 4), (5, 3), (10, 4)]:
+        for p, q in [(4, 2), (4, 4), (4, 6), (4, 8)]:
             for i in range(3):
                 G = create_graph(n, cluster_probs, p, q, e)
                 m = nx.number_of_edges(G)
