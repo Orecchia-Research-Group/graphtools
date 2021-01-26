@@ -122,6 +122,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         else weight_recip += weight[i];
     }
 
+    if (abs(weight_bisec / (double) weight_recip - 1) < 1e-3) {
+        weight_bisec = weight_recip = 1;
+    }
+
+
     /* COMPUTE WEIRD RATIO*/
     /* COMPUTE EDGES CUT */
 
