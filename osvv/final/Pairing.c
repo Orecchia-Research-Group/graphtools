@@ -74,9 +74,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *heads;
     long *weights;
     long *degrees;
-    long sideWeight[2] = {0, 0};
-    long sideNom = 1;
-    long sideDen = 1;
 
     long i;
     long j;
@@ -105,7 +102,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mwSize dims[] = {1, 1};
     long *temp_a;
 
-    float t1, t2;
+    // float t1, t2;
     int route_flag;
 
     /*  t1 =timer();*/
@@ -124,6 +121,14 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     original_modifier = ((long *) mxGetPr(prhs[5]))[0];
 
     if (nrhs > 6) internal_modifier = ((long *) mxGetPr(prhs[6]))[0];
+    else internal_modifier = 1;
+
+#ifdef DEBUG
+    fprintf(stderr, "Pairing: source_modifier=%ld\n", source_modifier);
+    fprintf(stderr, "Pairing: sink_modifier=%ld\n", sink_modifier);
+    fprintf(stderr, "Pairing: original_modifier=%ld\n", original_modifier);
+    fprintf(stderr, "Pairing: internal_modifier=%ld\n", internal_modifier);
+#endif
 
     N = mxGetM(G);
     mexCallMATLAB(1, &temp, 1, &G, "nnz");
@@ -222,8 +227,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
          route_flag);
     /*  t2 = timer();*/
 
-
-
+#ifdef DEBUG
+    fprintf(stderr, "Flow returned: %ld\n", fflow);
+#endif
 
     /* INITIALIZE MATCHING */
     if (route_flag == 1) {

@@ -60,7 +60,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 /* #define PRINT_CUT */
 #define CHECK_SOLUTION
 
-int loadflowproblem
+long loadflowproblem
         (
                 long n,
                 long m,
@@ -97,7 +97,7 @@ node *sink;                /* sink node pointer */
 long dMax;                 /* maximum label */
 long aMax;                 /* maximum actie node label */
 long aMin;                 /* minimum active node label */
-double flow;                 /* flow value */
+long flow;                 /* flow value */
 long pushCnt = 0;           /* number of pushes */
 long relabelCnt = 0;       /* number of relabels */
 long updateCnt = 0;       /* number of updates */
@@ -108,6 +108,7 @@ node *sentinelNode;        /* end of the node list marker */
 arc *stopA;                  /* used in forAllArcs */
 long workSinceUpdate = 0;      /* the number of arc scans since last update */
 float globUpdtFreq;          /* global update frequency */
+long totalNoOutgoingFlowErrors;
 
 /* macros */
 #define addedge(t, h, c)\
@@ -214,7 +215,7 @@ node *i_next, *i_prev;
 
 /* allocate datastructures, initialize related variables */
 
-int allocDS() {
+long allocDS() {
 
     nm = ALPHA * n + m;
     /*
@@ -236,7 +237,7 @@ int allocDS() {
 
 void init() {
     node *i;        /* current node */
-    int overflowDetected;
+    long overflowDetected;
     bucket *l;
     arc *a;
 #ifdef EXCESS_TYPE_LONG
@@ -592,7 +593,7 @@ void stageTwo()
 
 /* gap relabeling */
 
-int gap(emptyB)
+long gap(emptyB)
         bucket *emptyB;
 
 {
@@ -600,7 +601,7 @@ int gap(emptyB)
     bucket *l;
     node *i;
     long r;           /* index of the bucket before l  */
-    int cc;          /* cc = 1 if no nodes with positive excess before
+    long cc;          /* cc = 1 if no nodes with positive excess before
 		      the gap */
 
     gapCnt++;
@@ -825,11 +826,10 @@ void stageOne() {
     } /* end of the main loop */
 
     flow = sink->excess;
-
 }
 
 
-node *decomposePathInternal(node *n, long int *minCap);
+node *decomposePathInternal(node *n, long *minCap);
 
 
 void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag)
@@ -857,27 +857,12 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     long ni, na;
 #endif
     node *j;
-    int cc;
+    long cc;
 #ifdef CHECK_SOLUTION
     excessType sum;
     bucket *l;
 #endif
-    long loop_i;
-
-    /* fprintf(stderr,"calling hi_pr\n"); */
-
-
-    /* t1 = timer();
-
-   t2 = t1;
-    */
-
-
     loadflowproblem(ninput, minput, tails, heads, weights, s, t, &n, &m, &nodes, &arcs, &cap, &source, &sink, &nMin);
-
-
-    /*  fprintf(stderr,"nodes:       %10ld\nc arcs:        %10ld\nc\n", n, m); */
-
     cc = allocDS();
     if (cc) {
         fprintf(stderr, "Allocation error\n");
@@ -887,25 +872,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     init();
     stageOne();
 
-    /*
-    t2 = timer() - t2;
-    */
-
-    /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
-
 #ifndef CUT_ONLY
     stageTwo();
-
-    /*
-    t1 = timer() - t1;
-
-    fprintf (stderr,"\nc time:        %10.2f\n", t1);
-    */
 #endif
-    /*
-    fprintf (stderr,"c cut tm:      %10.2f\n", t2);
-    */
-
 
 #ifdef CHECK_SOLUTION
 
@@ -1018,20 +987,37 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     /* RETRIEVE FLOW */
     *fflow = (long) flow;
-
+#ifdef DEBUG
+    fprintf(stderr, "hipr: flow=%ld\n", flow);
+    /// Print flow on all edges
+    /*forAllNodes(i) {
+        long s = 0;
+        forAllArcs(i, a) {
+            long na = nArc(a);
+            if (cap[na] == 0) continue;
+            long local_flow = cap[na] - a->resCap;
+            s += local_flow;
+            if (i == source)
+                printf("%2ld -> %2ld: %ld\n", nNode(i), nNode(a->head), local_flow);
+        }
+        if (s > 0)
+            printf("Node: %2ld outflow: %ld\n", nNode(i), s);
+    }*/
+#endif
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
 
     if (route_flag == 1) {
-        long int minCap;
-        long int matchingCapacity;
+        long minCap;
+        long matchingCapacity;
         long *reallocPtr;
 
         node *last;
         arc *stopA;
 
 
-        int k;
+        long k;
 
+        totalNoOutgoingFlowErrors = 0;
         /* INITIALIZE MATCHING ARRAYS */
         matchingCapacity = 0;
         k = 0;
@@ -1042,7 +1028,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
 
         forAllArcs(source, a) {
-            int na = nArc(a);
+            long na = nArc(a);
             source->d = -1;  /*mark on path for cycle detection. */
 
             if (cap[na] > 0) {
@@ -1103,8 +1089,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         *nedges = k;
     }
 
-    /*  fprintf(stderr, "rem tm: %f//\n",  timer() - t1);		*/
-
+    if (totalNoOutgoingFlowErrors > 0) {
+        fprintf(stderr, "There were %ld No Outgoing Flow Errors.\n", totalNoOutgoingFlowErrors);
+    }
 
     /* Free data structures */
     free(nodes - nMin);               /* address of the array of nodes */ /*MEMORY LEAK*/
@@ -1115,7 +1102,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
 
 
-int loadflowproblem(n, m, tails, heads, weights, s, t,
+long loadflowproblem(n, m, tails, heads, weights, s, t,
                     n_ad, m_ad, nodes_ad, arcs_ad, cap_ad,
                     source_ad, sink_ad, node_min_ad)
 /* input */
@@ -1345,16 +1332,30 @@ int loadflowproblem(n, m, tails, heads, weights, s, t,
 }
 
 
-node *decomposePathInternal(node *n, long int *minCap) {
+node *decomposePathInternal(node *n, long *minCap) {
     node *i;
     arc *a;
-    arc *stopA;
 
     if (n->d < 0) {
         if (n->d == -2) {
             printf("Cycle detection software error.\n");
         }
         n->d = -2;
+        i = n;
+        long cycleFlow = cap[nArc(i->current)] - i->current->resCap;
+        do {
+            i = i->current->head;
+            long currentFlow = cap[nArc(i->current)] - i->current->resCap;
+            if (cycleFlow < currentFlow) {
+                cycleFlow = currentFlow;
+            }
+        } while (i->current->head != n);
+
+        i = n;
+        do {
+            i->current->resCap -= cycleFlow;
+            i = i->current->head;
+        } while (i != n);
         return NULL;
     }
 
@@ -1366,15 +1367,23 @@ node *decomposePathInternal(node *n, long int *minCap) {
         return n;
     }
 
-    forAllArcs(n, a) {
-        int na = nArc(a);
+    for (; n->current != (n + 1)->first; n->current++) {
+        a = n->current;
+        long na = nArc(a);
         if (cap[na] > 0) {
+#ifdef DEBUG
+            if (a->resCap < 0) {
+                fprintf(stderr, "ERROR: Node %ld has edge to %ld with negative residual capacity %ld\n", nNode(n), nNode(a->head), a->resCap);
+            }
+#endif
             while (a->resCap < cap[na]) {
-                int thisCap = cap[na] - a->resCap;
-                int tempRes = a->resCap;
+                long thisCap = cap[na] - a->resCap;
 
-                if (*minCap > thisCap)
+                if (*minCap > thisCap) {
                     *minCap = thisCap;
+                } else {
+                    thisCap = *minCap;
+                }
                 if (a->head == sink) {
                     a->resCap += *minCap;
                     n->d = 0;
@@ -1382,18 +1391,24 @@ node *decomposePathInternal(node *n, long int *minCap) {
                 }
 
                 i = decomposePathInternal(a->head, minCap);
-                a->resCap = tempRes + *minCap;
-                if (((i == NULL) && (n->d == -2))) {
-                    if (i == NULL)
+                // Somehow found a cycle. Should have been removed in stageTwo()
+                if (i == NULL) {
+                    *minCap = thisCap;
+                    if (n->d == -2) {
                         n->d = -1;
+                    } else {
+                        n->d = 0;
+                        return i;
+                    }
                 } else {
+                    a->resCap += *minCap;
                     n->d = 0;
                     return i;
                 }
             }
         }
     }
-    printf("ERROR: should never call decomposePathInternal on node with no outgoing flow!\n");
+    totalNoOutgoingFlowErrors++;
     n->d = 0;
     return n;
 }
