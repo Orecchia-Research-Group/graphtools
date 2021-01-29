@@ -17,9 +17,11 @@ mexFunction INPUTS;
    nlhs = 3
 
 */
+#include <stdio.h>
 #include <math.h>
 #include "mex.h"
 #include "matrix.h"
+#include "farey.h"
 
 #define abs(x) (x) > 0 ? (x) : -(x)
 
@@ -49,6 +51,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     long *weight;
     long weight_bisec = 0;
     long weight_recip = 0;
+    long w_bisec;
+    long w_recip;
+    long p = 1000;
     long i, j;
     long n;
     double cutedges = 0;
@@ -122,31 +127,39 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         else weight_recip += weight[i];
     }
 
-    if (abs(weight_bisec / (double) weight_recip - 1) < 1e-3) {
-        weight_bisec = weight_recip = 1;
+    w_bisec = weight_bisec;
+    w_recip = weight_recip;
+    
+    if (abs(((double)weight_bisec) /  weight_recip - 1) < 1e-3) {
+        w_bisec = w_recip = 1;
+    } else {
+        farey(weight_recip, weight_bisec, p, &w_recip, &w_bisec);
     }
-
+#ifdef DEBUG
+    fprintf(stderr, "Initial vol(L)=%ld vol(R)=%ld ratio=%lf\n", weight_bisec, weight_recip, abs(((double)weight_bisec) /  weight_recip - 1));
+    fprintf(stderr, "vol(L)=%ld vol(R)=%ld\n", w_bisec, w_recip);
+#endif
 
     /* COMPUTE WEIRD RATIO*/
     /* COMPUTE EDGES CUT */
 
     for (i = 0; i < n; i++) {
         if (mask_cut[i] && mask_bisec[i]) {                 // π(S && A)
-            denominator += weight[i] * lamda_inv * weight_recip;
+            denominator += weight[i] * lamda_inv * w_recip;
         }
 
         if (mask_cut[i] && (!mask_bisec[i]) && (!reciprocal_mask_cut[i])) {     // - π(L && !A), L = S \ T
-            denominator -= weight[i] * lamda_inv * weight_bisec;
+            denominator -= weight[i] * lamda_inv * w_bisec;
         }
 
         if (mask_cut[i] && reciprocal_mask_cut[i] && (lamda > 0)) {     // λ π(C)
-            cutedges += weight[i] * weight_recip;
+            cutedges += weight[i] * w_recip;
         }
 
         if (mask_cut[i] && !reciprocal_mask_cut[i]) {                   // w(E(L, R))
             for (j = col[i]; j < col[i + 1]; j++) {
                 if (!mask_cut[row[j]]) {
-                    cutedges += array_G[j] * lamda_inv * weight_recip;
+                    cutedges += array_G[j] * lamda_inv * w_recip;
                 }
             }
         }
@@ -154,6 +167,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
             printf("Overflow of cutedges detected\n");
         }
     }
+
+#ifdef DEBUG
+    fprintf(stderr, "cutedges=%lf denominator=%ld\n", cutedges, denominator);
+#endif
 
     // denominator = e2 * size_intersect - size_cut + (size_cut + reciprocal_size_cut - n - size_overlap_intersect);
     if (denominator < 0)
