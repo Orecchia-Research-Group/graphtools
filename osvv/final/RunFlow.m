@@ -80,7 +80,7 @@ found_flag = int8(1);
 counter = 0;
 
 vol = sum(weight);
-if abs(2 * bisec_vol - vol) / bisec_vol < 1e-3
+if abs(2 * bisec_vol - vol) / bisec_vol < 1e-4
     side_nom = int64(1);
     side_den = int64(1);
 else
@@ -98,16 +98,15 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     sink_modifier = int64(cap_add) * int64(side_nom);
     internal_modifier = int64(cap_orig) * int64(side_den);
     original_modifier = int64(cap_orig) * int64(side_den);
-
-    %fprintf(2, 'Source modifier %d\n', source_modifier);
-    %fprintf(2, 'Sink modifier %d\n', sink_modifier);
-    %fprintf(2, 'Internal modifier %d\n', internal_modifier);
-    %fprintf(2, 'Original modifier %d\n', original_modifier);
     
     if (lamda > 0)
         source_modifier = int64(source_modifier / lamda);
         sink_modifier = int64(sink_modifier / lamda);
         original_modifier = int64(original_modifier / lamda);
+        % fprintf(2, 'Source modifier %d\n', source_modifier);
+        % fprintf(2, 'Sink modifier %d\n', sink_modifier);
+        % fprintf(2, 'Internal modifier %d\n', internal_modifier);
+        % fprintf(2, 'Original modifier %d\n', original_modifier);
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -121,7 +120,7 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
     end 
     
     fprintf('flow: %d. weirdrat_num: %d. RHS: %d. Sink side: %d. weirdrat: %f\n', ...
-        flow, weirdrat_num, double(bisec_vol) * source_modifier, double(vol - bisec_vol) * sink_modifier, weirdrat);
+        flow, weirdrat_num, (bisec_vol) * source_modifier, (vol - bisec_vol) * sink_modifier, weirdrat);
     if(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
         found_flag = int8(1);
@@ -141,12 +140,16 @@ while(found_flag) % WHILE BETTER WEIRDRAT CUT EXISTS
         found_flag = int8(0); 
     end
 end
-     
-	fprintf(2, 'Number of maxflows: %d. ', counter + 1);
+
+if(weirdrat_num == 0)
+    error('RunFlow: ratio reduced to zero!');
+end
+fprintf(2, 'Number of maxflows: %d. ', counter + 1);
 % ONCE STOPPED, CONSTRUCT ROUTED UNION OF MATCHINGS - DO THIS AT PRECISION P
 if(nomatching_flag == 0)
-   [match_num, match_den] = Farey(int64(weirdrat_num), weirdrat_den, p); % use Farey sequences to find best p-precision approximation to weirdrat
-
+   %[match_num, match_den] = Farey(int64(weirdrat_num), weirdrat_den, p); % use Farey sequences to find best p-precision approximation to weirdrat
+    match_num = int64(weirdrat_num);
+    match_den = int64(weirdrat_den);
 %    fprintf(2, 'Match_num: %f\n', match_num);
     source_modifier = int64(match_num) * side_nom;
     sink_modifier = int64(match_num) * side_den;
@@ -157,11 +160,19 @@ if(nomatching_flag == 0)
         source_modifier = int64(source_modifier / lamda);
         sink_modifier = int64(sink_modifier / lamda);
         original_modifier = int64(original_modifier / lamda);
+        % fprintf(2, 'Source modifier %d\n', source_modifier);
+        % fprintf(2, 'Sink modifier %d\n', sink_modifier);
+        % fprintf(2, 'Internal modifier %d\n', internal_modifier);
+        % fprintf(2, 'Original modifier %d\n', original_modifier);
         [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     end
-   
+    matchingSum = sum(int64(full(sum(matching))));
+    if 2 * flow ~= matchingSum
+        fprintf(2, 'Warning: flow is %d, but matching has volume %d\n', flow, matchingSum / 2);
+    end
+   fprintf(2, 'Matching ended. ');
    % MATCHING SCALING
    matching = matching/double(match_num);
    matchrat = double(match_num)/double(match_den);
