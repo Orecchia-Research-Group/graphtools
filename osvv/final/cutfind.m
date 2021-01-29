@@ -112,6 +112,9 @@ end
 % Mixed cut or edge cut?
 if (size(varargin, 2) > 0)
     lamda = varargin{1};
+    if lamda > 1
+        error('Lambda needs to be less than or equal to 1');
+    end
 else
     lamda = -1.0;
 end
