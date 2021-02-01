@@ -6,8 +6,11 @@ files = dir(fullfile(inputDirectory, '*.eg2'));
 for f=1:length(files)
     [~, dataset, ~] = fileparts(files(f).name);
     fprintf('Processing %s...\n', dataset);
-    [G, n, m] = loadeg2graph(fullfile(files(f).folder, files(f).name));
     outfile = fullfile(inputDirectory, sprintf('%s.metis', dataset));
+    if isfile(outfile)
+        continue;
+    end
+    [G, n, m] = loadeg2graph(fullfile(files(f).folder, files(f).name));
     fOut = fopen(outfile, 'w');
     weight = int64(full(sum(G)));
     [column, row, value] = find(G);
