@@ -21,6 +21,7 @@ OUTPUTS:
  if no matching is required by MATLAB the flow computation does not waste time computing it.
 */
 
+#include <string.h>
 #include "mex.h"
 #include "matrix.h"
 #include "timer.h"
@@ -44,7 +45,8 @@ void hipr
                 long **mweights,
                 long *nedges,
                 long *fflow,
-                int route_flag
+                int route_flag,
+                long matching_index
         );
 
 
@@ -85,6 +87,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long nedges;
     long fflow;
     long size_cut;
+    long matching_index = 0;
 
     mxArray *matching;
     mxArray *cut;
@@ -99,7 +102,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /*  t1 =timer();*/
 
-    if (nrhs != 4 || nlhs > 3 || nlhs < 2)
+    if (nrhs < 4 || nrhs > 5 || nlhs > 3 || nlhs < 2)
         mexErrMsgTxt("Error in usage of Pairing.\n");
 
     /* EXTRACT DATA FROM MATLAB */
@@ -108,6 +111,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     size_bisec = mxGetM(prhs[1]);
     cap_add = ((long *) mxGetPr(prhs[2]))[0];
     cap_orig = ((long *) mxGetPr(prhs[3]))[0];
+    if (nrhs > 4) {
+        char *matching_algorithm = mxArrayToString(prhs[4]);
+        if (!strcmp(matching_algorithm, "dinic"))
+            matching_index = 0;
+        else if (!strcmp(matching_algorithm, "dynamic"))
+            matching_index = 1;
+        else
+            mexErrMsgTxt("Error in recognizing the matching algorithm");
+    }
+
 
     N = mxGetM(G);
     mexCallMATLAB(1, &temp, 1, &G, "nnz");
@@ -172,7 +185,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /*  t1 = timer() - t1;*/
     hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
-         route_flag);
+         route_flag, matching_index);
     /*  t2 = timer();*/
 
 

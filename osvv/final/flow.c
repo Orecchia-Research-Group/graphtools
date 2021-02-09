@@ -870,7 +870,8 @@ void hipr(
         long **mweights,
         long *nedges,
         long *fflow,
-        int route_flag)
+        int route_flag,
+        long matching_index)
 {
 #if (defined(PRINT_FLOW) || defined(CHECK_SOLUTION))
     node *i;
@@ -1041,6 +1042,7 @@ void hipr(
 
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
     if (route_flag == 1) {
+        long minCap;
         long int matchingCapacity;
         long *reallocPtr;
 
@@ -1057,121 +1059,180 @@ void hipr(
         matchingCapacity = 0;
         k = 0;
 
-        node* mhead;
-        node* mtail;
+        node *mhead;
+        node *mtail;
         long mweight;
-        dynamic_tree_t *p;
 
-        while(source->excess != 0) {
-            long sink_excess = 0;
+        dynamic_tree_t *p;
+        switch (matching_index) {
+            case 0: ;
+            fprintf(stderr, "Starting dinic matching\n");
+            node *last;
+            arc *stopA;
+            /* INITIALIZE MATCHING ARRAYS */
             forAllNodes(i) {
-                forAllArcs(i, a) {
-                    long na = nArc(a);
-                    if ((a->cap > 0) && (a->head == sink)) {
-                        sink_excess += cap[na] - a->resCap;
+                i->d = 0;
+            }
+
+            forAllArcs(source, a) {
+                int na = nArc(a);
+                source->d = -1;  /*mark on path for cycle detection. */
+                if (cap[na] > 0) {
+                    while (a->resCap < cap[na]) {
+                        minCap = cap[na] - a->resCap;
+                        last = decomposePathInternal(a->head, &minCap);
+                        a->resCap += minCap;
+                        if (last != NULL) {
+                            if (k >= matchingCapacity) {
+                                if (!matchingCapacity) matchingCapacity = 2 * n;
+                                else matchingCapacity = 2 * matchingCapacity;
+                                reallocPtr = *mheads;
+                                *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+                                if (NULL == *mheads) {
+                                    free(reallocPtr);
+                                    fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                    exit(1);
+                                }
+
+                                reallocPtr = *mtails;
+                                *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+                                if (NULL == *mtails) {
+                                    free(reallocPtr);
+                                    fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                    exit(1);
+                                }
+
+                                reallocPtr = *mweights;
+                                *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+                                if (NULL == *mweights) {
+                                    free(reallocPtr);
+                                    fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                                    exit(1);
+                                }
+                            }
+
+                            (*mheads)[k] = nNode(a->head);
+                            (*mtails)[k] = nNode(last);
+                            (*mweights)[k] = minCap;
+
+                            (*mtails)[k + 1] = nNode(a->head);
+                            (*mheads)[k + 1] = nNode(last);
+                            (*mweights)[k + 1] = minCap;
+
+
+                            k = k + 2;
+                        } else {
+                            printf("cycle with source detected marked %ld should be -2\n", source->d);
+                            source->d = -1;
+                        }
+
                     }
                 }
             }
+            fprintf(stderr, "Finished dinic matching\n");
+            break;
+        case 1: ;
+            while (source->excess != 0) {
 
-            forAllNodes(i) {
-                i->d = -1;
-                i->current = i->first;
-            }
-            bfs();
+                forAllNodes(i) {
+                    i->d = -1;
+                    i->current = i->first;
+                }
+                bfs();
 
-            p = dt_init(n, nodes, source);
-            while (source->current < (source + 1)->first) {
-                while (p->cur_node != sink) {
-                    int link_flag = 0;
-                    for (; p->cur_node->current < (p->cur_node + 1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
-                        arc* cur_arc = p->cur_node->current;
-                        if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
+                p = dt_init(n, nodes, source);
+                while (source->current < (source + 1)->first) {
+                    while (p->cur_node != sink) {
+                        int link_flag = 0;
+                        for (; p->cur_node->current < (p->cur_node +
+                                                       1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
+                            arc *cur_arc = p->cur_node->current;
+                            if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
 
-                        if ((cur_arc->cap == cur_arc->resCap) ||
-                            (p->cur_node->d + 1 != cur_arc->head->d)) {
-                            continue;
-                        }
-                        p->cur_node->current++; // added by Xifan
+                            if ((cur_arc->cap == cur_arc->resCap) ||
+                                (p->cur_node->d + 1 != cur_arc->head->d)) {
+                                continue;
+                            }
+                            p->cur_node->current++; // added by Xifan
 
-                        dt_link(p, p->cur_node, cur_arc->head, cur_arc);
-                        link_flag = 1;
-                        break;
-                    }
-                    if (link_flag == 1) {
-                        continue;
-                    }
-                    if (p->cur_node->current == (p->cur_node + 1)->first) {             // if no suitable edges cut tail
-                        node* previous;
-                        if ((previous = dt_before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
-                                                                                        // The alternative is that p is the source
-                            dt_cut(p, previous);
-                            // following line commented out by Xifan
-                            // p->cur_node->current++; // TODO: this update is problematic. It should be previous->current++
-                        } else {
+                            dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+                            link_flag = 1;
                             break;
                         }
+                        if (link_flag == 1) {
+                            continue;
+                        }
+                        if (p->cur_node->current ==
+                            (p->cur_node + 1)->first) {             // if no suitable edges cut tail
+                            node *previous;
+                            if ((previous = dt_before(p, p->cur_node)) !=
+                                NULL) {              // Checks that a previous exists.
+                                // The alternative is that p is the source
+                                dt_cut(p, previous);
+                                // following line commented out by Xifan
+                                // p->cur_node->current++; // TODO: this update is problematic. It should be previous->current++
+                            } else {
+                                break;
+                            }
+                        }
                     }
+
+                    if (p->cur_node != sink) {
+                        break;
+                    }
+
+                    dt_findPath(p, &mhead, &mtail, &mweight);
+
+                    if (!mweight) continue;
+
+                    source->excess -= mweight;
+
+                    if (k >= matchingCapacity) {
+                        if (!matchingCapacity) matchingCapacity = 2 * n;
+                        else matchingCapacity = 2 * matchingCapacity;
+                        reallocPtr = *mheads;
+                        *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+                        if (NULL == *mheads) {
+                            free(reallocPtr);
+                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                            exit(1);
+                        }
+
+                        reallocPtr = *mtails;
+                        *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+                        if (NULL == *mtails) {
+                            free(reallocPtr);
+                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                            exit(1);
+                        }
+
+                        reallocPtr = *mweights;
+                        *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+                        if (NULL == *mweights) {
+                            free(reallocPtr);
+                            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+                            exit(1);
+                        }
+                    }
+
+                    (*mheads)[k] = nNode(mhead);
+                    (*mtails)[k] = nNode(mtail);
+                    (*mweights)[k] = mweight;
+
+                    (*mtails)[k + 1] = nNode(mhead);
+                    (*mheads)[k + 1] = nNode(mtail);
+                    (*mweights)[k + 1] = mweight;
+
+                    k = k + 2;
+
                 }
-
-                if (p->cur_node != sink) {
-                    break;
-                }
-
-                dt_findPath(p, &mhead, &mtail, &mweight);
-
-                if(!mweight) continue;
-
-                source->excess -= mweight;
-
-                if (k >= matchingCapacity) {
-                    if (!matchingCapacity) matchingCapacity = 2 * n;
-                    else matchingCapacity = 2 * matchingCapacity;
-                    reallocPtr = *mheads;
-                    *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
-                    if (NULL == *mheads) {
-                        free(reallocPtr);
-                        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                        exit(1);
-                    }
-
-                    reallocPtr = *mtails;
-                    *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
-                    if (NULL == *mtails) {
-                        free(reallocPtr);
-                        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                        exit(1);
-                    }
-
-                    reallocPtr = *mweights;
-                    *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
-                    if (NULL == *mweights) {
-                        free(reallocPtr);
-                        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                        exit(1);
-                    }
-                }
-
-                (*mheads)[k] = nNode(mhead);
-                (*mtails)[k] = nNode(mtail);
-                (*mweights)[k] = mweight;
-
-                (*mtails)[k + 1] = nNode(mhead);
-                (*mheads)[k + 1] = nNode(mtail);
-                (*mweights)[k + 1] = mweight;
-
-                k = k + 2;
-
+                dt_print_op_stat(p);
+                dt_cleanUp(p);
             }
-            dt_print_op_stat(p);
-            dt_cleanUp(p);
+            break;
         }
         *nedges = k;
     }
-
-
-    /*  fprintf(stderr, "rem tm: %f//\n",  timer() - t1);		*/
-
-
     /* Free data structures */
     free(nodes - nMin);               /* address of the array of nodes */ /*MEMORY LEAK*/
     free(arcs);             /* address of the array of arcs */
@@ -1457,12 +1518,6 @@ node *decomposePathInternal(node *n, long int *minCap) {
                     if (i == NULL)
                         n->d = -1;
                 } else {
-                    /*
-                    if (i==NULL)
-                      {
-                        printf ("Cancelling cycle\n");
-                      }
-                    */
                     n->d = 0;
                     return i;
                 }
