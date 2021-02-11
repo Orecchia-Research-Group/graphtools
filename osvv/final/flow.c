@@ -1134,11 +1134,11 @@ void hipr(
         case 1: ;
             while (source->excess != 0) {
 
-                forAllNodes(i) {
+                /*forAllNodes(i) {i
                     i->d = -1;
                     i->current = i->first;
                 }
-                bfs();
+                bfs();*/
 
                 p = dt_init(n, nodes, source);
                 while (source->current < (source + 1)->first) {
@@ -1149,8 +1149,8 @@ void hipr(
                             arc *cur_arc = p->cur_node->current;
                             if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
 
-                            if ((cur_arc->cap == cur_arc->resCap) ||
-                                (p->cur_node->d + 1 != cur_arc->head->d)) {
+                            if ((cur_arc->cap == cur_arc->resCap)){// ||
+                                //(p->cur_node->d + 1 != cur_arc->head->d)) {
                                 continue;
                             }
                             p->cur_node->current++; // added by Xifan
