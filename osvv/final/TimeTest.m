@@ -30,7 +30,7 @@
 %    matrix (double) runTimeArr - matrix of runtimes
 %
 
-function [avgNM, avgM, stdNM, stdM] = TimeTest(graphFileName, ptnFileName, weirdrat_num, weirdrat_den, runNumber)
+function [avgNM, avgM, stdNM, stdM] = TimeTest(graphFileName, ptnFileName, weirdrat_num, weirdrat_den, runNumber, matching_algorithm)
 
 if(~exist("runNumber", "var"))
 	runNumber = 1;
@@ -40,7 +40,7 @@ end
 partitions = readPtn(ptnFileName);
 partition = int64(partitions{1});
 [G, n, m] = loadeg2graph(graphFileName);
-[cap_add, cap_orig, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, partition, int64(10), int64(1), 10, int64(10), 0);
+[cap_add, cap_orig, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, partition, int64(10), int64(1), 10, int64(10), 0, matching_algorithm);
 [flow, cut] = Pairing(G, partition, cap_add, cap_orig);
 runTimeArr = zeros(runNumber, 2);
 
