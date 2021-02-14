@@ -18,7 +18,7 @@ for i = 1 : length(eg2)
     for(k=1 : length(ptn))
 	    ptnname = ptn(i).name;
 	    ptnname = ptnname(1:end-3);
-	    if(eg2name == ptnname);
+	    if(eg2name == ptnname)
 		    eg2path = fullfile(eg2(i).folder, eg2(i).name);
 		    ptnpath = fullfile(ptn(i).folder, ptn(i).name);
 		    [avgNM, avgM, stdNM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber, 'dinic');

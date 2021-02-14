@@ -1066,7 +1066,6 @@ void hipr(
         dynamic_tree_t *p;
         switch (matching_index) {
             case 0: ;
-            fprintf(stderr, "Starting dinic matching\n");
             node *last;
             arc *stopA;
             /* INITIALIZE MATCHING ARRAYS */
@@ -1129,7 +1128,6 @@ void hipr(
                     }
                 }
             }
-            fprintf(stderr, "Finished dinic matching\n");
             break;
         case 1: ;
             p = dt_init(n, nodes, source);

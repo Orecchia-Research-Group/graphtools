@@ -38,7 +38,7 @@ end
 
 %INTITIALIZATION OF VARIABLES
 partitions = readPtn(ptnFileName);
-partition = int64(partitions{1});
+partition = int64(partitions{1})';
 [G, n, m] = loadeg2graph(graphFileName);
 [cap_add, cap_orig, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, partition, int64(10), int64(1), 10, int64(10), 0, matching_algorithm);
 [flow, cut] = Pairing(G, partition, cap_add, cap_orig);
@@ -52,7 +52,7 @@ for i=1:runNumber
 
     %RUNNING CUTFIND TIMINGS WITH MATCHING
     tStart = tic;
-    [flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig);
+    [flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig, matching_algorithm);
     tMatch = toc(tStart);
     
     runTimeArr(i, 1) = tNoMatch;
@@ -64,9 +64,4 @@ stdNM = std(runTimeArr(1:end, 1));
 avgM = mean(runTimeArr(1:end, 2));
 stdM = std(runTimeArr(1:end, 2));
 
-%PRINT CUTFIND TIMINGS
-%tPercent = 100*(tMatch-tNoMatch)/tMatch;
-%fprintf('Runtime of Pairing without matching %.3fs\n',tNoMatch);
-%fprintf('Runtime of Pairing with matching %.3fs\n', tMatch);
-%fprintf('Percent that runtime of matching is slower than without matching %.2f%%\n', tPercent);
 end
