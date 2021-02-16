@@ -4,15 +4,19 @@
 #ifndef FILE_DYNAMICTREE_SEEN
 #define FILE_DYANMICTREE_SEEN
 
+//#define DEBUG
+
 typedef struct dynamic_tree_node {
     long id;
     long delmin, delcost;
     arc* edge; // edge going out from this vertex
     struct dynamic_tree_node *left, *right, *parent;
 
+#ifdef DEBUG
     long rot_cnt;
     long splay_cnt;
     long expose_cnt;
+#endif
 } dynamic_node_t;
 
 
@@ -25,8 +29,10 @@ typedef struct dynamic_tree {
     dynamic_node_t* d_source;
     node* source;
 
+#ifdef DEBUG
     long link_cnt;
     long cut_cnt;
+#endif
 } dynamic_tree_t;
 
 void dt_print_op_stat(dynamic_tree_t* dTree);
