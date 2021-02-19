@@ -41,7 +41,8 @@
 % - does it make sense to use weirdrat as bound guiding the search?
 % - reorder parameters
 
-function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, varargin)
+function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = ...
+    cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, ufactor, varargin)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%  ERROR CHECKING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,10 +161,10 @@ end
 H = init*G;
 D = diag(sum(H));
 
-% INITIALIZE EXPANSION AND WEIRDEST RATIO TRACKER VARIABLES
+% INITIALIZE EXPANSION AND WEIRDEST RATIO TRACKER VARIABLES - DOES NOT WORK FOR BALANCED
 % MINEXP
-[minexp_num, bestcut] = max(sum(G)); % find maximum degree and maximum degree vertex
-minexp_num = full(minexp_num); % make sure it's full
+[~, bestcut] = max(sum(G)); % find maximum degree and maximum degree vertex
+minexp_num = 2;
 bestcut = int64(bestcut);
 
 minexp_den = int64(1);
@@ -296,9 +297,11 @@ for i=1:double(t)
     tFlow = tic;
     % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
     if (lamda > 0)
-        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, lamda);
+        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
+            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor, lamda);
     else
-        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching);
+        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
+            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor);
     end
     flowtime = flowtime + toc(tFlow);
     % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));
@@ -320,8 +323,10 @@ for i=1:double(t)
             minexp = ex;
             minexp_num = ex_num;
             minexp_den = ex_den;
+            notimproved = 0;
+        else
+            notimproved = notimproved + 1;
         end
-        notimproved = 0;
         if(strcmp(lwbd, 'ylast'))
             certificate = D-H;
             certificatecongestion = congestion;

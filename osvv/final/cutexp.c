@@ -57,11 +57,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("Error in cutexp. Graph must be sparse.\n");
 
     if (mxGetClassID(prhs[2]) != mxINT64_CLASS)
-        mexErrMsgTxt("Error in cutexp. Cut must be of class int64.\n");
+        mexErrMsgTxt("Error in cutexp. Weight must be of class int64.\n");
 
     if (mxGetClassID(prhs[3]) != mxINT64_CLASS)
-        mexErrMsgTxt("Error in cutexp. Reciprocal cut must be of class int64.\n");
+        mexErrMsgTxt("Error in cutexp. Cut must be of class int64.\n");
 
+    if (mxGetClassID(prhs[4]) != mxINT64_CLASS)
+        mexErrMsgTxt("Error in cutexp. Reciprocal cut must be of class int64.\n");
 
     /* LOAD ARGUMENTS */
     G = prhs[0];
@@ -124,10 +126,3 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     free(reciprocal_mask_cut);
 
 } 
-
-
-
-  
-
-
-  

@@ -53,7 +53,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     long weight_recip = 0;
     long w_bisec;
     long w_recip;
-    long p = 1000;
+    long p = 10000;
     long i, j;
     long n;
     double cutedges = 0;
@@ -64,7 +64,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     int *mask_cut;
     int *reciprocal_mask_cut;
     int *mask_bisec;
-    mxArray *exp;
 
     mwSize dims[] = {1, 1};
     long *temp;
@@ -130,7 +129,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     w_bisec = weight_bisec;
     w_recip = weight_recip;
     
-    if (abs(((double)weight_bisec) /  weight_recip - 1) < 1e-3) {
+    if (abs(((double)weight_bisec) /  weight_recip - 1) < 1e-4) {
         w_bisec = w_recip = 1;
     } else {
         farey(weight_recip, weight_bisec, p, &w_recip, &w_bisec);
