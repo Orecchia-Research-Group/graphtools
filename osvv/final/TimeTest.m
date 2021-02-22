@@ -46,14 +46,18 @@ runTimeArr = zeros(runNumber, 2);
 
 for i=1:runNumber
     %RUNNING CUTFIND TIMINGS WITHOUT MATCHING
-    tStart = (tic);
-    [flow, cut] = Pairing(G, partition, cap_add, cap_orig);
-    tNoMatch = toc(tStart);
+    #ifdef DEBUG
+        tStart = (tic);
+        [flow, cut] = Pairing(G, partition, cap_add, cap_orig);
+        tNoMatch = toc(tStart);
+    #endif
 
     %RUNNING CUTFIND TIMINGS WITH MATCHING
-    tStart = tic;
-    [flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig, matching_algorithm);
-    tMatch = toc(tStart);
+    #ifdef DEBUG
+        tStart = tic;
+        [flow, cut, matching] = Pairing(G, partition, cap_add, cap_orig, matching_algorithm);
+        tMatch = toc(tStart);
+    #endif
     
     runTimeArr(i, 1) = tNoMatch;
     runTimeArr(i, 2) = tMatch;
