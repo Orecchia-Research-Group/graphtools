@@ -1,4 +1,4 @@
-function[timeArr] = TimeTestFolder(folderPath, runNumber)
+function[timeArr, graphNames] = TimeTestFolder(folderPath, runNumber)
 
 if(~exist("runNumber", "var"))
         runNumber = 1;
@@ -11,26 +11,29 @@ ptn = dir(fullfile(folderPath, '*ptn'));
 %without matching, the 2nd value is the standard deviation without
 %matching, the 3rd and 4th are the same, respectively, but with matching
 timeArr = zeros(2*length(eg2), 4);
+graphNames = strings([1, length(eg2)]);
 
 for i = 1 : length(eg2)
-    eg2name = eg2(i).name;
-    eg2name = eg2name(1:end-3);
-    for(k=1 : length(ptn))
-	    ptnname = ptn(i).name;
-	    ptnname = ptnname(1:end-3);
-	    if(eg2name == ptnname)
-		    eg2path = fullfile(eg2(i).folder, eg2(i).name);
-		    ptnpath = fullfile(ptn(i).folder, ptn(i).name);
-		    [avgNM, avgM, stdNM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber, 'dinic');
-		    timeArr(i, 1) = avgNM;
-	    	    timeArr(i, 2) = stdNM;
-    		    timeArr(i, 3) = avgM;
-    	            timeArr(i, 4) = stdM;
-		    [avgNM, avgM, stdNM, stdM] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber, 'dynamic');
-                    timeArr(i+length(eg2), 1) = avgNM;
-                    timeArr(i+length(eg2), 2) = stdNM;
-                    timeArr(i+length(eg2), 3) = avgM;
-                    timeArr(i+length(eg2), 4) = stdM;
+    eg2path = fullfile(eg2(i).folder, eg2(i).name);
+    [p, eg2name, ext] = fileparts(eg2path);
+    for k = 1 : length(ptn)
+        ptnpath = fullfile(ptn(k).folder, ptn(k).name);
+        [p, ptnname, ext] = fileparts(ptnpath);
+	    if strcmp(eg2name, ptnname)
+		    [avgInit, avgS1, avgS2, avgMatch] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber, 'dinic');
+		    timeArr(i, 1) = avgInit;
+            timeArr(i, 2) = avgS1;
+            timeArr(i, 3) = avgS2;
+            timeArr(i, 4) = avgMatch;
+
+		    [avgInit, avgS1, avgS2, avgMatch] = TimeTest(eg2path, ptnpath, int64(1), int64(1), runNumber, 'dynamic');
+            timeArr(i+length(eg2), 1) = avgInit;
+            timeArr(i+length(eg2), 2) = avgS1;
+            timeArr(i+length(eg2), 3) = avgS2;
+            timeArr(i+length(eg2), 4) = avgMatch;
+
+            eg2name(1) = upper(eg2name(1));
+            graphNames(i) = eg2name;
 		    break;
 	    end
     end

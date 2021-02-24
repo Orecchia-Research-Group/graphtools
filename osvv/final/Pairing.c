@@ -46,7 +46,11 @@ void hipr
                 long *nedges,
                 long *fflow,
                 int route_flag,
-                long matching_index
+                long matching_index,
+                float *tInit,
+                float *tS1,
+                float *tS2,
+                float *tMatch
         );
 
 
@@ -88,21 +92,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long fflow;
     long size_cut;
     long matching_index = 0;
+    float tInit;
+    float tS1;
+    float tS2;
+    float tMatch;
 
     mxArray *matching;
     mxArray *cut;
     mxArray *flow;
+    mxArray *t_init;
+    mxArray *t_S1;
+    mxArray *t_S2;
+    mxArray *t_match;
     long *cut_pr;
 
     mwSize dims[] = {1, 1};
     long *temp_a;
+    float *temp_b;
 
-    float t1, t2;
     int route_flag;
 
     /*  t1 =timer();*/
 
-    if (nrhs < 4 || nrhs > 5 || nlhs > 3 || nlhs < 2)
+    if (nrhs < 4 || nrhs > 5 || ((nlhs > 7 || nlhs < 6)&&(nlhs>3 || nlhs <2)))
         mexErrMsgTxt("Error in usage of Pairing.\n");
 
     /* EXTRACT DATA FROM MATLAB */
@@ -173,7 +185,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     /* CALL HI_PR - modified to output flow - would prefer for hipr to allocate this memory*/
 
 
-    /* m-arrays are initialized within hi_pr */
+    /* m-arrays are init    ialized within hi_pr */
     n = N + 2;
     m = M + N;
 
@@ -185,11 +197,27 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /*  t1 = timer() - t1;*/
     hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
-         route_flag, matching_index);
+         route_flag, matching_index, &tInit, &tS1, &tS2, &tMatch);
     /*  t2 = timer();*/
 
+    fprintf(stderr, "%f\n", tInit);
+    fflush(stderr);
+    /* INITIALIZE TIMINGS */
+    t_init = mxCreateNumericArray(2, dims, mxSINGLE_CLASS, mxREAL);
+    temp_b = (float *) mxGetPr(t_init);
+    *temp_b = tInit;
 
+    t_S1 = mxCreateNumericArray(2, dims, mxSINGLE_CLASS, mxREAL);
+    temp_b = (float *) mxGetPr(t_S1);
+    *temp_b = tS1;
 
+    t_S2 = mxCreateNumericArray(2, dims, mxSINGLE_CLASS, mxREAL);
+    temp_b = (float *) mxGetPr(t_S2);
+    *temp_b = tS2;
+
+    t_match = mxCreateNumericArray(2, dims, mxSINGLE_CLASS, mxREAL);
+    temp_b = (float *) mxGetPr(t_match);
+    *temp_b = tMatch;
 
     /* INITIALIZE MATCHING */
     if (route_flag == 1)
@@ -199,7 +227,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     flow = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
     temp_a = (long *) mxGetPr(flow);
     *temp_a = fflow;
-
 
     /* INITIALIZE CUT - recall cut returned is sink side! so need to complement*/
     size_cut = 0;
@@ -222,10 +249,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     plhs[0] = flow;
     plhs[1] = cut;
+    plhs[3] = t_init;
+    plhs[4] = t_S1;
+    plhs[5] = t_S2;
+    plhs[6] = t_match;
 
     if (route_flag == 1)
         plhs[2] = matching;
 
+    if((nlhs==6) || (nlhs==7)){
+        plhs[3] = t_init;
+        plhs[4] = t_S1;
+        plhs[5] = t_S2;
+        plhs[6] = t_match;
+    }
+    
     /*   t2 = timer() -t2;
      fprintf(stderr, "Oth tm: %f", t2 + t1);*/
     free(heads);
