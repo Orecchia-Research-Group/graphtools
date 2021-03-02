@@ -103,7 +103,7 @@ long relabelCnt = 0;       /* number of relabels */
 long updateCnt = 0;       /* number of updates */
 long gapCnt = 0;           /* number of gaps */
 long gNodeCnt = 0;           /* number of nodes after gap */
-float tInit, tS1, tS2, tMatch;                 /* for saving times */
+float tStart, tInit, tS1, tS2, tMatch;                 /* for saving times */
 node *sentinelNode;        /* end of the node list marker */
 arc *stopA;                  /* used in forAllArcs */
 long workSinceUpdate = 0;      /* the number of arc scans since last update */
@@ -854,8 +854,6 @@ void bfs(){
     free(queue);
 }
 
-
-
 void hipr(
         long ninput,
         long minput,
@@ -871,11 +869,16 @@ void hipr(
         long *nedges,
         long *fflow,
         int route_flag,
-        long matching_index,
+        long matching_index
+
+#ifdef DEBUG
+        ,
         float *time_init,
         float *time_S1,
         float *time_S2,
-        float *time_match)
+        float *time_match
+#endif
+)
 {
 #if (defined(PRINT_FLOW) || defined(CHECK_SOLUTION))
     node *i;
@@ -892,11 +895,9 @@ void hipr(
     bucket *l;
 #endif
     /* fprintf(stderr,"calling hi_pr\n"); */
-    
-    tS2 = timer();
-    tS1 = tS2;
-    tInit = tS2;
-
+#ifdef DEBUG
+    tStart = timer();
+#endif
     loadflowproblem(ninput, minput, tails, heads, weights, s, t, &n, &m, &nodes, &arcs, &cap, &source, &sink, &nMin);
 
 
@@ -909,24 +910,24 @@ void hipr(
     }
 
     init();
-
-    tInit = timer() - tS2;
-    fprintf(stderr, "%f\n", tInit);
-    fflush(stderr);
+#ifdef DEBUG
+    tInit = timer();
+    *time_init = tInit - tStart;
+#endif
     stageOne();
-
-    tS1 = timer() - tS2;
-
+#ifdef DEBUG
+    tS1 = timer();
+#endif
     /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
 
 #ifndef CUT_ONLY
     stageTwo();
 
-    
-    tS2 = timer() - tS2;
-    *time_init = tInit;
-    *time_S1 = tS1;
-    *time_S2 = tS2;
+#ifdef DEBUG
+    tS2 = timer();
+    *time_S1 = tS1 - tInit;
+    *time_S2 = tS2 - tS1;
+#endif
     /*
     fprintf (stderr,"\nc time:        %10.2f\n", t1);
     */
@@ -1048,7 +1049,9 @@ void hipr(
 
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
     if (route_flag == 1) {
+#ifdef DEBUG
         tMatch = timer();
+#endif
         long minCap;
         long int matchingCapacity;
         long *reallocPtr;
@@ -1227,8 +1230,9 @@ void hipr(
             break;
         }
         *nedges = k;
-        tMatch = timer() - tMatch;
-        *time_match = tMatch;
+#ifdef DEBUG
+        *time_match = timer() - tMatch;
+#endif
     }
     /* Free data structures */
     free(nodes - nMin);               /* address of the array of nodes */ /*MEMORY LEAK*/
