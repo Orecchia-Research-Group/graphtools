@@ -38,6 +38,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 /*#include <values.h>*/
 #define MAXLONG 1000000000
 
@@ -108,6 +109,9 @@ node *sentinelNode;        /* end of the node list marker */
 arc *stopA;                  /* used in forAllArcs */
 long workSinceUpdate = 0;      /* the number of arc scans since last update */
 float globUpdtFreq;          /* global update frequency */
+long PathLength = 0;
+long PathNumber = 0;
+long PathLengthSum = 0;
 
 /* macros */
 #define addedge(t, h, c)\
@@ -1511,10 +1515,13 @@ node *decomposePathInternal(node *n, long int *minCap) {
                 if (a->head == sink) {
                     a->resCap += *minCap;
                     n->d = 0;
+		    PathLengthSum+=PathLength;
+		    PathNumber++;
                     return n;
                 }
-
+		PathLength++;
                 i = decomposePathInternal(a->head, minCap);
+		PathLength--;
                 a->resCap = tempRes + *minCap;
                 if (((i == NULL) && (n->d == -2))) {
                     if (i == NULL)

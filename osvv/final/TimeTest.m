@@ -31,7 +31,6 @@
 %
 
 function [avgInit, avgS1, avgS2, avgMatch] = TimeTest(graphFileName, ptnFileName, weirdrat_num, weirdrat_den, runNumber, matching_algorithm)
-
 if(~exist("runNumber", "var"))
 	runNumber = 1;
 end
@@ -60,5 +59,4 @@ avgInit = mean(runTimeArr(1:end, 1));
 avgS1 = mean(runTimeArr(1:end, 2));
 avgS2 = mean(runTimeArr(1:end, 3));
 avgMatch = mean(runTimeArr(1:end, 4));
-
 end

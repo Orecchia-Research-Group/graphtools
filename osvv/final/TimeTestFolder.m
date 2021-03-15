@@ -1,5 +1,4 @@
 function[timeArr, graphNames] = TimeTestFolder(folderPath, runNumber)
-
 if(~exist("runNumber", "var"))
         runNumber = 1;
 end
