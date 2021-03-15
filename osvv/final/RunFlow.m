@@ -38,7 +38,7 @@
 % ISSUES: can do mincut at precision p too?
 %
 
-function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag)
+function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag, matching_algorithm)
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INITIALIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -101,7 +101,7 @@ if(nomatching_flag == 0)
    [match_num, match_den] = Farey(int64(weirdrat_num), weirdrat_den, p); % use Farey sequences to find best p-precision approximation to weirdrat
    double(weirdrat_num);
 
-   [flow, cut, matching] = Pairing(G, bisec, match_num, match_den);
+   [flow, cut, matching] = Pairing(G, bisec, match_num, match_den, matching_algorithm);
 
    % MATCHInG SCALING
    matching = matching/double(match_num);

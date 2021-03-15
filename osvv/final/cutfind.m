@@ -40,7 +40,7 @@
 % - does it make sense to use weirdrat as bound guiding the search?
 % - reorder parameters
 
-function [expansionFound, edgesCut, cutFound,H, iterations, lower] = cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec) 
+function [expansionFound, edgesCut, cutFound,H, iterations, lower] = cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, matchingAlgorithm, certificatespec) 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%  ERROR CHECKING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -91,7 +91,7 @@ for k=1:size_stop
 end
 
 if(~ischar(lwbd) || ~(strcmp(lwbd, 'y') || (strcmp(lwbd, 'n') || strcmp(lwbd, 'ylast'))))
-   error(error_string, 'lowerbound computation');
+   error(error_string, 'lowerbound argumentsd computation');
 end
 
 if(~ischar(outputfile) && outputfile ~= 1 && outputfile ~= 2)
@@ -102,9 +102,12 @@ if(certificatespec ~= 1 && certificatespec ~= 0)
    error(error_string, 'certificate specification');
 end
 
-
 if(~ischar(suffix))
    error(error_string, 'suffix file name');
+end
+
+if(~ischar(matchingAlgorithm) || (~strcmp(matchingAlgorithm, 'dinic') && ~strcmp(matchingAlgorithm, 'dynamic')))
+    error(error_string, 'matching algorithm');
 end
 
 
@@ -249,7 +252,7 @@ for i=1:double(t)
     
     tFlow = tic;
     % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW    
-    [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching);
+    [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, bisec, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, matchingAlgorithm);
     flowtime = flowtime + toc(tFlow);
 
     % UPDATE LOWER BOUND
