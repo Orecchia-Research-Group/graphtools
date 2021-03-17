@@ -63,8 +63,8 @@ void dt_expose(dynamic_node_t* q);
 
 /* assuming p and q are nodes in different trees and
    that p is a root of its tree, this links p to q,
-   and returns 1. if p and q are nodes in the same
-   tree, it removes a cycle and returns 0 */
+   and returns true. If q is the tree rooted at p,
+   this removes a cycle and returns false*/
 bool dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
 bool dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge);
 
