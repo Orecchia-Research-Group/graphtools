@@ -38,7 +38,6 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <time.h>
 /*#include <values.h>*/
 #define MAXLONG 1000000000
 
@@ -109,9 +108,6 @@ node *sentinelNode;        /* end of the node list marker */
 arc *stopA;                  /* used in forAllArcs */
 long workSinceUpdate = 0;      /* the number of arc scans since last update */
 float globUpdtFreq;          /* global update frequency */
-long PathLength = 0;
-long PathNumber = 0;
-long PathLengthSum = 0;
 
 /* macros */
 #define addedge(t, h, c)\
@@ -1150,6 +1146,7 @@ void hipr(
 
                 while (p->cur_node != sink) {
                     int link_flag = 0;
+                    int cycle_flag = 0;
                     for (; p->cur_node->current < (p->cur_node +
                                                    1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
                         arc *cur_arc = p->cur_node->current;
@@ -1157,13 +1154,16 @@ void hipr(
 
                         if ((cur_arc->cap == cur_arc->resCap)) continue;
 
-                        // Found an edge. Perform the link
-                        p->cur_node->current++;
-                        dt_link(p, p->cur_node, cur_arc->head, cur_arc);
-                        link_flag = 1;
+                        // Found an edge. Perform the link or remove flow on
+                        // a cycle if one is found
+                        cycle_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+                        if (cycle_flag == 0) {
+                            link_flag = 1;
+                            p->cur_node->current++;
+                        }
                         break;
                     }
-                    if (link_flag == 1) {
+                    if (link_flag || cycle_flag) {
                         continue;
                     }
                     if (p->cur_node->current ==
@@ -1243,7 +1243,7 @@ void hipr(
     free(arcs);             /* address of the array of arcs */
     free(cap);              /* address of the array of capacities */
     free(buckets);              /* address of the array of capacities */
- 
+
 }
 
 int loadflowproblem(n, m, tails, heads, weights, s, t,
@@ -1515,13 +1515,10 @@ node *decomposePathInternal(node *n, long int *minCap) {
                 if (a->head == sink) {
                     a->resCap += *minCap;
                     n->d = 0;
-		    PathLengthSum+=PathLength;
-		    PathNumber++;
                     return n;
                 }
-		PathLength++;
+
                 i = decomposePathInternal(a->head, minCap);
-		PathLength--;
                 a->resCap = tempRes + *minCap;
                 if (((i == NULL) && (n->d == -2))) {
                     if (i == NULL)

@@ -279,8 +279,10 @@ void dt_expose(dynamic_node_t* q) {
 }
 
 /* assuming p and q are nodes in different trees and
-   that p is a root of its tree, this links p to q */
-void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
+   that p is a root of its tree, this links p to q,
+   and returns 1. if p and q are nodes in the same
+   tree, it removes a cycle and returns 0 */
+bool dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
 #ifdef DEBUG
     dTree->link_cnt++;
 #endif
@@ -291,7 +293,16 @@ void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc*
         long pid = p - dTree->d_nodes;
         long qid = q - dTree->d_nodes;
         fprintf(stderr, "Linking from node %ld to node %ld failed, because node %ld is not a root\n", pid, qid, pid);
-        return;
+        return false;
+    }
+    if (dt_d_root(q) == p) {
+        long pcost = dt_nMinCost(q);
+        long ccost = min(pcost, edge->cap - edge->resCap); // cycle minimum cost
+        dt_pUpdate(q, -ccost);
+        edge->resCap += ccost;
+        dt_d_cutEdge(dTree, q);
+
+        return false;
     }
 
     dynamic_node_t* a = p->left;
@@ -311,11 +322,13 @@ void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc*
     // find the root
     dTree->d_cur_node = dt_d_root(q);
     dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
+    return true;
 }
 
-void dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge) {
-    dt_d_link(dTree, dt_to_d_node(dTree, p), dt_to_d_node(dTree, q), edge);
+bool dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge) {
+    return dt_d_link(dTree, dt_to_d_node(dTree, p), dt_to_d_node(dTree, q), edge);
 }
+
 
 
 /* this returns the id of the node that is the root of the tree containing p */
