@@ -47,7 +47,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include "dynamictree.h"
 /* MATLAB INTEGRATION LIBS */
 
-
+#define STAGETWO_DYNAMIC
 
 #define GLOB_UPDT_FREQ 0.5
 #define ALPHA 6
@@ -588,6 +588,163 @@ void stageTwo()
     }
 }
 
+void stageTwoDynamic()
+{
+    node *i, *j, *tos, *bos, *restart, *r;
+    arc *a;
+    cType delta;
+
+    /* deal with self-loops */
+    forAllNodes(i) {
+        forAllArcs(i, a)if (a->head == i) {
+                a->resCap = cap[a - arcs];
+            }
+    }
+
+    /* eliminate flow cycles */
+    dynamic_tree_t *p;
+    p = dt_init(n, nodes, source);
+    while (true) {
+        int link_flag = 0;
+        int cycle_flag = 0;
+        // fprintf(stderr, "cur node is %ld\n", nNode(p->cur_node));
+        // fprintf(stderr, "currrent = %ld, next = %ld\n", nArc(p->cur_node->current), nArc((p->cur_node + 1)->first));
+        // if (p->cur_node->current < (p->cur_node +
+                                       // 1)->first) exit(0);
+        for (; p->cur_node->current < (p->cur_node +
+                                       1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
+            arc *cur_arc = p->cur_node->current;
+            if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
+
+            if ((cur_arc->cap == cur_arc->resCap)) continue;
+
+            // Found an edge. Perform the link or remove flow on
+            // a cycle if one is found
+
+            node* prev = p->cur_node;
+            link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+            if (link_flag == 1)
+                prev->current++;
+            else
+                cycle_flag = 1;
+            break;
+        }
+        // fprintf(stderr, "link = %d, cycle = %d\n", link_flag, cycle_flag);
+        // // if (link_flag == 1) exit(0);
+        // if (cycle_flag == 1) exit(0);
+        if (link_flag || cycle_flag) {
+            continue;
+        }
+        // fprintf(stderr, "currrent = %ld, next = %ld\n", nArc(p->cur_node->current), nArc((p->cur_node + 1)->first));
+        // fprintf(stderr, "cur_node = %ld, sink = %ld\n", nNode(p->cur_node), nNode(sink));
+        if (p->cur_node->current ==
+            (p->cur_node + 1)->first || p->cur_node == sink) {             // if no suitable edges cut tail
+            node *previous;
+            // fprintf(stderr, "end of list of node %ld\n", nNode(p->cur_node));
+            if ((previous = dt_before(p, p->cur_node)) !=
+                NULL) {              // Checks that a previous exists.
+                // The alternative is that p is the source
+                // fprintf(stderr, "cut previous = %ld\n", nNode(previous));
+                dt_cut(p, previous);
+            } else {
+                break;
+            }
+        }
+    }
+    dt_cleanUp(p);
+
+    // fprintf(stderr, "should be no cycle\n");
+
+    // assert no cycle
+
+    /* initialize */
+    tos = bos = NULL;
+    forAllNodes(i) {
+        i->d = WHITE;
+        /*   buckets[i-nodes].firstActive = NULL; */
+        buckets[i - nodes].firstActive = sentinelNode;
+        i->current = i->first;
+    }
+
+    forAllNodes(i)if ((i->d == WHITE) && (i->excess > 0) &&
+                      (i != source) && (i != sink)) {
+            r = i;
+            r->d = GREY;
+            do {
+                for (; i->current != (i + 1)->first; i->current++) {
+                    a = i->current;
+                    if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
+                        j = a->head;
+                        if (j->d == WHITE) {
+                            /* start scanning j */
+                            j->d = GREY;
+                            buckets[j - nodes].firstActive = i;
+                            i = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (i->current == (i + 1)->first) {
+                    /* scan of i complete */
+                    i->d = BLACK;
+                    if (i != source) {
+                        if (bos == NULL) {
+                            bos = i;
+                            tos = i;
+                        } else {
+                            i->bNext = tos;
+                            tos = i;
+                        }
+                    }
+
+                    if (i != r) {
+                        i = buckets[i - nodes].firstActive;
+                        i->current++;
+                    } else
+                        break;
+                }
+            } while (1);
+        }
+
+
+
+    if (bos != NULL) {
+        for (i = tos; i != bos; i = i->bNext) {
+            a = i->first;
+            while (i->excess > 0) {
+                if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
+                    if (a->resCap < i->excess)
+                        delta = a->resCap;
+                    else
+                        delta = i->excess;
+                    a->resCap -= delta;
+                    a->rev->resCap += delta;
+                    i->excess -= delta;
+                    a->head->excess += delta;
+                }
+                a++;
+            }
+        }
+        /* now do the bottom */
+        i = bos;
+        a = i->first;
+        while (i->excess > 0) {
+            if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
+                if (a->resCap < i->excess)
+                    delta = a->resCap;
+                else
+                    delta = i->excess;
+                a->resCap -= delta;
+                a->rev->resCap += delta;
+                i->excess -= delta;
+                a->head->excess += delta;
+            }
+            a++;
+        }
+    }
+
+}
 
 /* gap relabeling */
 
@@ -921,7 +1078,8 @@ void hipr(
     /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
 
 #ifndef CUT_ONLY
-    stageTwo();
+    // stageTwo();
+    stageTwoDynamic();
 
 #ifdef DEBUG
     tS2 = timer();
@@ -1156,11 +1314,12 @@ void hipr(
 
                         // Found an edge. Perform the link or remove flow on
                         // a cycle if one is found
-                        cycle_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
-                        if (cycle_flag == 0) {
-                            link_flag = 1;
-                            p->cur_node->current++;
-                        }
+                        node* prev = p->cur_node;
+                        link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+                        if (link_flag == 1)
+                            prev->current++;
+                        else
+                            cycle_flag = 1;
                         break;
                     }
                     if (link_flag || cycle_flag) {
