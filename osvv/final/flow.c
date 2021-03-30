@@ -594,12 +594,19 @@ void stageTwoDynamic()
     arc *a;
     cType delta;
 
+    float tS2_Selfloop_Start, tS2_EliminateCycle_Start, tS2_Topo_Start,
+        tS2_RemoveExcess_Start, tS2_End;
+
+    tS2_Selfloop_Start = timer();
+
     /* deal with self-loops */
     forAllNodes(i) {
         forAllArcs(i, a)if (a->head == i) {
                 a->resCap = cap[a - arcs];
             }
     }
+
+    tS2_EliminateCycle_Start = timer();
 
     /* eliminate flow cycles */
     dynamic_tree_t *p;
@@ -657,6 +664,8 @@ void stageTwoDynamic()
 
     // assert no cycle
 
+    tS2_Topo_Start = timer();
+
     /* initialize */
     tos = bos = NULL;
     forAllNodes(i) {
@@ -707,7 +716,7 @@ void stageTwoDynamic()
             } while (1);
         }
 
-
+    tS2_RemoveExcess_Start = timer();
 
     if (bos != NULL) {
         for (i = tos; i != bos; i = i->bNext) {
@@ -743,6 +752,15 @@ void stageTwoDynamic()
             a++;
         }
     }
+
+    tS2_End = timer();
+
+    fprintf(stderr, "-------------------------------\n");
+    fprintf(stderr, "S2 Selfloop Removal: %lf\n", tS2_EliminateCycle_Start - tS2_Selfloop_Start);
+    fprintf(stderr, "S2 Eliminate Cycle: %lf\n", tS2_Topo_Start - tS2_EliminateCycle_Start);
+    fprintf(stderr, "S2 Toposort: %lf\n", tS2_RemoveExcess_Start - tS2_Topo_Start);
+    fprintf(stderr, "S2 Remove Excess: %lf\n", tS2_End - tS2_RemoveExcess_Start);
+    fprintf(stderr, "-------------------------------\n\n\n");
 
 }
 
