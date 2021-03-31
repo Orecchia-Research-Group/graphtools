@@ -599,12 +599,22 @@ void stageTwoDynamic()
 
     tS2_Selfloop_Start = timer();
 
+    long s_cnt = 0;
+    long e_cnt = 0;
+
     /* deal with self-loops */
     forAllNodes(i) {
-        forAllArcs(i, a)if (a->head == i) {
+        forAllArcs(i, a){
+            e_cnt++;
+            if (a->head == i) {
                 a->resCap = cap[a - arcs];
+
+                s_cnt++;
             }
+        }
     }
+
+    fprintf(stderr, "Loop e_cnt = %ld, s_cnt = %ld\n", e_cnt, s_cnt);
 
     tS2_EliminateCycle_Start = timer();
 
