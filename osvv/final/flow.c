@@ -1126,8 +1126,8 @@ void hipr(
     /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
 
 #ifndef CUT_ONLY
-    // stageTwo();
-    stageTwoDynamic();
+    stageTwo();
+    // stageTwoDynamic();
 
 #ifdef DEBUG
     tS2 = timer();
