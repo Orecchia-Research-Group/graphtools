@@ -453,12 +453,19 @@ void stageTwo()
     arc *a;
     cType delta;
 
+    float tS2_Selfloop_Start, tS2_Init_Start, tS2_Topo_Start,
+        tS2_RemoveExcess_Start, tS2_End;
+
+    tS2_Selfloop_Start = timer();
+
     /* deal with self-loops */
     forAllNodes(i) {
         forAllArcs(i, a)if (a->head == i) {
                 a->resCap = cap[a - arcs];
             }
     }
+
+    tS2_Init_Start = timer();
 
     /* initialize */
     tos = bos = NULL;
@@ -468,6 +475,8 @@ void stageTwo()
         buckets[i - nodes].firstActive = sentinelNode;
         i->current = i->first;
     }
+
+    tS2_Topo_Start = timer();
 
     /* eliminate flow cycles, topologicaly order vertices */
     forAllNodes(i)if ((i->d == WHITE) && (i->excess > 0) &&
@@ -549,6 +558,7 @@ void stageTwo()
             } while (1);
         }
 
+    tS2_RemoveExcess_Start = timer();
 
     /* return excesses */
     /* note that sink is not on the stack */
@@ -586,6 +596,16 @@ void stageTwo()
             a++;
         }
     }
+
+    tS2_End = timer();
+
+    fprintf(stderr, "-------------------------------\n");
+    fprintf(stderr, "S2 Selfloop Removal: %lf\n", tS2_Init_Start - tS2_Selfloop_Start);
+    fprintf(stderr, "S2 Init: %lf\n", tS2_Topo_Start - tS2_Init_Start);
+    fprintf(stderr, "S2 Toposort and Cycle Removal: %lf\n", tS2_RemoveExcess_Start - tS2_Topo_Start);
+    fprintf(stderr, "S2 Remove Excess: %lf\n", tS2_End - tS2_RemoveExcess_Start);
+    fprintf(stderr, "-------------------------------\n\n\n");
+
 }
 
 void stageTwoDynamic()
