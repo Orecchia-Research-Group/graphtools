@@ -497,6 +497,8 @@ void stageTwo()
                         if (j->d == WHITE) {
                             /* start scanning j */
                             j->d = GREY;
+
+                            node_cnt++;
                             buckets[j - nodes].firstActive = i;
                             i = j;
                             break;
