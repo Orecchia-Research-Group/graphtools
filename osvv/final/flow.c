@@ -478,11 +478,17 @@ void stageTwo()
 
     tS2_Topo_Start = timer();
 
+    long node_cnt = 0;
+    long cycle_cnt = 0;
+    long stack_cnt = 0;
+
     /* eliminate flow cycles, topologicaly order vertices */
     forAllNodes(i)if ((i->d == WHITE) && (i->excess > 0) &&
                       (i != source) && (i != sink)) {
             r = i;
             r->d = GREY;
+
+            node_cnt++;
             do {
                 for (; i->current != (i + 1)->first; i->current++) {
                     a = i->current;
@@ -496,6 +502,8 @@ void stageTwo()
                             break;
                         } else if (j->d == GREY) {
                             /* find minimum flow on the cycle */
+                            cycle_cnt++;
+
                             delta = a->resCap;
                             while (1) {
                                 delta = min (delta, j->current->resCap);
@@ -564,6 +572,8 @@ void stageTwo()
     /* note that sink is not on the stack */
     if (bos != NULL) {
         for (i = tos; i != bos; i = i->bNext) {
+            stack_cnt++;
+
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
@@ -580,6 +590,8 @@ void stageTwo()
             }
         }
         /* now do the bottom */
+        stack_cnt++;
+
         i = bos;
         a = i->first;
         while (i->excess > 0) {
@@ -598,6 +610,8 @@ void stageTwo()
     }
 
     tS2_End = timer();
+
+    fprintf(stderr, "Node cnt = %ld, cycle cnt = %ld, stack cnt = %ld\n", node_cnt, cycle_cnt, stack_cnt);
 
     fprintf(stderr, "-------------------------------\n");
     fprintf(stderr, "S2 Selfloop Removal: %lf\n", tS2_Init_Start - tS2_Selfloop_Start);
@@ -638,6 +652,9 @@ void stageTwoDynamic()
 
     tS2_EliminateCycle_Start = timer();
 
+    long node_cnt = 0;
+    long cycle_cnt = 0;
+
     /* eliminate flow cycles */
     dynamic_tree_t *p;
     p = dt_init(n, nodes, source);
@@ -662,8 +679,10 @@ void stageTwoDynamic()
             link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
             if (link_flag == 1)
                 prev->current++;
-            else
+            else {
                 cycle_flag = 1;
+                cycle_cnt++;
+            }
             break;
         }
         // fprintf(stderr, "link = %d, cycle = %d\n", link_flag, cycle_flag);
@@ -690,6 +709,8 @@ void stageTwoDynamic()
     }
     dt_cleanUp(p);
 
+    fprintf(stderr, "Cycle cnt = %ld\n", cycle_cnt);
+
     // fprintf(stderr, "should be no cycle\n");
 
     // assert no cycle
@@ -709,6 +730,7 @@ void stageTwoDynamic()
                       (i != source) && (i != sink)) {
             r = i;
             r->d = GREY;
+            node_cnt++;
             do {
                 for (; i->current != (i + 1)->first; i->current++) {
                     a = i->current;
@@ -746,10 +768,16 @@ void stageTwoDynamic()
             } while (1);
         }
 
+    fprintf(stderr, "Node cnt = %ld\n", node_cnt);
+
     tS2_RemoveExcess_Start = timer();
+
+    long stack_cnt = 0;
 
     if (bos != NULL) {
         for (i = tos; i != bos; i = i->bNext) {
+            stack_cnt++;
+
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
@@ -766,6 +794,8 @@ void stageTwoDynamic()
             }
         }
         /* now do the bottom */
+        stack_cnt++;
+
         i = bos;
         a = i->first;
         while (i->excess > 0) {
@@ -782,6 +812,8 @@ void stageTwoDynamic()
             a++;
         }
     }
+
+    fprintf(stderr, "Stack cnt = %ld\n", stack_cnt);
 
     tS2_End = timer();
 
