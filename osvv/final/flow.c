@@ -478,6 +478,15 @@ void stageTwo()
 
     tS2_Topo_Start = timer();
 
+
+    long node_excess_cnt_before = 0;
+    forAllNodes(i) {
+        if (i->d == WHITE && i->excess > 0 && i != source && i != sink) {
+            node_excess_cnt_before++;
+        }
+    }
+
+
     long node_cnt = 0;
     long cycle_cnt = 0;
     long stack_cnt = 0;
@@ -611,9 +620,17 @@ void stageTwo()
         }
     }
 
+    long node_excess_cnt_after = 0;
+    forAllNodes(i) {
+        if (i->d == WHITE && i->excess > 0 && i != source && i != sink) {
+            node_excess_cnt_after++;
+        }
+    }
+
     tS2_End = timer();
 
     fprintf(stderr, "Node cnt = %ld, cycle cnt = %ld, stack cnt = %ld\n", node_cnt, cycle_cnt, stack_cnt);
+    fprintf(stderr, "Node with excess before = %ld, node with excess after = %ld\n", node_excess_cnt_before, node_excess_cnt_after);
 
     fprintf(stderr, "-------------------------------\n");
     fprintf(stderr, "S2 Selfloop Removal: %lf\n", tS2_Init_Start - tS2_Selfloop_Start);
