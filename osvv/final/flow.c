@@ -474,6 +474,8 @@ void stageTwo()
     }
     forAllNodes(i) {
         forAllArcs(i, a) {
+            if (a->cap == 0)
+                continue;
             long flow = a->cap - a->resCap;
             i->excess -= flow;
             a->head->excess += flow;
