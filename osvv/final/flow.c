@@ -233,11 +233,11 @@ void printGraphStat() {
     }
     for (int x = nMin; x < nMin + n; x++) {
         for (int y = nMin; y < nMin + n; y++) {
-            printf("(%d->%d): %012ld / %012ld,   ", x, y, adj_cap[x][y], adj_flow[x][y]);
+            fprintf(stderr, "(%d->%d): %012ld / %012ld,   ", x, y, adj_cap[x][y], adj_flow[x][y]);
         }
-        printf("\n");
+        fprintf(stderr, "\n");
     }
-    printf("\n");
+    fprintf(stderr, "\n");
 }
 
 /* allocate datastructures, initialize related variables */
