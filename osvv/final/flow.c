@@ -215,6 +215,8 @@ node *i_next, *i_prev;
 
 
 void printGraphStat() {
+    node *i;        /* current node */
+    arc *a;
     if (n > 100) return;
     long adj_cap[105][105];
     long adj_flow[105][105];
@@ -229,12 +231,13 @@ void printGraphStat() {
                 adj_flow[nNode(i)][nNode(a->head)] = flow;
         }
     }
-    for (int i = nMin; i < nMin + n; i++) {
-        for (int j = nMin; j < nMin + n; j++) {
-            printf("(i->j): %012ld / %012ld,   ", adj_cap[i][j], adj_flow[i][j]);
+    for (int x = nMin; x < nMin + n; x++) {
+        for (int y = nMin; y < nMin + n; y++) {
+            printf("(%d->%d): %012ld / %012ld,   ", x, y, adj_cap[x][y], adj_flow[x][y]);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 /* allocate datastructures, initialize related variables */
