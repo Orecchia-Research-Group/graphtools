@@ -213,6 +213,30 @@ node *i_next, *i_prev;
   }\
 }
 
+
+void printGraphStat() {
+    if (n > 100) return;
+    long adj_cap[105][105];
+    long adj_flow[105][105];
+    memset(adj_cap, 0, sizeof adj_cap);
+    memset(adj_flow, 0, sizeof adj_flow);
+    forAllNodes(i) {
+        forAllArcs(i, a) {
+                if (a->cap == 0)
+                    continue;
+                long flow = a->cap - a->resCap;
+                adj_cap[nNode(i)][nNode(a->head)] = a->cap;
+                adj_flow[nNode(i)][nNode(a->head)] = flow;
+        }
+    }
+    for (int i = nMin; i < nMin + n; i++) {
+        for (int j = nMin; j < nMin + n; j++) {
+            printf("(i->j): %012ld / %012ld,   ", adj_cap[i][j], adj_flow[i][j]);
+        }
+        printf("\n");
+    }
+}
+
 /* allocate datastructures, initialize related variables */
 
 int allocDS() {
@@ -593,6 +617,8 @@ void stageTwo()
             } while (1);
         }
 
+    printGraphStat();
+
     tS2_RemoveExcess_Start = timer();
 
     /* return excesses */
@@ -642,6 +668,8 @@ void stageTwo()
             node_excess_cnt_after++;
         }
     }
+
+    printGraphStat();
 
     tS2_End = timer();
 
@@ -1189,6 +1217,7 @@ void hipr(
 #endif
     stageOne();
 #ifdef DEBUG
+    printGraphStat();
     tS1 = timer();
 #endif
     /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
