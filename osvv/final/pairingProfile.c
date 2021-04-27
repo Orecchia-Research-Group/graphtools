@@ -3,9 +3,6 @@
 #include "flow.h"
 
 void pairingProfile(const char *filePath, const char *filePathPtn, const char *filePathAlpha, long matching_algorithm) {
-    
-    //read alpha as cap_add cap_orig (two longs)
-    //all variable declarations to the top (int, long, pointer, double, FILE)
      
     int route_flag = 1;
 
@@ -82,8 +79,7 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     m = M + N;
 
 
-    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
-         route_flag);
+    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag);
 
     free(heads);
     free(tails);
