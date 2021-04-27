@@ -10,7 +10,7 @@
 %    (double) runNumber - number of times both Pairings are run
 %
 %
-% OUTPUTS: 
+% OUTPUTS:
 %    (double) tNoMatch - runtime of Pairing without matching
 %    (double) tMatch - runtime of Pairing with matching
 %    (double) tDiff - difference between runtimes of Pairing with and without matching
@@ -40,15 +40,16 @@ partitions = readPtn(ptnFileName);
 partition = int64(partitions{1})';
 [G, n, m] = loadeg2graph(graphFileName);
 [cap_add, cap_orig, minweirdrat, ex_num, ex_den, ex, cut, matching, matchrat, iterflownumber] =  RunFlow(G, partition, int64(10), int64(1), 10, int64(10), 0, matching_algorithm);
+fprintf(stderr, "cutsize = %d\n", length(cut));
 [flow, cut] = Pairing(G, partition, cap_add, cap_orig);
 runTimeArr = zeros(runNumber, 4);
 
 for i=1:runNumber
 
     %RUNNING CUTFIND TIMINGS WITH MATCHING
-        
+
         [flow, cut, matching, t_init, t_S1, t_S2, t_match] = Pairing(G, partition, cap_add, cap_orig, matching_algorithm);
-    
+
     runTimeArr(i, 1) = t_init;
     runTimeArr(i, 2) = t_S1;
     runTimeArr(i, 3) = t_S2;
