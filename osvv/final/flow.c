@@ -609,7 +609,7 @@ void stageTwo()
             } while (1);
         }
 
-    printGraphStat();
+    // printGraphStat();
 
     tS2_RemoveExcess_Start = timer();
 
@@ -661,13 +661,12 @@ void stageTwo()
         }
     }
 
-    printGraphStat();
+    // printGraphStat();
 
     tS2_End = timer();
 
     fprintf(stderr, "Node cnt = %ld, cycle cnt = %ld, stack cnt = %ld\n", node_cnt, cycle_cnt, stack_cnt);
     fprintf(stderr, "Node with excess before = %ld, node with excess after = %ld\n", node_excess_cnt_before, node_excess_cnt_after);
-    fprintf(stderr, "Node with nonzero excess = %ld\n", node_nonzero_excess_cnt);
 
     fprintf(stderr, "-------------------------------\n");
     fprintf(stderr, "S2 Selfloop Removal: %lf\n", tS2_Init_Start - tS2_Selfloop_Start);
@@ -1209,7 +1208,7 @@ void hipr(
 #endif
     stageOne();
 #ifdef DEBUG
-    printGraphStat();
+    // printGraphStat();
     tS1 = timer();
 #endif
     /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
