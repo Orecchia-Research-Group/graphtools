@@ -498,18 +498,6 @@ void stageTwo()
     long node_excess_cnt_before = 0;
     long node_nonzero_excess_cnt = 0;
     forAllNodes(i) {
-        i->excess = 0;
-    }
-    forAllNodes(i) {
-        forAllArcs(i, a) {
-            if (a->cap == 0)
-                continue;
-            long flow = a->cap - a->resCap;
-            i->excess -= flow;
-            a->head->excess += flow;
-        }
-    }
-    forAllNodes(i) {
         if (i->excess > 0) {
             node_excess_cnt_before++;
         }
