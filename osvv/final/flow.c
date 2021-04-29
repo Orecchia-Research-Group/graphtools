@@ -572,6 +572,10 @@ void stageTwo()
                             for (j = i->current->head; j != i; j = a->head) {
                                 a = j->current;
                                 if ((j->d == WHITE) || (a->resCap == 0)) {
+                                    if (j->current->head->d != WHITE) {
+                                        node_cnt--;
+                                    }
+
                                     j->current->head->d = WHITE;
                                     if (j->d != WHITE)
                                         restart = j;

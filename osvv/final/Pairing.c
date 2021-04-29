@@ -3,8 +3,8 @@
 PURPOSE: prepares the flow problem and calls hipr which performs it.
          Obtains hipr output and converts it to MATLAB objects.
 
-USAGE: 
-function [flow, cut, matching]= Pairing(G, bisec, cap_add, cap_orig); 
+USAGE:
+function [flow, cut, matching]= Pairing(G, bisec, cap_add, cap_orig);
 
 INPUTS: Note: vertex indices start at 1
  -G: a sparse graph
@@ -27,7 +27,7 @@ OUTPUTS:
 #include "timer.h"
 
 /* PROTOTYPE
-function [flow, cut, matching]= Pairing(G, bisec, cap_add, cap_orig); 
+function [flow, cut, matching]= Pairing(G, bisec, cap_add, cap_orig);
 */
 
 void hipr
@@ -249,6 +249,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     size_cut = N - size_cut;
 
+    fprintf(stderr, "Pairing.c size_cnt = %ld\n", size_cut);
+    if (size_cut < 2) mexErrMsgTxt("Cut size smaller than 2\n");
+
     k = 0;
     dims[0] = size_cut;
     cut = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
@@ -283,4 +286,3 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (mweights) free(mweights);
     free(output_set);
 }
- 
