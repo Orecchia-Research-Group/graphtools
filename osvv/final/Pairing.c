@@ -144,6 +144,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             mexErrMsgTxt("Error in recognizing the matching algorithm");
     }
 
+    fprintf(stderr, "Pairing.c size_bisec = %ld\n", size_bisec);
+    fprintf(stderr, "Pairing.c alpha = %ld / %ld = %lf\n", cap_add, cap_orig, 1.0 * cap_add / cap_orig);
+
 
     N = mxGetM(G);
     mexCallMATLAB(1, &temp, 1, &G, "nnz");
