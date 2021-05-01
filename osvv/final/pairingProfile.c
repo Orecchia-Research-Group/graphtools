@@ -2,15 +2,13 @@
 #include <stdlib.h>
 #include "flow.h"
 
-void pairingProfile(const char *filePath, const char *filePathPtn, const char *filePathAlpha, long matching_algorithm) {
+void pairingProfile(const char *filePath, const char *filePathPtn, const char *filePathAlpha, int runNumber, long matching_algorithm) {
      
     int route_flag = 1;
 
     long nedges;
     long fflow;
-    long size_cut;
-    long matching_index = matching_algorithm;
-
+    
     long N, n, M, m, temp;
     long cap_add, cap_orig;
 
@@ -22,6 +20,11 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     long *heads;
     long *weights;
     int *mask;
+
+    float time_init;
+    float time_S1;
+    float time_S2;
+    float time_match;
 
     FILE *eg2File;
     FILE *ptnFile;
@@ -47,14 +50,15 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     weights = calloc(sizeof(*weights), M + N);
     mask = calloc(sizeof(*mask), N + 1);
 
+    printf("Allocated graph variables\n");
     for (int i = 0; i < M; i++) {
         fscanf(eg2File, "%ld %ld %ld", &tails[i], &heads[i], &weights[i]);
         tails[i]++;
         heads[i]++;
         weights[i] *= cap_orig;
     }
-    
     fclose(eg2File);
+    printf("Read file\n");
 
     ptnFile = fopen(filePathPtn, "r");
     if (!ptnFile) {
@@ -72,15 +76,22 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
         }
         weights[M+h] = cap_add;
     }
+    printf("Read mask and created additional edges\n");
 
     /* CALL HI_PR - modified to output flow - would prefer for hipr to allocate this memory*/
 
     n = N + 2;
     m = M + N;
 
+    printf("Graph %s has %ld nodes and %ld edges\n", filePath, N, M);
 
-    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag);
+#ifdef DEBUG
+    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm, &time_init, &time_S1, &time_S2, &time_match);
+#else
+    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm);
+#endif
 
+    printf("Finished with hipr call\n");
     free(heads);
     free(tails);
     free(weights);

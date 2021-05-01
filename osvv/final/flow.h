@@ -34,7 +34,16 @@ void hipr(
         long **mweights,
         long *nedges,
         long *fflow,
-        int route_flag
+        int route_flag,
+        long matching_index
+#ifdef DEBUG
+        ,
+        float *time_init,
+        float *time_S1,
+        float *time_S2,
+        float *time_match
+#endif
+
 );
 
 #endif
