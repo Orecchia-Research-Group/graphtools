@@ -1150,6 +1150,7 @@ void hipr(
 
                 while (p->cur_node != sink) {
                     int link_flag = 0;
+                    int cycle_flag = 0;
                     for (; p->cur_node->current < (p->cur_node +
                                                    1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
                         arc *cur_arc = p->cur_node->current;
@@ -1157,13 +1158,17 @@ void hipr(
 
                         if ((cur_arc->cap == cur_arc->resCap)) continue;
 
-                        // Found an edge. Perform the link
-                        p->cur_node->current++;
-                        dt_link(p, p->cur_node, cur_arc->head, cur_arc);
-                        link_flag = 1;
+                        // Found an edge. Perform the link or remove flow on
+                        // a cycle if one is found
+                        node* prev = p->cur_node;
+                        link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+                        if (link_flag == 1)
+                            prev->current++;
+                        else
+                            cycle_flag = 1;
                         break;
                     }
-                    if (link_flag == 1) {
+                    if (link_flag || cycle_flag) {
                         continue;
                     }
                     if (p->cur_node->current ==
@@ -1243,7 +1248,7 @@ void hipr(
     free(arcs);             /* address of the array of arcs */
     free(cap);              /* address of the array of capacities */
     free(buckets);              /* address of the array of capacities */
- 
+
 }
 
 int loadflowproblem(n, m, tails, heads, weights, s, t,

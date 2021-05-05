@@ -62,9 +62,11 @@ void dt_splay(dynamic_node_t* p);
 void dt_expose(dynamic_node_t* q);
 
 /* assuming p and q are nodes in different trees and
-   that p is a root of its tree, this links p to q */
-void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
-void dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge);
+   that p is a root of its tree, this links p to q,
+   and returns true. If q is the tree rooted at p,
+   this removes a cycle and returns false*/
+bool dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge);
+bool dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge);
 
 
 /* this returns the id of the node that is the root of the tree containing p */

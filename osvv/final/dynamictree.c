@@ -279,8 +279,10 @@ void dt_expose(dynamic_node_t* q) {
 }
 
 /* assuming p and q are nodes in different trees and
-   that p is a root of its tree, this links p to q */
-void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
+   that p is a root of its tree, this links p to q,
+   and returns true. If q is the tree rooted at p,
+   this removes a cycle and returns false*/
+bool dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc* edge) {
 #ifdef DEBUG
     dTree->link_cnt++;
 #endif
@@ -291,7 +293,18 @@ void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc*
         long pid = p - dTree->d_nodes;
         long qid = q - dTree->d_nodes;
         fprintf(stderr, "Linking from node %ld to node %ld failed, because node %ld is not a root\n", pid, qid, pid);
-        return;
+        return false;
+    }
+    if (dt_d_root(q) == p) {
+        long pcost = dt_nMinCost(q);
+        long ccost = min(pcost, edge->cap - edge->resCap); // cycle minimum cost
+        dt_pUpdate(q, -ccost);
+        edge->resCap += ccost;
+        dt_d_cutEdge(dTree, q);
+        dTree->d_cur_node = dt_d_root(dTree->d_source);
+        dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
+
+        return false;
     }
 
     dynamic_node_t* a = p->left;
@@ -311,11 +324,12 @@ void dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc*
     // find the root
     dTree->d_cur_node = dt_d_root(q);
     dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
+    return true;
+}
+bool dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge) {
+    return dt_d_link(dTree, dt_to_d_node(dTree, p), dt_to_d_node(dTree, q), edge);
 }
 
-void dt_link(dynamic_tree_t* dTree, node* p, node* q, arc* edge) {
-    dt_d_link(dTree, dt_to_d_node(dTree, p), dt_to_d_node(dTree, q), edge);
-}
 
 
 /* this returns the id of the node that is the root of the tree containing p */
@@ -425,13 +439,15 @@ void dt_d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
     }
     p->delcost = inf;
 
-    dTree->d_cur_node = p;
-    dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
+    // dTree->d_cur_node = p;
+    // dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
 }
 
 void dt_cut(dynamic_tree_t* dTree, node* p) {
     dynamic_node_t* d_p = dt_to_d_node(dTree, p);
     dt_d_cut(dTree, d_p);
+    dTree->d_cur_node = dt_d_root(dTree->d_source);
+    dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
 }
 
 void dt_d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p) {
@@ -470,4 +486,6 @@ void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost) {
     *cost = pcost;
     dt_pUpdate(dt_to_d_node(dTree, p), -pcost);
     dt_cutEdge(dTree, p);
+    dTree->cur_node = dt_root(dTree, p);
+    dTree->d_cur_node = dt_to_d_node(dTree, dTree->cur_node);
 }
