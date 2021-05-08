@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "flow.h"
+#include "timer.h"
 
 void pairingProfile(const char *filePath, const char *filePathPtn, const char *filePathAlpha, int runNumber, long matching_algorithm) {
      
@@ -25,6 +26,9 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     float time_S1;
     float time_S2;
     float time_match;
+
+    float time_run;
+    float time_sum = 0;
 
     FILE *eg2File;
     FILE *ptnFile;
@@ -85,11 +89,20 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
 
     printf("Graph %s has %ld nodes and %ld edges\n", filePath, N, M);
 
-#ifdef DEBUG
-    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm, &time_init, &time_S1, &time_S2, &time_match);
-#else
-    hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm);
-#endif
+    for(int i = 0; i < 5; i++){
+        time_run = timer();
+        #ifdef DEBUG
+            hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm, &time_init, &time_S1, &time_S2, &time_match);
+        #else
+            hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm);
+        #endif
+        time_run = timer() - time_run;
+        time_sum += time_run;
+    }
+
+    time_sum /= 5;
+    fprintf(stderr, "Average hipr runtime: %.5f\n", time_sum);
+    fflush(stderr);
 
     printf("Finished with hipr call\n");
     free(heads);
