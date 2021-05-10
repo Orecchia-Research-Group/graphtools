@@ -1,0 +1,12 @@
+Plots
+Spectral 2D scatter LCR color coded             Ready
+Conductance vs Overlap (%)                      Ready
+Karate non-overlapping/overlapping plot         Ready
+L/C/R Volume Percentage for different k-cores   Needs work  Recreate AoE2 timeline graph
+Onmi vs overlap for all datasets/algorithms     Not started
+
+DBLP:
+Score vs Balance                                Ready       When requested balance is small, score is also small
+Shannon Entropy vs Balance                      Needs work  What is the correct notion of entropy when the two parts do not have the same size, so probabilities need a new meaning
+Areas Spider plots                              Ready
+
