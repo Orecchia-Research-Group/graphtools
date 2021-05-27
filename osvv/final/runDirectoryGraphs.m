@@ -1,4 +1,4 @@
-function [ ] = runDirectoryGraphs(inputDirectory, outputDirectory, lamdas, balances)
+function [ ] = runDirectoryGraphs(inputDirectory, outputDirectory, lamdas_num, lamdas_den, balances)
 %RUNDIRECTORYGRAPHS Runs all graphs in the input directory and saves
 %   results in the output directory
 %
@@ -32,13 +32,15 @@ for f=1:length(files)
         save(fullfile(outputDirectory, sprintf('%s.mat', dataset)), 'vec');
     end
     for balance=balances
-        for lamda=lamdas
-            ptnFilename = fullfile(outputDirectory, sprintf('%s_balanced_%02.0f_%d.ptn', dataset, 1 / lamda, balance));
+        for l=1:length(lamdas_num)
+            lamda_num = lamdas_num(l);
+            lamda_den = lamdas_den(l);
+            ptnFilename = fullfile(outputDirectory, sprintf('%s_balanced_%d_%d_%d.ptn', dataset, lamda_num, lamda_den, balance));
             if exist(ptnFilename)
                 continue;
             end
             try
-                [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, balance/1000, lamda);
+                [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, balance/1000, lamda_num, lamda_den);
             catch
                 fprintf(2, 'Failed lambda=%.2f\n', lamda);
             end
