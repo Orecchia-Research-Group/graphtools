@@ -54,10 +54,20 @@ end
 
 % Mixed cut or edge cut?
 if (size(varargin, 2) > 0)
-    lamda = varargin{1};
+    if length(varargin) < 2
+        error('Lambda not passed correctly to RunFlow');
+    end
+    lamda_num = int64(varargin{1});
+    lamda_den = int64(varargin{2});
+    if lamda_num > lamda_den
+        error('Lambda needs to be less than or equal to 1 in RunFlow');
+    end
 else
-    lamda = -1;
+    lamda_num = int64(-1);
+    lamda_den = int64(1);
 end
+
+fprintf('lamda_num = %d, lamda_den = %d\n', lamda_num, lamda_den);
 % INITIALIZATION OF OUTPUT VARIABLES
 n = int64(size(G,1));
 bestcut = int64([]);
@@ -106,10 +116,11 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
     internal_modifier = int64(cap_orig) * int64(side_den);
     original_modifier = int64(cap_orig) * int64(side_den);
 
-    if (lamda > 0)
-        source_modifier = int64(source_modifier / lamda);
-        sink_modifier = int64(sink_modifier / lamda);
-        original_modifier = int64(original_modifier / lamda);
+    if (lamda_num > 0)
+        source_modifier = int64(source_modifier * lamda_den);
+        sink_modifier = int64(sink_modifier * lamda_den);
+        internal_modifier = int64(internal_modifier * lamda_num);
+        original_modifier = int64(original_modifier * lamda_den);
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -135,7 +146,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         end
     elseif(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
-        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, int64(weight), lamda); % COMPUTE NEW WEIRDRAT
+        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, int64(weight), int64(lamda_num), int64(lamda_den)); % COMPUTE NEW WEIRDRAT
         if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol)
             weirdrat_num_lower = weirdrat_num;
             weirdrat_den_lower = weirdrat_den;
@@ -156,7 +167,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         weirdrat = double(weirdrat_num) / double(weirdrat_den);
     end
 
-    [newex_num, newex_den, newex] = cutexp(G, lamda, int64(weight), cut, reciprocalCut);
+    [newex_num, newex_den, newex] = cutexp(G, lamda_num, lamda_den, int64(weight), cut, reciprocalCut);
     % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
     if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol) && (newex < ex)
         ex_num = newex_num;
@@ -183,10 +194,11 @@ sink_modifier = int64(cap_add) * int64(side_num);
 internal_modifier = int64(cap_orig) * int64(side_den);
 original_modifier = int64(cap_orig) * int64(side_den);
 
-if (lamda > 0)
-    source_modifier = int64(source_modifier / lamda);
-    sink_modifier = int64(sink_modifier / lamda);
-    original_modifier = int64(original_modifier / lamda);
+if (lamda_num > 0)
+    source_modifier = int64(source_modifier * lamda_den);
+    sink_modifier = int64(sink_modifier * lamda_den);
+    internal_modifier = int64(internal_modifier * lamda_num);
+    original_modifier = int64(original_modifier * lamda_den);
     [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
 else
     [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -209,10 +221,11 @@ if(nomatching_flag == 0)
     internal_modifier = int64(match_den) * side_num;
     original_modifier = int64(match_den) * side_num;
 
-    if (lamda > 0)
-        source_modifier = int64(source_modifier / lamda);
-        sink_modifier = int64(sink_modifier / lamda);
-        original_modifier = int64(original_modifier / lamda);
+    if (lamda_num > 0)
+        source_modifier = int64(source_modifier * lamda_den);
+        sink_modifier = int64(sink_modifier * lamda_den);
+        internal_modifier = int64(internal_modifier * lamda_num);
+        original_modifier = int64(original_modifier * lamda_den);
         [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT

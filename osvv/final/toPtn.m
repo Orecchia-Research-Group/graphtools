@@ -17,6 +17,7 @@ function [ ] = toPtn(outputFilename, partitions)
 %   The filename is encuraged to be of the form dataset.clusterNumber.ptn
 
 n = max([partitions{:}]);
+disp(n);
 p = length(partitions);
 if ischar(outputFilename)
     outputFile = fopen(outputFilename, 'w');

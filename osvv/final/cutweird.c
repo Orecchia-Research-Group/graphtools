@@ -58,8 +58,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     long n;
     double cutedges = 0;
     long denominator = 0;
-    double lamda;
-    long lamda_inv;
+    long lamda_num;
+    long lamda_den;
 
     int *mask_cut;
     int *reciprocal_mask_cut;
@@ -70,8 +70,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
 
     /*%%%%%%%%%%%%%%%%% ARGUMENT LOADING &  CHECKING %%%%%%%%%%%%%%%%%%%%%*/
 
+    //fprintf(stderr, "cutweird: nrhs = %d nlhs = %d\n", nrhs, nlhs);
+
     /* CHECK CORRECT NUMBER OF INPUT/OUTPUTS */
-    if (nrhs != 6 || nlhs != 3)
+    if (nrhs != 7 || nlhs != 3)
         mexErrMsgTxt("Error in cutweird. Incorrect usage.\n");
 
     /* CHECK TYPES */
@@ -82,10 +84,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         mexErrMsgTxt("Error in cutweird. Cut must be of class int64.\n");
 
     if (mxGetClassID(prhs[2]) != mxINT64_CLASS)
-        mexErrMsgTxt("Error in cutweird. Cut must be of class int64.\n");
+        mexErrMsgTxt("Error in cutweird. Reciprocal cut must be of class int64.\n");
 
     if (mxGetClassID(prhs[3]) != mxINT64_CLASS)
         mexErrMsgTxt("Error in cutweird. Bisec must be of class int64.\n");
+
+    if (mxGetClassID(prhs[4]) != mxINT64_CLASS)
+        mexErrMsgTxt("Error in cutweird. Weight must be of class int64.\n");
+    
+    if (mxGetClassID(prhs[5]) != mxINT64_CLASS)
+        mexErrMsgTxt("Error in cutweird. lamda_num must be of class int64.\n");
+    
+    if (mxGetClassID(prhs[6]) != mxINT64_CLASS)
+        mexErrMsgTxt("Error in cutweird. lamda_den must be of class int64.\n");
+
+
 
 
     /* LOAD ARGUMENTS */
@@ -103,10 +116,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     bisec = (long *) mxGetPr(prhs[3]);
     size_bisec = mxGetM(prhs[3]);
     weight = (long *) mxGetPr(prhs[4]);
-    lamda = mxGetScalar(prhs[5]);
-    if (lamda > 0) lamda_inv = (long) round(1 / lamda);
-    else lamda_inv = 1l;
+    lamda_num = ((long *) mxGetPr(prhs[5]))[0];
+    lamda_den = ((long *) mxGetPr(prhs[6]))[0];
+    if (lamda_num < 0) {
+        lamda_den = 1l;
+    }
 
+    // fprintf(stderr, "lamda_num = %ld, lamda_den = %ld\n", lamda_num, lamda_den);
 
 
     /*%%%%%%%%%%%%%%%%%%%%%%%%% MAIN BODY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -144,21 +160,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
 
     for (i = 0; i < n; i++) {
         if (mask_cut[i] && mask_bisec[i]) {                 // π(S && A)
-            denominator += weight[i] * lamda_inv * w_recip;
+            denominator += weight[i] * lamda_den * w_recip;
         }
 
         if (mask_cut[i] && (!mask_bisec[i]) && (!reciprocal_mask_cut[i])) {     // - π(L && !A), L = S \ T
-            denominator -= weight[i] * lamda_inv * w_bisec;
+            denominator -= weight[i] * lamda_den * w_bisec;
         }
 
-        if (mask_cut[i] && reciprocal_mask_cut[i] && (lamda > 0)) {     // λ π(C)
-            cutedges += weight[i] * w_recip;
+        if (mask_cut[i] && reciprocal_mask_cut[i] && (lamda_num > 0)) {     // λ π(C)
+            cutedges += weight[i] * w_recip * lamda_num;
         }
 
         if (mask_cut[i] && !reciprocal_mask_cut[i]) {                   // w(E(L, R))
             for (j = col[i]; j < col[i + 1]; j++) {
                 if (!mask_cut[row[j]]) {
-                    cutedges += array_G[j] * lamda_inv * w_recip;
+                    cutedges += array_G[j] * lamda_den * w_recip;
                 }
             }
         }

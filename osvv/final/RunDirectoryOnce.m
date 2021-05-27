@@ -1,4 +1,4 @@
-function [  ] = RunDirectoryOnce(graphDirectory, resultDirectory, lamdas)
+function [  ] = RunDirectoryOnce(graphDirectory, resultDirectory, lamdas_num, lamdas_den)
 %RUNDIRECTORYGRAPHS Runs all graphs in the input directory and saves
 %   results in the output directory
 %
@@ -33,15 +33,17 @@ for f=1:length(files)
             continue;
         end
         partitions = readPtn(inputFilename);
-        for lamda=lamdas
-                outputFilename = fullfile(resultDirectory, sprintf('%s_%s_runOnce_%.0f.ptn', dataset, alg{1}, 100 / lamda));
+        for i=1:length(lamdas_num)
+            lamda_num = lamdas_num(i);
+            lamda_den = lamdas_den(i);
+            outputFilename = fullfile(resultDirectory, sprintf('%s_%s_runOnce_%d_%d.ptn', dataset, alg{1}, lamda_num, lamda_den));
             if isfile(outputFilename)
                 continue;
             end
             try
-                [~, ~] = RunOnce(G, partitions, outputFilename, lamda);
+                [~, ~] = RunOnce(G, partitions, outputFilename, lamda_num, lamda_den);
             catch
-                fprintf(2, 'Failed %s for lambda = %f', dataset, lamda)
+                fprintf(2, 'Failed %s for lambda = %d / %d\n', dataset, lamda_num, lamda_den);
                 continue;
             end
         end

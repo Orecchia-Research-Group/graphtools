@@ -112,12 +112,17 @@ end
 
 % Mixed cut or edge cut?
 if (size(varargin, 2) > 0)
-    lamda = varargin{1};
-    if lamda > 1
+    if length(varargin) < 2
+        error(error_string, 'lambda');
+    end
+    lamda_num = int64(varargin{1});
+    lamda_den = int64(varargin{2});
+    if lamda_num > lamda_den
         error('Lambda needs to be less than or equal to 1');
     end
 else
-    lamda = -1.0;
+    lamda_num = int64(-1);
+    lamda_den = int64(1);
 end
 
 
@@ -164,7 +169,7 @@ D = diag(sum(H));
 % INITIALIZE EXPANSION AND WEIRDEST RATIO TRACKER VARIABLES - DOES NOT WORK FOR BALANCED
 % MINEXP
 [~, bestcut] = max(sum(G)); % find maximum degree and maximum degree vertex
-minexp_num = 2;
+minexp_num = max(full(sum(G)));
 bestcut = int64(bestcut);
 
 minexp_den = int64(1);
@@ -235,7 +240,7 @@ fprintf(2, 'Random generator seed: %f.\n', seed);
 fprintf(2, 'Flow precision: %ld.\n', p);
 fprintf(2, 'Run rate: %s.\n', rate);
 fprintf(2, 'Lower bound: %s.\n', lwbd);
-fprintf(2, 'Lambda: %.2f.\n', lamda);
+fprintf(2, 'Lambda: %.2f.\n', lamda_num/lamda_den);
 
 %%%%%%%%%%%%%%%%%%%%%%% ALGORITHM MAIN LOOP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -296,9 +301,9 @@ for i=1:double(t)
     
     tFlow = tic;
     % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
-    if (lamda > 0)
+    if (lamda_num > 0)
         [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
-            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor, lamda);
+            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor, lamda_num, lamda_den);
     else
         [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
             RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor);

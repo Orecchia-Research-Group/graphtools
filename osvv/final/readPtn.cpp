@@ -62,17 +62,18 @@ class MexFunction : public matlab::mex::Function
     matlab::data::ArrayFactory factory;
 
 private:
-    void mxErrorMessage(std::string msg)
+    /*void mxErrorMessage(std::string msg)
     {
         matlab::data::CharArray args = factory.createCharArray(msg.data());
         matlabPtr->feval<void>(u"error", args);
     }
+    */
 
 public:
     void operator()(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs)
     {
         std::string msg;
-        if ((inputs.size() < 1) || (inputs.size() > 1)) {
+        /*if ((inputs.size() < 1) || (inputs.size() > 1)) {
             msg = "Error in readPtn. Wrong number of arguments.";
             mxErrorMessage(msg);
         }
@@ -80,13 +81,14 @@ public:
             msg = "Error in readPtn. Wrong number of return results.";
             mxErrorMessage(msg);
         }
+        */
 
         std::string ptnFilename(matlab::data::CharArray(inputs[0]).toAscii());
         auto temp = readPtn(ptnFilename);
 
-        if (temp.size() == 0) {
+        /*if (temp.size() == 0) {
             mxErrorMessage("Failed to read partitions.");
-        }
+        }*/
 
         std::vector<matlab::data::Array> tempArray;
         for (auto part: temp) {
