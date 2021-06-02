@@ -151,6 +151,7 @@ m = nnz(G)/2;
 degree = int64(full(sum(G)));
 weight = ones(1, n, 'int64');
 weight(:) = degree;
+sparse_deg = diag(sum(G));
 vol = sum(weight);
 factor = diag(sum(G).^(-1/2));
 
@@ -250,6 +251,7 @@ for i=1:double(t)
     tSpectral = tic;
     % RANDOM BISECTION INITIALIZATION;
     v = round(rand(n,1));
+    v = v - mean(v);
     
     
     % LEARNING RATE INITIALIZATION
@@ -266,11 +268,11 @@ for i=1:double(t)
         opts.tol = 1e-14;
         % opts.sigma = 'SM';
         
-        [temp, trash ] = eigs(factor * (D-H) * factor, 2, 'SA', opts);
-        u=temp([1:n],2);
+        [temp, trash ] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, 1, 'SA', opts);
+        u=temp([1:n],1);
     else
         %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
-        u = expv((-1)*current_eta, factor * (D - H) * factor, v);
+        u = expv((-1)*current_eta, factor * ((init + i - 1) .* sparse_deg - H) * factor, v, 1e-3);
         %%%                   %%%
     end
     spectime = spectime + toc(tSpectral);
@@ -314,8 +316,13 @@ for i=1:double(t)
     congestion = congestion +1/matchrat;
     
     % UPDATE CERTIFICATE
-    fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d\n', nnz(matching), nnz(H));
-    H = H + matching;
+    
+    % fprintf(2, 'Min = %d Max = %d\n', full(min(sum(matching))), full(max(sum(matching))));
+    fprintf(2, 'Metric = %f\n', full(max(double(sum(matching)) ./ double(weight))));
+    degree_distortion = full(max(double(sum(matching)) ./ double(weight)));
+    fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d |matching|_inf = %f\n', nnz(matching), nnz(H), norm(factor * matching ./ degree_distortion * factor, inf));
+    % fprintf(2, 'Volume of matching %d\n', sum(matching, 'all'));
+    H = H + matching ./ degree_distortion;
     D = D + diag(sum(matching));
     % UPDATE COUNTER
     flownumber = flownumber + iterflownumber;
@@ -348,7 +355,7 @@ for i=1:double(t)
     % CHECK STOPPING CONDITION
     if(notimproved >= stop(stop_cnt) || i == t)
         endtime = toc;
-        fprintf(2,'\nBest cut found: %f / %ld. Expansion: %f.\n', minexp_num, minexp_den, minexp);
+        fprintf(2,'\nBest cut found: %d / %ld. Expansion: %f.\n', minexp_num, minexp_den, minexp);
         
         
         %%%%%%%%%%%%%%%%%%%%%%%% LOWER BOUND %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

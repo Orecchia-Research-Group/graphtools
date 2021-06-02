@@ -1034,10 +1034,15 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             if (cap[na] > 0) {
                 while (a->resCap < cap[na]) {
                     minCap = cap[na] - a->resCap;
-
+                    if (minCap < 0) {
+                        printf("WARNING: Found negative minCap = %ld - %ld = %ld\n", cap[na], a->resCap, minCap);
+                    }
 
                     last = decomposePathInternal(a->head, &minCap);
 
+                    if (minCap < 0) {
+                        printf("WARNING: Returned negative minCap = %ld\n", minCap);
+                    }
 
                     a->resCap += minCap;
                     if (last != NULL) {
@@ -1068,7 +1073,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                                 exit(1);
                             }
                         }
-
+                        if (minCap < 0) {
+                            printf("Edge (%ld, %ld) has negative weight %ld\n", nNode(a->head), nNode(last), minCap);
+                        }
                         (*mheads)[k] = nNode(a->head);
                         (*mtails)[k] = nNode(last);
                         (*mweights)[k] = minCap;
@@ -1078,10 +1085,10 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                         (*mweights)[k + 1] = minCap;
 
                         k = k + 2;
-                    } else {
-                        printf("cycle with source detected marked %ld should be -2\n", source->d);
-                        source->d = -1;
-                    }
+                    } //else {
+                      //  printf("cycle with source detected marked %ld should be -2\n", source->d);
+                      //  source->d = -1;
+                    //}
 
                 }
             }
@@ -1378,7 +1385,9 @@ node *decomposePathInternal(node *n, long *minCap) {
 #endif
             while (a->resCap < cap[na]) {
                 long thisCap = cap[na] - a->resCap;
-
+                if (thisCap < 0) {
+                    printf("WARNING: Found negative decomposing flow = %ld - %ld = %ld\n", cap[na], a->resCap, thisCap);
+                }
                 if (*minCap > thisCap) {
                     *minCap = thisCap;
                 } else {
@@ -1410,5 +1419,5 @@ node *decomposePathInternal(node *n, long *minCap) {
     }
     totalNoOutgoingFlowErrors++;
     n->d = 0;
-    return n;
+    return NULL;
 }

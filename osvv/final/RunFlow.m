@@ -167,7 +167,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         weirdrat = double(weirdrat_num) / double(weirdrat_den);
     end
 
-    [newex_num, newex_den, newex] = cutexp(G, lamda_num, lamda_den, int64(weight), cut, reciprocalCut);
+    [newex_num, newex_den, newex] = cutexp(G, int64(lamda_num), int64(lamda_den), int64(weight), cut, reciprocalCut);
     % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
     if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol) && (newex < ex)
         ex_num = newex_num;
