@@ -44,6 +44,9 @@ Graph loadeg2graph(std::string graphFilename) {
 
 Partitions readPtn(std::string ptnFilename) {
     Partitions partitions;
+    if (!ptnFilename.size()) {
+        return partitions;
+    }
     std::ifstream ptnFile(ptnFilename);
     if (!ptnFile.is_open()) {
         std::cerr << "Failed to open ptnFilename " << ptnFilename <<". Check path and permissions.\n";
@@ -241,3 +244,4 @@ int main(int argc, char *argv[]) {
     }
     csvFile.close();
 }
+
