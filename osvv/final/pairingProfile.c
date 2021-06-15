@@ -37,6 +37,7 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     alphaFile = fopen(filePathAlpha, "r");
     if (!alphaFile) {
         fprintf(stderr, "Unable to open file: %s\n", filePathAlpha);
+        exit(1);
     }
 
     fscanf(alphaFile, "%ld %ld", &cap_add, &cap_orig);
@@ -89,7 +90,7 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
 
     printf("Graph %s has %ld nodes and %ld edges\n", filePath, N, M);
 
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < runNumber; i++){
         time_run = timer();
         #ifdef DEBUG
             hipr(n, m, tails, heads, weights, N + 1, N + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_algorithm, &time_init, &time_S1, &time_S2, &time_match);
@@ -100,7 +101,7 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
         time_sum += time_run;
     }
 
-    time_sum /= 5;
+    time_sum /= runNumber;
     fprintf(stderr, "Average hipr runtime: %.5f\n", time_sum);
     fflush(stderr);
 
