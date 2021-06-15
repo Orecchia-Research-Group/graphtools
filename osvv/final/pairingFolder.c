@@ -7,7 +7,7 @@
 
 #define ARRAYSIZE 100
 
-void profileFolder(const char *folderPath, int runNumber) {
+void profileFolder(const char *folderPath, int runNumber, int algorithm) {
     unsigned int eg2Len, currLen;
     int fileCount = 0;
 //instead of realloc iterate through the folder multiple times by calling opendir
@@ -69,8 +69,7 @@ void profileFolder(const char *folderPath, int runNumber) {
             alphaArr[fileCount] = strdup(alphaPath);
             currentDirectory = getcwd(NULL, 0);
             chdir(folderPath);
-            pairingProfile(eg2Arr[fileCount], ptnArr[fileCount], alphaArr[fileCount], runNumber, 0);
-            pairingProfile(eg2Arr[fileCount], ptnArr[fileCount], alphaArr[fileCount], runNumber, 1);
+            pairingProfile(eg2Arr[fileCount], ptnArr[fileCount], alphaArr[fileCount], runNumber, algorithm);
             chdir(currentDirectory);
             free(currentDirectory);
             fileCount++;
@@ -81,7 +80,7 @@ void profileFolder(const char *folderPath, int runNumber) {
 }
 
 int main(int argc, char *argv[]) {
-    if ((argc < 2) || (argc > 3)) {
+    if ((argc < 2) || (argc > 4)) {
         fprintf(stderr, "Usage: %s folderpath\n [runNumber]", argv[0]);
         exit(-1);
     }
@@ -91,5 +90,10 @@ int main(int argc, char *argv[]) {
         sscanf(argv[2], "%d", &runNumber);
     }
 
-    profileFolder(argv[1], runNumber);
+    int algorithm = 0;
+    if (argc > 3) {
+        sscanf(argv[3], "%d", &algorithm);
+    }
+
+    profileFolder(argv[1], runNumber, algorithm);
 }
