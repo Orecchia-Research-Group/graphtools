@@ -4,7 +4,7 @@
 
 int main (int argc, char *argv[]) {
     if((argc < 4) || (argc > 6)){
-        fprintf(stderr, "Wrong number of arguments");
+        fprintf(stderr, "Usage: %s eg2Path, ptnPath, alphaPath, runNumber, algorithm", argv[0]);
         exit(-1);
     }
 
