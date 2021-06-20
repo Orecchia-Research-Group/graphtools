@@ -768,6 +768,18 @@ void stageTwoDynamic()
     }
     dt_cleanUp(p);
 
+    // recompute excess
+    forAllNodes(i) {
+        i->excess = 0;
+        forAllArcs(i, a){
+            if (a->cap > 0) {
+                long flow = a->cap - a->resCap;
+                i->excess -= flow;
+                a->head->excess += flow;
+            }
+        }
+    }
+
     fprintf(stderr, "Cycle cnt = %ld\n", cycle_cnt);
 
     // fprintf(stderr, "should be no cycle\n");
@@ -1218,8 +1230,8 @@ void hipr(
     /*  fprintf (stderr,"c flow:       %12.01f\n", flow); */
 
 #ifndef CUT_ONLY
-    stageTwo();
-    // stageTwoDynamic();
+    // stageTwo();
+    stageTwoDynamic();
 
 #ifdef DEBUG
     tS2 = timer();

@@ -70,6 +70,8 @@ void dt_cleanUp_d_node(dynamic_node_t* d_node, bool* flag, long parent_cost) {
     long cost = parent_cost + d_node->delcost;
     if (d_node->edge != NULL) {
         d_node->edge->resCap = d_node->edge->cap - cost;
+        long tot_cap = d_node->edge->cap + d_node->edge->rev->cap;
+        d_node->edge->rev->resCap = tot_cap - d_node->edge->resCap;
     }
     if (d_node->left != NULL) {
         dt_cleanUp_d_node(d_node->left, flag, cost);
@@ -300,6 +302,7 @@ bool dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc*
         long ccost = min(pcost, edge->cap - edge->resCap); // cycle minimum cost
         dt_pUpdate(q, -ccost);
         edge->resCap += ccost;
+        edge->rev->resCap -= ccost;
         dt_d_cutEdge(dTree, q);
         dTree->d_cur_node = dt_d_root(dTree->d_source);
         dTree->cur_node = dt_to_node(dTree, dTree->d_cur_node);
@@ -429,6 +432,8 @@ void dt_d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
     }
 
     p->edge->resCap = p->edge->cap - p->delcost;
+    long tot_cap = p->edge->cap + p->edge->rev->cap;
+    p->edge->rev->resCap = tot_cap - p->edge->resCap;
     p->edge = NULL;
 
     p->delmin = 0;

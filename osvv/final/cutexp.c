@@ -75,22 +75,22 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mask_cut[cut[i]] = 1;
 
 
-  // if(size_cut > n/2)    /* COMPLEMENTATION */
-  //   {
-  //   for(i=1; i < n+1 ; i++)
-  //     mask_cut[i] = !mask_cut[i];
-  //
-  //   size_cut = n - size_cut;
-  //
-  //   j = 0;
-  //   for(i=1; i < n+1; i++)
-  //     {
-	// if(mask_cut[i]) {
-	//   cut[j] = i;
-	//   j++;
-	// }
-  //     }
-  //   }
+  if(size_cut > n/2)    /* COMPLEMENTATION */
+    {
+    for(i=1; i < n+1 ; i++)
+      mask_cut[i] = !mask_cut[i];
+
+    size_cut = n - size_cut;
+
+    j = 0;
+    for(i=1; i < n+1; i++)
+      {
+	if(mask_cut[i]) {
+	  cut[j] = i;
+	  j++;
+	}
+      }
+    }
 
 
   /* COMPUTE EXPANSION */

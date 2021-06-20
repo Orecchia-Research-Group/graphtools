@@ -252,8 +252,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     size_cut = N - size_cut;
 
-    fprintf(stderr, "Pairing.c size_cnt = %ld\n", size_cut);
-    if (size_cut < 2) mexErrMsgTxt("Cut size smaller than 2\n");
+    fprintf(stderr, "Pairing.c size_cut = %ld\n", size_cut);
+    // if (size_cut < 2) mexErrMsgTxt("Cut size smaller than 2\n");
 
     k = 0;
     dims[0] = size_cut;
