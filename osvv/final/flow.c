@@ -697,6 +697,7 @@ void stageTwoDynamic()
 
     /* deal with self-loops */
     forAllNodes(i) {
+        i->current = i->first;
         forAllArcs(i, a){
             e_cnt++;
             if (a->head == i) {
@@ -771,6 +772,9 @@ void stageTwoDynamic()
     // recompute excess
     forAllNodes(i) {
         i->excess = 0;
+    }
+
+    forAllNodes(i) {
         forAllArcs(i, a){
             if (a->cap > 0) {
                 long flow = a->cap - a->resCap;
@@ -1272,6 +1276,7 @@ void hipr(
             }
 #else
             if (i->excess != 0) {
+                printf("node=%ld, node->first=%ld, node->current=%ld\n", i - nodes + nMin, i->first - arcs, i->current - arcs);
                 printf("ERROR: nonzero node excess\n");
                 exit(2);
             }
