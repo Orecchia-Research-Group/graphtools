@@ -519,8 +519,6 @@ void stageTwo()
     tS2_Topo_Start = timer();
 
 
-    long node_cnt = 0;
-    long cycle_cnt = 0;
     long stack_cnt = 0;
 
     /* eliminate flow cycles, topologicaly order vertices */
@@ -529,7 +527,6 @@ void stageTwo()
             r = i;
             r->d = GREY;
 
-            node_cnt++;
             do {
                 for (; i->current != (i + 1)->first; i->current++) {
                     a = i->current;
@@ -539,13 +536,11 @@ void stageTwo()
                             /* start scanning j */
                             j->d = GREY;
 
-                            node_cnt++;
                             buckets[j - nodes].firstActive = i;
                             i = j;
                             break;
                         } else if (j->d == GREY) {
                             /* find minimum flow on the cycle */
-                            cycle_cnt++;
 
                             delta = a->resCap;
                             while (1) {
@@ -572,9 +567,6 @@ void stageTwo()
                             for (j = i->current->head; j != i; j = a->head) {
                                 a = j->current;
                                 if ((j->d == WHITE) || (a->resCap == 0)) {
-                                    if (j->current->head->d != WHITE) {
-                                        node_cnt--;
-                                    }
 
                                     j->current->head->d = WHITE;
                                     if (j->d != WHITE)
@@ -669,7 +661,6 @@ void stageTwo()
 
     tS2_End = timer();
 
-    fprintf(stderr, "Node cnt = %ld, cycle cnt = %ld, stack cnt = %ld\n", node_cnt, cycle_cnt, stack_cnt);
     fprintf(stderr, "Node with excess before = %ld, node with excess after = %ld\n", node_excess_cnt_before, node_excess_cnt_after);
 
     fprintf(stderr, "-------------------------------\n");
@@ -680,6 +671,31 @@ void stageTwo()
     fprintf(stderr, "-------------------------------\n\n\n");
 
 }
+
+/* perform dfs with dynamic trees
+ * return: 0 if link or cycle elimination is performed
+ *         1 otherwise
+ */
+int dt_dfs(dynamic_tree_t* p) {
+    int link_flag = 0;
+    for (; p->cur_node->current < (p->cur_node +
+                                   1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
+        arc *cur_arc = p->cur_node->current;
+        if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
+
+        if ((cur_arc->cap == cur_arc->resCap)) continue;
+
+        // Found an edge. Perform the link or remove flow on
+        // a cycle if one is found
+        node* prev = p->cur_node;
+        link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+        if (link_flag == 1)
+            prev->current++;
+        return 0;
+    }
+    return 1;
+}
+
 
 void stageTwoDynamic()
 {
@@ -692,75 +708,32 @@ void stageTwoDynamic()
 
     tS2_Selfloop_Start = timer();
 
-    long s_cnt = 0;
-    long e_cnt = 0;
-
     /* deal with self-loops */
     forAllNodes(i) {
         i->current = i->first;
         forAllArcs(i, a){
-            e_cnt++;
             if (a->head == i) {
                 a->resCap = cap[a - arcs];
-
-                s_cnt++;
             }
         }
     }
 
-    fprintf(stderr, "Loop e_cnt = %ld, s_cnt = %ld\n", e_cnt, s_cnt);
-
     tS2_EliminateCycle_Start = timer();
-
-    long node_cnt = 0;
-    long cycle_cnt = 0;
 
     /* eliminate flow cycles */
     dynamic_tree_t *p;
     p = dt_init(n, nodes, source);
     while (true) {
-        int link_flag = 0;
-        int cycle_flag = 0;
-        // fprintf(stderr, "cur node is %ld\n", nNode(p->cur_node));
-        // fprintf(stderr, "currrent = %ld, next = %ld\n", nArc(p->cur_node->current), nArc((p->cur_node + 1)->first));
-        // if (p->cur_node->current < (p->cur_node +
-                                       // 1)->first) exit(0);
-        for (; p->cur_node->current < (p->cur_node +
-                                       1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
-            arc *cur_arc = p->cur_node->current;
-            if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
-
-            if ((cur_arc->cap == cur_arc->resCap)) continue;
-
-            // Found an edge. Perform the link or remove flow on
-            // a cycle if one is found
-
-            node* prev = p->cur_node;
-            link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
-            if (link_flag == 1)
-                prev->current++;
-            else {
-                cycle_flag = 1;
-                cycle_cnt++;
-            }
-            break;
-        }
-        // fprintf(stderr, "link = %d, cycle = %d\n", link_flag, cycle_flag);
-        // // if (link_flag == 1) exit(0);
-        // if (cycle_flag == 1) exit(0);
-        if (link_flag || cycle_flag) {
+        int dfs_ret = dt_dfs(p);
+        if (!dfs_ret) { // link or cycle elimination is performed
             continue;
         }
-        // fprintf(stderr, "currrent = %ld, next = %ld\n", nArc(p->cur_node->current), nArc((p->cur_node + 1)->first));
-        // fprintf(stderr, "cur_node = %ld, sink = %ld\n", nNode(p->cur_node), nNode(sink));
         if (p->cur_node->current ==
             (p->cur_node + 1)->first || p->cur_node == sink) {             // if no suitable edges cut tail
             node *previous;
-            // fprintf(stderr, "end of list of node %ld\n", nNode(p->cur_node));
             if ((previous = dt_before(p, p->cur_node)) !=
                 NULL) {              // Checks that a previous exists.
                 // The alternative is that p is the source
-                // fprintf(stderr, "cut previous = %ld\n", nNode(previous));
                 dt_cut(p, previous);
             } else {
                 break;
@@ -784,12 +757,6 @@ void stageTwoDynamic()
         }
     }
 
-    fprintf(stderr, "Cycle cnt = %ld\n", cycle_cnt);
-
-    // fprintf(stderr, "should be no cycle\n");
-
-    // assert no cycle
-
     tS2_Topo_Start = timer();
 
     /* initialize */
@@ -805,7 +772,6 @@ void stageTwoDynamic()
                       (i != source) && (i != sink)) {
             r = i;
             r->d = GREY;
-            node_cnt++;
             do {
                 for (; i->current != (i + 1)->first; i->current++) {
                     a = i->current;
@@ -843,16 +809,10 @@ void stageTwoDynamic()
             } while (1);
         }
 
-    fprintf(stderr, "Node cnt = %ld\n", node_cnt);
-
     tS2_RemoveExcess_Start = timer();
-
-    long stack_cnt = 0;
 
     if (bos != NULL) {
         for (i = tos; i != bos; i = i->bNext) {
-            stack_cnt++;
-
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
@@ -869,7 +829,6 @@ void stageTwoDynamic()
             }
         }
         /* now do the bottom */
-        stack_cnt++;
 
         i = bos;
         a = i->first;
@@ -887,8 +846,6 @@ void stageTwoDynamic()
             a++;
         }
     }
-
-    fprintf(stderr, "Stack cnt = %ld\n", stack_cnt);
 
     tS2_End = timer();
 
@@ -1460,26 +1417,8 @@ void hipr(
                 // Look for an augmenting path
 
                 while (p->cur_node != sink) {
-                    int link_flag = 0;
-                    int cycle_flag = 0;
-                    for (; p->cur_node->current < (p->cur_node +
-                                                   1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
-                        arc *cur_arc = p->cur_node->current;
-                        if (cap[nArc(cur_arc)] == 0) continue;              // Reverse arc, not important.
-
-                        if ((cur_arc->cap == cur_arc->resCap)) continue;
-
-                        // Found an edge. Perform the link or remove flow on
-                        // a cycle if one is found
-                        node* prev = p->cur_node;
-                        link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
-                        if (link_flag == 1)
-                            prev->current++;
-                        else
-                            cycle_flag = 1;
-                        break;
-                    }
-                    if (link_flag || cycle_flag) {
+                    int dfs_ret = dt_dfs(p);
+                    if (!dfs_ret) { // link is performed
                         continue;
                     }
                     if (p->cur_node->current ==
