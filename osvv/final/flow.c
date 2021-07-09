@@ -1169,6 +1169,87 @@ void addMatching(long **mheads, long **mtails, long **mweights,
     *kPtr = k + 2;
 }
 
+void matchingDinic(long **mheads, long **mtails, long **mweights,
+                int *kPtr, long int *matchingCapacityPtr) {
+    node *i;
+    arc *a;
+
+    node *last;
+    arc *stopA;
+    long minCap;
+    /* INITIALIZE MATCHING ARRAYS */
+    forAllNodes(i) {
+        i->d = 0;
+    }
+
+    forAllArcs(source, a) {
+        int na = nArc(a);
+        source->d = -1;  /*mark on path for cycle detection. */
+        if (cap[na] > 0) {
+            while (a->resCap < cap[na]) {
+                minCap = cap[na] - a->resCap;
+                last = decomposePathInternal(a->head, &minCap);
+                a->resCap += minCap;
+                if (last != NULL) {
+                    addMatching(mheads, mtails, mweights, a->head,
+                                last, minCap, kPtr, matchingCapacityPtr);
+                } else {
+                    printf("cycle with source detected marked %ld should be -2\n", source->d);
+                    source->d = -1;
+                }
+
+            }
+        }
+    }
+}
+
+void matchingDynamic(long **mheads, long **mtails, long **mweights,
+                    int *kPtr, long int *matchingCapacityPtr) {
+    node *i;
+    arc *a;
+
+    node *mhead;
+    node *mtail;
+    long mweight;
+
+    dynamic_tree_t* p = dt_init(n, nodes, source);
+    while (source->excess != 0) {
+        // Look for an augmenting path
+
+        while (p->cur_node != sink) {
+            int dfs_ret = dt_dfs(p);
+            if (!dfs_ret) { // link is performed
+                continue;
+            }
+            if (p->cur_node->current ==
+                (p->cur_node + 1)->first) {             // if no suitable edges cut tail
+                node *previous;
+                if ((previous = dt_before(p, p->cur_node)) !=
+                    NULL) {              // Checks that a previous exists.
+                    // The alternative is that p is the source
+                    dt_cut(p, previous);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (p->cur_node != sink) {
+            break;
+        }
+
+        dt_findPath(p, &mhead, &mtail, &mweight);
+
+        if (!mweight) continue;
+
+        source->excess -= mweight;
+
+        addMatching(mheads, mtails, mweights, mhead, mtail, mweight,
+                    kPtr, matchingCapacityPtr);
+    }
+    dt_cleanUp(p);
+}
+
 void hipr(
         long ninput,
         long minput,
@@ -1370,7 +1451,6 @@ void hipr(
 #ifdef DEBUG
         tMatch = timer();
 #endif
-        long minCap;
         long int matchingCapacity;
         // long *reallocPtr;
 
@@ -1387,77 +1467,13 @@ void hipr(
         matchingCapacity = 0;
         k = 0;
 
-        node *mhead;
-        node *mtail;
-        long mweight;
 
-        dynamic_tree_t *p;
         switch (matching_index) {
             case 0: ;
-                node *last;
-                arc *stopA;
-                /* INITIALIZE MATCHING ARRAYS */
-                forAllNodes(i) {
-                    i->d = 0;
-                }
-
-                forAllArcs(source, a) {
-                    int na = nArc(a);
-                    source->d = -1;  /*mark on path for cycle detection. */
-                    if (cap[na] > 0) {
-                        while (a->resCap < cap[na]) {
-                            minCap = cap[na] - a->resCap;
-                            last = decomposePathInternal(a->head, &minCap);
-                            a->resCap += minCap;
-                            if (last != NULL) {
-                                addMatching(mheads, mtails, mweights, a->head,
-                                            last, minCap, &k, matchingCapacity);
-                            } else {
-                                printf("cycle with source detected marked %ld should be -2\n", source->d);
-                                source->d = -1;
-                            }
-
-                        }
-                    }
-                }
+                matchingDinic(mheads, mtails, mweights, &k, &matchingCapacity);
                 break;
             case 1: ;
-                p = dt_init(n, nodes, source);
-                while (source->excess != 0) {
-                    // Look for an augmenting path
-
-                    while (p->cur_node != sink) {
-                        int dfs_ret = dt_dfs(p);
-                        if (!dfs_ret) { // link is performed
-                            continue;
-                        }
-                        if (p->cur_node->current ==
-                            (p->cur_node + 1)->first) {             // if no suitable edges cut tail
-                            node *previous;
-                            if ((previous = dt_before(p, p->cur_node)) !=
-                                NULL) {              // Checks that a previous exists.
-                                // The alternative is that p is the source
-                                dt_cut(p, previous);
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (p->cur_node != sink) {
-                        break;
-                    }
-
-                    dt_findPath(p, &mhead, &mtail, &mweight);
-
-                    if (!mweight) continue;
-
-                    source->excess -= mweight;
-
-                    addMatching(mheads, mtails, mweights, mhead, mtail, mweight,
-                                &k, &matchingCapacity);
-                }
-                dt_cleanUp(p);
+                matchingDynamic(mheads, mtails, mweights, &k, &matchingCapacity);
                 break;
         }
         *nedges = k;
