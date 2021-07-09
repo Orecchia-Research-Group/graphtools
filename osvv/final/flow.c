@@ -1123,33 +1123,50 @@ void bfs(){
     free(queue);
 }
 
-void reallocMatchingArr(long **mheads, long **mtails, long **mweights,
-                        long *reallocPtr, long int matchingCapacity) {
-    if (!matchingCapacity) matchingCapacity = 2 * n;
-    else matchingCapacity = 2 * matchingCapacity;
-    reallocPtr = *mheads;
-    *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
-    if (NULL == *mheads) {
-        free(reallocPtr);
-        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-        exit(1);
+void addMatching(long **mheads, long **mtails, long **mweights,
+                node* mhead, node* mtail, long mweight, int *kPtr,
+                long int *matchingCapacityPtr) {
+    long *reallocPtr;
+    long int matchingCapacity = *matchingCapacityPtr;
+    int k = *kPtr;
+    if (k >= matchingCapacity) {
+        if (!matchingCapacity) *matchingCapacityPtr = 2 * n;
+        else *matchingCapacityPtr = 2 * matchingCapacity;
+        reallocPtr = *mheads;
+        *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+        if (NULL == *mheads) {
+            free(reallocPtr);
+            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+            exit(1);
+        }
+
+        reallocPtr = *mtails;
+        *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+        if (NULL == *mtails) {
+            free(reallocPtr);
+            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+            exit(1);
+        }
+
+        reallocPtr = *mweights;
+        *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+        if (NULL == *mweights) {
+            free(reallocPtr);
+            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+            exit(1);
+        }
     }
 
-    reallocPtr = *mtails;
-    *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
-    if (NULL == *mtails) {
-        free(reallocPtr);
-        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-        exit(1);
-    }
+    (*mheads)[k] = nNode(mhead);
+    (*mtails)[k] = nNode(mtail);
+    (*mweights)[k] = mweight;
 
-    reallocPtr = *mweights;
-    *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
-    if (NULL == *mweights) {
-        free(reallocPtr);
-        fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-        exit(1);
-    }
+    (*mtails)[k + 1] = nNode(mhead);
+    (*mheads)[k + 1] = nNode(mtail);
+    (*mweights)[k + 1] = mweight;
+
+
+    *kPtr = k + 2;
 }
 
 void hipr(
@@ -1355,7 +1372,7 @@ void hipr(
 #endif
         long minCap;
         long int matchingCapacity;
-        long *reallocPtr;
+        // long *reallocPtr;
 
         int k;
 
@@ -1393,20 +1410,8 @@ void hipr(
                             last = decomposePathInternal(a->head, &minCap);
                             a->resCap += minCap;
                             if (last != NULL) {
-                                if (k >= matchingCapacity) {
-                                    reallocMatchingArr(mheads, mtails, mweights, reallocPtr, matchingCapacity);
-                                }
-
-                                (*mheads)[k] = nNode(a->head);
-                                (*mtails)[k] = nNode(last);
-                                (*mweights)[k] = minCap;
-
-                                (*mtails)[k + 1] = nNode(a->head);
-                                (*mheads)[k + 1] = nNode(last);
-                                (*mweights)[k + 1] = minCap;
-
-
-                                k = k + 2;
+                                addMatching(mheads, mtails, mweights, a->head,
+                                            last, minCap, &k, matchingCapacity);
                             } else {
                                 printf("cycle with source detected marked %ld should be -2\n", source->d);
                                 source->d = -1;
@@ -1449,22 +1454,8 @@ void hipr(
 
                     source->excess -= mweight;
 
-                    if (k >= matchingCapacity) {
-                        reallocMatchingArr(mheads, mtails, mweights, reallocPtr, matchingCapacity);
-                    }
-
-                    (*mheads)[k] = nNode(mhead);
-                    (*mtails)[k] = nNode(mtail);
-                    (*mweights)[k] = mweight;
-
-                    (*mtails)[k + 1] = nNode(mhead);
-                    (*mheads)[k + 1] = nNode(mtail);
-                    (*mweights)[k + 1] = mweight;
-
-                    k = k + 2;
-
-                    //dt_print_op_stat(p);
-
+                    addMatching(mheads, mtails, mweights, mhead, mtail, mweight,
+                                &k, &matchingCapacity);
                 }
                 dt_cleanUp(p);
                 break;
