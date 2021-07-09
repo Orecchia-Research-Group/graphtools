@@ -1,0 +1,300 @@
+Max degree is higher than precision. Search will start at weirdrat = p.
+
+Initialization complete. Time required: 258.233960
+
+Running on ...
+Graph: ../../graphs/social/orkut.eg2. Number of vertices: 3072441. Number of edges: 117185083.
+Number of iterations: 1000.
+Stopping condition: 4
+Learning rate: 1000.000000.
+Initialization: 1.000000.
+Random generator seed: 42.000000.
+Flow precision: 1000.
+Run rate: infty.
+Lower bound: y.
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1000 / 1 = 1000.000000
+Node with excess before = 1536221, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.770142
+S2 Init: 0.060974
+S2 Toposort and Cycle Removal: 4.896973
+S2 Remove Excess: 3.179504
+-------------------------------
+
+
+Pairing.c size_cut = 1536220
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 57019200 / 1536220 = 37.116559
+Node with excess before = 873787, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 2.079834
+S2 Init: 0.050659
+S2 Toposort and Cycle Removal: 160.243530
+S2 Remove Excess: 1.332642
+-------------------------------
+
+
+Pairing.c size_cut = 1705424
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 19153148 / 941510 = 20.343011
+Node with excess before = 442242, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 2.037231
+S2 Init: 0.040894
+S2 Toposort and Cycle Removal: 0.344971
+S2 Remove Excess: 0.216431
+-------------------------------
+
+
+Pairing.c size_cut = 448368
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 4737390 / 448190 = 10.570048
+Node with excess before = 215861, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.881470
+S2 Init: 0.039673
+S2 Toposort and Cycle Removal: 0.127441
+S2 Remove Excess: 0.086792
+-------------------------------
+
+
+Pairing.c size_cut = 217725
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1140843 / 217687 = 5.240749
+Node with excess before = 113922, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.648438
+S2 Init: 0.035889
+S2 Toposort and Cycle Removal: 286.636230
+S2 Remove Excess: 0.333496
+-------------------------------
+
+
+Pairing.c size_cut = 2957831
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 310447 / 114589 = 2.709222
+Node with excess before = 56178, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 2.159668
+S2 Init: 0.035400
+S2 Toposort and Cycle Removal: 0.032959
+S2 Remove Excess: 0.028564
+-------------------------------
+
+
+Pairing.c size_cut = 56642
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 79077 / 56584 = 1.397515
+Node with excess before = 33974, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.929688
+S2 Init: 0.049561
+S2 Toposort and Cycle Removal: 150.270752
+S2 Remove Excess: 0.296143
+-------------------------------
+
+
+Pairing.c size_cut = 3038289
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 34141 / 34149 = 0.999766
+Node with excess before = 21, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 2.157959
+S2 Init: 0.031250
+S2 Toposort and Cycle Removal: 102.571045
+S2 Remove Excess: 0.258545
+-------------------------------
+
+
+Pairing.c size_cut = 3072406
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 19 / 32 = 0.593750
+Node with excess before = 9, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 2.019531
+S2 Init: 0.056641
+S2 Toposort and Cycle Removal: 22.782715
+S2 Remove Excess: 0.251953
+-------------------------------
+
+
+Pairing.c size_cut = 3072424
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 8 / 16 = 0.500000
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.958984
+S2 Init: 0.030762
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 3072438
+Number of maxflows: 11. Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 2 = 0.500000
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.678223
+S2 Init: 0.042480
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 3072438
+Wrat: 0.500000. Iter 1. Exp: 8.000000 / 3072424 = 0.470588
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 8 / 16 = 0.500000
+Node with excess before = 2, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.984375
+S2 Init: 0.030273
+S2 Toposort and Cycle Removal: 0.020996
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 3072435
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 2 / 5 = 0.400000
+Node with excess before = 2, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.641602
+S2 Init: 0.030762
+S2 Toposort and Cycle Removal: 0.020508
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 3
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.571777
+S2 Init: 0.034668
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 3
+Number of maxflows: 4. Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.765625
+S2 Init: 0.034668
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 3
+Wrat: 0.333333. Iter 2. Exp: 2.000000 / 3072435 = 0.333333
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.591797
+S2 Init: 0.039062
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 6
+Number of maxflows: 2. Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.589844
+S2 Init: 0.026855
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 6
+Wrat: 0.333333. Iter 3. Exp: 2.000000 / 3072435 = 0.333333
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.671387
+S2 Init: 0.034668
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.013184
+-------------------------------
+
+
+Pairing.c size_cut = 0
+Number of maxflows: 2. Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 2.034668
+S2 Init: 0.034668
+S2 Toposort and Cycle Removal: 0.013184
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 0
+Wrat: 0.333333. Iter 4. Exp: 2.000000 / 3072435 = 0.333333
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.588867
+S2 Init: 0.042969
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 0
+Number of maxflows: 2. Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.955078
+S2 Init: 0.035156
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 0
+Wrat: 0.333333. Iter 5. Exp: 2.000000 / 3072435 = 0.333333
+Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.981445
+S2 Init: 0.034180
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.013672
+-------------------------------
+
+
+Pairing.c size_cut = 6
+Number of maxflows: 2. Pairing.c size_bisec = 1536220
+Pairing.c alpha = 1 / 3 = 0.333333
+Node with excess before = 1, node with excess after = 0
+-------------------------------
+S2 Selfloop Removal: 1.646484
+S2 Init: 0.041992
+S2 Toposort and Cycle Removal: 0.012695
+S2 Remove Excess: 0.012695
+-------------------------------
+
+
+Pairing.c size_cut = 6
+Wrat: 0.333333. Iter 6. Exp: 2.000000 / 3072435 = 0.333333
+
+Best cut found: 2.000000 / 3072435. Expansion: 0.333333.
+Lower bound: 0.656739.
+Algorithm has completed. Time required: 10755.159507
