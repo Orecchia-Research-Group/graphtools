@@ -235,7 +235,7 @@ if(nomatching_flag == 0)
         fprintf(2, 'Warning: flow is %d, but matching has volume %d\n', flow, matchingSum / 2);
     end
    % MATCHING SCALING
-   matching = matching/double(match_num);
+   matching = matching / double(match_num * side_num);
    matchrat = double(match_num)/double(match_den);
    if (lamda_num > 0)
        matching = matching / double(lamda_den);

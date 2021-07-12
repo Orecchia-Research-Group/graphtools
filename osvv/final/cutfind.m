@@ -244,7 +244,7 @@ fprintf(2, 'Random generator seed: %f.\n', seed);
 fprintf(2, 'Flow precision: %ld.\n', p);
 fprintf(2, 'Run rate: %s.\n', rate);
 fprintf(2, 'Lower bound: %s.\n', lwbd);
-fprintf(2, 'Lambda: %.2f.\n', lamda_num/lamda_den);
+fprintf(2, 'Lambda: %d / %d = %.2f.\n', lamda_num, lamda_den, double(lamda_num) / double(lamda_den));
 
 %%%%%%%%%%%%%%%%%%%%%%% ALGORITHM MAIN LOOP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -352,9 +352,7 @@ for i=1:double(t)
     
     % PRINT CURRENT RESULT
     fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
-    
-    pause;
-    
+        
     % CHECK STOPPING CONDITION
     if(notimproved >= stop(stop_cnt) || i == t)
         endtime = toc;

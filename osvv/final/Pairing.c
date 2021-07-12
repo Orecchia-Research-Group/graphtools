@@ -204,7 +204,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         k++;
     }
-    fprintf(stderr, "Total edges = %ld\n", k);
     if (zero_internal > 0) fprintf(stderr, "There are %ld nodes whose internal edges were reduced to zero\n", zero_internal);
 
     for (h = 0; h < N; h++) {
