@@ -136,10 +136,15 @@ rand('twister', seed);
 
 % READ GRAPH G
 if(ischar(FileToRead))
-    [G, n, ~] = loadeg2graph(FileToRead);
+    [G, weight] = loadMetisGraph(FileToRead);
+    n = size(G, 1);
+    weight = int64(weight);
 else
     G = FileToRead;
     n = size(G, 1);
+    degree = int64(full(sum(G)));
+    weight = ones(1, n, 'int64');
+    weight(:) = degree;
 end
 % ERROR CHECKING: G MUST BE UNDIRECTED
 % if(nnz(G - G') ~= 0)
@@ -149,8 +154,6 @@ end
 % CONVERT m FROM NUMBER OF ARCS TO NUMBER OF EDGES
 m = nnz(G)/2;
 degree = int64(full(sum(G)));
-weight = ones(1, n, 'int64');
-weight(:) = degree;
 sparse_deg = diag(sum(G));
 vol = sum(weight);
 factor = diag(sum(G).^(-1/2));
@@ -226,7 +229,7 @@ nomatching = 0;
 inittime = toc;
 fprintf(2, '\nInitialization complete. Time required: %f\n', inittime);
 fprintf(2, '\nRunning on ...\n');
-fprintf(2, 'Number of vertices: %ld. Number of edges: %ld. Graph volume: %ld\n', n, m, vol);
+fprintf(2, 'Number of vertices: %d. Number of edges: %d. Graph volume: %d\n', n, m, vol);
 fprintf(2, 'Number of iterations: %d.\n', t);
 
 fprintf(2, 'Stopping condition:');
@@ -350,7 +353,7 @@ for i=1:double(t)
     % PRINT CURRENT RESULT
     fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
     
-    
+    pause;
     
     % CHECK STOPPING CONDITION
     if(notimproved >= stop(stop_cnt) || i == t)

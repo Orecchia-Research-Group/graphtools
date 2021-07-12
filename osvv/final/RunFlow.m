@@ -237,6 +237,10 @@ if(nomatching_flag == 0)
    % MATCHING SCALING
    matching = matching/double(match_num);
    matchrat = double(match_num)/double(match_den);
+   if (lamda_num > 0)
+       matching = matching / double(lamda_den);
+       matchrat = matchrat * double(lamda_den);
+   end
    if(~issparse(matching))
         fprintf('Matching is not sparse...\n');
    end

@@ -1003,6 +1003,38 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         if (s > 0)
             printf("Node: %2ld outflow: %ld\n", nNode(i), s);
     }*/
+
+    long *excesses = calloc(n + 2, sizeof(long));
+    for (long i = 0; i < n + 2; i++) {
+        excesses[i] = 0;
+    }
+
+    forAllNodes(i) {
+        forAllArcs(i, a) {
+            long na = nArc(a);
+            if (cap[na] == 0) continue;
+            excesses[nNode(a->head)] += cap[na] - a->resCap;
+            excesses[nNode(i)] -= cap[na] - a->resCap;
+        }
+    }
+
+    long nonZeroExcesses = 0;
+    forAllNodes(i) {
+        if (i == source || i == sink) continue;
+        nonZeroExcesses += excesses[nNode(i)] != 0;
+    }
+
+    fprintf(stderr, "Non zero excesses = %ld\n", nonZeroExcesses);
+
+    long wrong_edges = 0;
+    forAllNodes(i) {
+        forAllArcs(i, a) {
+            if (a->resCap < 0) {
+                wrong_edges++;
+            }
+        }
+    }
+    fprintf(stderr, "There are %ld edges with negative residual capacity\n", wrong_edges);
 #endif
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
 
@@ -1024,6 +1056,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
         forAllNodes(i) {
             i->d = 0;
+            i->current = i->first;
         }
 
 
@@ -1044,8 +1077,8 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
                         printf("WARNING: Returned negative minCap = %ld\n", minCap);
                     }
 
-                    a->resCap += minCap;
                     if (last != NULL) {
+                        a->resCap += minCap;
                         if (k >= matchingCapacity) {
                             if (!matchingCapacity) matchingCapacity = 2 * n;
                             else matchingCapacity = 2 * matchingCapacity;
@@ -1350,17 +1383,27 @@ node *decomposePathInternal(node *n, long *minCap) {
         n->d = -2;
         i = n;
         long cycleFlow = cap[nArc(i->current)] - i->current->resCap;
+        #ifdef DEBUG
+        fprintf(stderr, "Why are there still cycles here?\n");
+        #endif
         do {
+            #ifdef DEBUG
+            fprintf(stderr, "%ld ", nNode(i));
+            #endif
             i = i->current->head;
             long currentFlow = cap[nArc(i->current)] - i->current->resCap;
-            if (cycleFlow < currentFlow) {
+            if (cycleFlow > currentFlow) {
                 cycleFlow = currentFlow;
             }
         } while (i->current->head != n);
 
+        #ifdef DEBUG
+        fprintf(stderr, "\n");
+        #endif
+
         i = n;
         do {
-            i->current->resCap -= cycleFlow;
+            i->current->resCap += cycleFlow;
             i = i->current->head;
         } while (i != n);
         return NULL;
@@ -1380,7 +1423,7 @@ node *decomposePathInternal(node *n, long *minCap) {
         if (cap[na] > 0) {
 #ifdef DEBUG
             if (a->resCap < 0) {
-                fprintf(stderr, "ERROR: Node %ld has edge to %ld with negative residual capacity %ld\n", nNode(n), nNode(a->head), a->resCap);
+                fprintf(stderr, "ERROR: Node %7ld has edge to %7ld with negative residual capacity %18ld\n", nNode(n), nNode(a->head), a->resCap);
             }
 #endif
             while (a->resCap < cap[na]) {

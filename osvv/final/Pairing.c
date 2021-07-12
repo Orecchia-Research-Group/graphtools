@@ -93,6 +93,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long fflow;
     long size_cut;
     long reciprocal_size_cut;
+    long internal_edge_count;
+    long internalNodes;
 
     mxArray *matching;
     mxArray *cut, *reciprocalCut;
@@ -138,7 +140,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     row_G = (long *) mxGetIr(G);
     pr_G = (double *) mxGetPr(G);
 
+    internal_edge_count = 0;
+    for (long i = 0; i < N; i++) {
+        internal_edge_count += (volume[i] > 0);
+    }
     reciprocalOffset = N * (nrhs > 6);
+    internalNodes = internal_edge_count * (reciprocalOffset > 0);
 
     /* CONSTRUCT THE FLOW PROBLEM IN THE REPRESENTATION
        NEED TO ADD SOURCE / SINK AND RELATIVE EDGES
@@ -157,9 +164,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     // Mixed cut. Nodes 1-N have incoming edges. Nodes N+1-2N have outgoing edges.
     // There is an edge from node k to node k+N with capacity lambda.
 
-    tails = calloc(sizeof(*tails), M + N + reciprocalOffset);
-    heads = calloc(sizeof(*heads), M + N + reciprocalOffset);
-    weights = calloc(sizeof(*weights), M + N + reciprocalOffset);
+    tails = calloc(sizeof(*tails), M + internal_edge_count + internalNodes);
+    heads = calloc(sizeof(*heads), M + internal_edge_count + internalNodes);
+    weights = calloc(sizeof(*weights), M + internal_edge_count + internalNodes);
     degrees = calloc(sizeof(*degrees), N + 1);
 
     if (!(tails && heads && weights && degrees)) {
@@ -169,9 +176,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long zero_degree = 0;
     for (i = 0; i < N; i++) {
         for (j = col_G[i]; j < col_G[i + 1]; j++) {
+            if (i == row_G[j]) continue;
             heads[k] = i + 1;
-            tails[k] = row_G[j] + reciprocalOffset + 1;
-            weights[k] = pr_G[j] * original_modifier;
+            tails[k] = row_G[j] + reciprocalOffset * (volume[row_G[j]] > 0) + 1;
+            weights[k] = ((long) pr_G[j]) * original_modifier;
             degrees[i + 1] += weights[k];
             k++;
         }
@@ -186,6 +194,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     long zero_internal = 0;
     for (h = 0; h < reciprocalOffset; h++) {
+        if (volume[h] == 0) continue;
         heads[k] = h + reciprocalOffset + 1;
         tails[k] = h + 1;
         weights[k] = volume[h] * internal_modifier;
@@ -195,15 +204,17 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         k++;
     }
+    fprintf(stderr, "Total edges = %ld\n", k);
     if (zero_internal > 0) fprintf(stderr, "There are %ld nodes whose internal edges were reduced to zero\n", zero_internal);
 
     for (h = 0; h < N; h++) {
+        if (volume[h] == 0) continue;
         if (mask[h + 1] == 1) {
             heads[k] = h + 1;
-            tails[k] = N + reciprocalOffset + 1;
+            tails[k] = N + internalNodes + 1;
             weights[k] = source_modifier * volume[h];
         } else {
-            heads[k] = N + reciprocalOffset + 2;
+            heads[k] = N + internalNodes + 2;
             tails[k] = h + reciprocalOffset + 1;
             weights[k] = sink_modifier * volume[h];
         }
@@ -214,8 +225,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     /* CALL HI_PR - modified to output flow - would prefer for hipr to allocate this memory*/
 
     /* m-arrays are initialized within hi_pr */
-    n = N + 2 + reciprocalOffset;
-    m = M + N + reciprocalOffset;
+    n = N + 2 + internalNodes;
+    m = M + internal_edge_count + internalNodes;
 
     if (nlhs == 3) {
         route_flag = 0;
@@ -223,7 +234,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         route_flag = 1;
     }
     /*  t1 = timer() - t1;*/
-    hipr(n, m, tails, heads, weights, N + reciprocalOffset + 1, N + reciprocalOffset + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
+    hipr(n, m, tails, heads, weights, N + internal_edge_count + 1, N + internal_edge_count + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
          route_flag);
     /*  t2 = timer();*/
 
@@ -256,7 +267,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             size_cut++;
 
     reciprocal_size_cut = 0;
-    for (i = reciprocalOffset; i < N + reciprocalOffset; i++)
+    for (i = internalNodes; i < N + internalNodes; i++)
         if (output_set[i] != 0)
             reciprocal_size_cut++;
 
@@ -268,13 +279,17 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     dims[0] = reciprocal_size_cut;
     reciprocalCut = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
     reciprocalCut_pr = (long *) mxGetPr(reciprocalCut);
-
+    
+    #ifdef DEBUG
+        fprintf(stderr, "Preparing to create cut = %ld and reciprocal cut = %ld\n", size_cut, reciprocal_size_cut);
+    #endif
+    
     for (i = 0; i < N; i++) {
         if (output_set[i] == 0) {
             cut_pr[k] = (long) i + 1;
             k++;
         }
-        if (output_set[i+reciprocalOffset] != 0) {
+        if (output_set[i + reciprocalOffset * (volume[i] > 0)] != 0) {
             reciprocalCut_pr[j] = (long) i + 1;
             j++;
         }
