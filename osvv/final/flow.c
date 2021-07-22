@@ -1132,6 +1132,7 @@ void addMatching(long **mheads, long **mtails, long **mweights,
     if (k >= matchingCapacity) {
         if (!matchingCapacity) *matchingCapacityPtr = 2 * n;
         else *matchingCapacityPtr = 2 * matchingCapacity;
+        matchingCapacity = *matchingCapacityPtr;
         reallocPtr = *mheads;
         *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
         if (NULL == *mheads) {
