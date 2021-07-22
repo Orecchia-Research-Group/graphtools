@@ -34,7 +34,8 @@ void hipr(
         long **mweights,
         long *nedges,
         long *fflow,
-        int route_flag
+        int route_flag,
+        long matching_index
 );
 
 #endif
