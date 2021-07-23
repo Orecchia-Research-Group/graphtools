@@ -506,7 +506,7 @@ int dt_dfs(dynamic_tree_t* p) {
         arc *cur_arc = p->cur_node->current;
         if (cur_arc->cap == 0) continue;              // Reverse arc, not important.
 
-        if ((cur_arc->cap == cur_arc->resCap)) continue;
+        if (cur_arc->cap == cur_arc->resCap) continue;
 
         // Found an edge. Perform the link or remove flow on
         // a cycle if one is found
