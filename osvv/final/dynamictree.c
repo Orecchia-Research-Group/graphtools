@@ -494,3 +494,27 @@ void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost) {
     dTree->cur_node = dt_root(dTree, p);
     dTree->d_cur_node = dt_to_d_node(dTree, dTree->cur_node);
 }
+
+/* perform dfs with dynamic trees
+ * return: 0 if link or cycle elimination is performed
+ *         1 otherwise
+ */
+int dt_dfs(dynamic_tree_t* p) {
+    int link_flag = 0;
+    for (; p->cur_node->current < (p->cur_node +
+                                   1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
+        arc *cur_arc = p->cur_node->current;
+        if (cur_arc->cap == 0) continue;              // Reverse arc, not important.
+
+        if ((cur_arc->cap == cur_arc->resCap)) continue;
+
+        // Found an edge. Perform the link or remove flow on
+        // a cycle if one is found
+        node* prev = p->cur_node;
+        link_flag = dt_link(p, p->cur_node, cur_arc->head, cur_arc);
+        if (link_flag == 1)
+            prev->current++;
+        return 0;
+    }
+    return 1;
+}

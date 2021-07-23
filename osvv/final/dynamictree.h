@@ -92,5 +92,7 @@ void dt_d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p);
 void dt_cutEdge(dynamic_tree_t* dTree, node* p);
 void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost);
 
+int dt_dfs(dynamic_tree_t* p);
+
 
 #endif
