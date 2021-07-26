@@ -4,12 +4,12 @@
 #include "timer.h"
 
 void pairingProfile(const char *filePath, const char *filePathPtn, const char *filePathAlpha, int runNumber, long matching_algorithm) {
-     
+
     int route_flag = 1;
 
     long nedges;
     long fflow;
-    
+
     long N, n, M, m, temp;
     long cap_add, cap_orig;
 
@@ -22,10 +22,10 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     long *weights;
     int *mask;
 
-    float time_init;
-    float time_S1;
-    float time_S2;
-    float time_match;
+    // float time_init;
+    // float time_S1;
+    // float time_S2;
+    // float time_match;
 
     float time_run;
     float time_sum = 0;
@@ -33,7 +33,7 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     FILE *eg2File;
     FILE *ptnFile;
     FILE *alphaFile;
- 
+
     alphaFile = fopen(filePathAlpha, "r");
     if (!alphaFile) {
         fprintf(stderr, "Unable to open file: %s\n", filePathAlpha);
@@ -48,7 +48,7 @@ void pairingProfile(const char *filePath, const char *filePathPtn, const char *f
     }
 
     fscanf(eg2File, "%ld %ld %ld", &N, &temp, &M);
- 
+
     tails = calloc(sizeof(*tails), M + N);
     heads = calloc(sizeof(*heads), M + N);
     weights = calloc(sizeof(*weights), M + N);

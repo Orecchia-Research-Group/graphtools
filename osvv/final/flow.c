@@ -618,7 +618,7 @@ void stageTwo()
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                    if (a->resCap < i->excess)
+                    if (a->resCap < (long int) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -637,7 +637,7 @@ void stageTwo()
         a = i->first;
         while (i->excess > 0) {
             if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                if (a->resCap < i->excess)
+                if (a->resCap < (long int) i->excess)
                     delta = a->resCap;
                 else
                     delta = i->excess;
@@ -675,7 +675,7 @@ void stageTwo()
 
 void stageTwoDynamic()
 {
-    node *i, *j, *tos, *bos, *restart, *r;
+    node *i, *j, *tos, *bos, *r;
     arc *a;
     cType delta;
 
@@ -798,7 +798,7 @@ void stageTwoDynamic()
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                    if (a->resCap < i->excess)
+                    if (a->resCap < (long int) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -816,7 +816,7 @@ void stageTwoDynamic()
         a = i->first;
         while (i->excess > 0) {
             if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                if (a->resCap < i->excess)
+                if (a->resCap < (long int) i->excess)
                     delta = a->resCap;
                 else
                     delta = i->excess;
@@ -964,7 +964,7 @@ void discharge(i)
 
                 if (j->d == jD) {
                     pushCnt++;
-                    if (a->resCap < i->excess)
+                    if (a->resCap < (long int) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -1190,9 +1190,6 @@ void matchingDinic(long **mheads, long **mtails, long **mweights,
 
 void matchingDynamic(long **mheads, long **mtails, long **mweights,
                     int *kPtr, long int *matchingCapacityPtr) {
-    node *i;
-    arc *a;
-
     node *mhead;
     node *mtail;
     long mweight;
