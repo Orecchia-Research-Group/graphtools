@@ -481,10 +481,12 @@ void stageTwo()
     arc *a;
     cType delta;
 
+#ifdef DEBUG
     float tS2_Selfloop_Start, tS2_Init_Start, tS2_Topo_Start,
         tS2_RemoveExcess_Start, tS2_End;
 
     tS2_Selfloop_Start = timer();
+#endif
 
     /* deal with self-loops */
     forAllNodes(i) {
@@ -493,6 +495,7 @@ void stageTwo()
             }
     }
 
+#ifdef DEBUG
     tS2_Init_Start = timer();
 
     long node_excess_cnt_before = 0;
@@ -505,6 +508,7 @@ void stageTwo()
             node_nonzero_excess_cnt++;
         }
     }
+#endif
 
 
     /* initialize */
@@ -516,8 +520,9 @@ void stageTwo()
         i->current = i->first;
     }
 
+#ifdef DEBUG
     tS2_Topo_Start = timer();
-
+#endif
 
     long stack_cnt = 0;
 
@@ -606,8 +611,9 @@ void stageTwo()
         }
 
     // printGraphStat();
-
+#ifdef DEBUG
     tS2_RemoveExcess_Start = timer();
+#endif
 
     /* return excesses */
     /* note that sink is not on the stack */
@@ -650,15 +656,17 @@ void stageTwo()
         }
     }
 
+#ifdef DEBUG
     long node_excess_cnt_after = 0;
     forAllNodes(i) {
         if (i->d == WHITE && i->excess > 0 && i != source && i != sink) {
             node_excess_cnt_after++;
         }
     }
+#endif
 
     // printGraphStat();
-
+#ifdef DEBUG
     tS2_End = timer();
 
     fprintf(stderr, "Node with excess before = %ld, node with excess after = %ld\n", node_excess_cnt_before, node_excess_cnt_after);
@@ -669,7 +677,7 @@ void stageTwo()
     fprintf(stderr, "S2 Toposort and Cycle Removal: %lf\n", tS2_RemoveExcess_Start - tS2_Topo_Start);
     fprintf(stderr, "S2 Remove Excess: %lf\n", tS2_End - tS2_RemoveExcess_Start);
     fprintf(stderr, "-------------------------------\n\n\n");
-
+#endif
 }
 
 
