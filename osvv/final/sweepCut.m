@@ -1,4 +1,4 @@
-function [ edgesCut, L, R] = sweepCut( filename, eta)
+function [ edgesCut, L, R] = sweepCut( filename, eta, ufactor)
 %SWEEPCUT Sweep Cut greedy algorithm
 %   Given a node ordering produce an locally optimal sweep cut.
 %   Iteratively choose the node with the most crosses to include in the overlap
@@ -9,13 +9,15 @@ start = 1;
 overlappingNodes = [];
 degree = sum(G);
 D = diag(degree);
+vol = sum(full(degree));
 % opts.tol = 0.001;
 % [temp, ~ ] = eigs(D-G, 2, 'SA', opts);
 v = round(rand(n,1));
-u = expv((-1)*eta, (D - G), v);
+factor = diag(degree.^(-1/2));
+u = expv((-1)*eta, factor * (D - G) * factor, v);
 [~, index] = sort(u);
-Lsize = start;
-Rsize = n - Lsize;
+Lsize = sum(degree(index(1:start)));
+Rsize = vol - Lsize;
 Ltemp = zeros(n, 1, 'logical');
 Ltemp(index(1:Lsize), 1) = true;
 Rtemp = ~Ltemp;
@@ -34,7 +36,7 @@ for i= start + 1:n - start
 %     if (i < 100) || (i > n - 100) || ((i > n /2 -50) && (i < n/2 + 50))
 %         fprintf('%d %f\n', i, full(expansion));
 %     end
-    if expansion < best_expansion
+    if (min(Lsize, Rsize) >= ufactor * vol) && (expansion < best_expansion)
         best_expansion = expansion;
         Lmask = Ltemp;
         Rmask = Rtemp;

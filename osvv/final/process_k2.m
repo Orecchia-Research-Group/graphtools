@@ -72,12 +72,13 @@ for f=1:length(graphFiles)
 
         dataset{i} = datasetName;
         algorithm{i} = 'ORC-SDP';
-        lambda{i} = 100 / str2double(filenamePieces{3});
+        lambda{i} = 1 / str2double(filenamePieces{end});
         [~, ~, score{i}] = cutexp(G, 0, int64(weight), partitions{1}, partitions{2});
         overlappingNodes = intersect(partitions{1}, partitions{2});
         overlap{i} = 100 * sum(weight(overlappingNodes)) / volume;
+        fprintf('lambda = %f. score = %f\n', lambda{i}, score{i});
         
-        if (lambda{i} == 1) || (score{i} == 0)
+        if (lambda{i} == 1) || (lambda{i} == 1/10)
             fig = figure;
             hold on;
             colorIndex = ones(n, 1);
@@ -86,10 +87,10 @@ for f=1:length(graphFiles)
             scatter(vectors(:,2), vectors(:, 3), 4, color(colorIndex, :), 'filled');
             axis off;
             if lambda{i} == 1
-                title(sprintf('Non overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                title({sprintf('Non overlapping communities from %s', algorithm{i}), sprintf('for %s', dataset{i})}, 'Interpreter', 'none');
                 exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_nonoverlapping.png', dataset{i}, algorithm{i})));
             else
-                title(sprintf('Overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                title({sprintf('Overlapping communities from %s', algorithm{i}), sprintf('for %s', dataset{i})}, 'Interpreter', 'none');
                 exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_overlapping.png', dataset{i}, algorithm{i})));
             end
             hold off;
@@ -111,12 +112,12 @@ for f=1:length(graphFiles)
             
             dataset{i} = datasetName;
             algorithm{i} = algos{j};
-            lambda{i} = 100 / str2double(filenamePieces{4});
+            lambda{i} = 100 / str2double(filenamePieces{end});
             [~, ~, score{i}] = cutexp(G, 0, int64(weight), partitions{1}, partitions{2});
             overlappingNodes = intersect(partitions{1}, partitions{2});
             overlap{i} = 100 * sum(weight(overlappingNodes)) / volume;
 
-            if (lambda{i} == 1) || (score{i} == 0)
+            if (lambda{i} == 1) || (lambda{i} == 1/10)
                 fig = figure;
                 hold on;
                 colorIndex = ones(n, 1);
@@ -125,10 +126,10 @@ for f=1:length(graphFiles)
                 scatter(vectors(:,2), vectors(:, 3), 4, color(colorIndex, :), 'filled');
                 axis off;
                 if lambda{i} == 1
-                    title(sprintf('Non overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                    title({sprintf('Non overlapping communities from %s', algorithm{i}), sprintf('for %s', dataset{i})}, 'Interpreter', 'none');
                     exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_nonoverlapping.png', dataset{i}, algorithm{i})));
                 else
-                    title(sprintf('Overlapping communities from %s for %s', algorithm{i}, dataset{i}));
+                    title({sprintf('Overlapping communities from %s', algorithm{i}), sprintf('for %s', dataset{i})}, 'Interpreter', 'none');
                     exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_%s_overlapping.png', dataset{i}, algorithm{i})));
                 end
                 hold off;
@@ -172,7 +173,7 @@ for ds=unique(dataset)
     
     xlabel('Overlap (%)');
     ylabel('Conductance');
-    title(sprintf('Conductance vs Overlap (%%) for %s', ds{1}));
+    title(sprintf('Conductance vs Overlap (%%) for %s', ds{1}), 'Interpreter', 'none');
     legend({algs{algMask}});
     exportgraphics(gcf, fullfile(inputDirectory, sprintf('%s_lambda.png', ds{1})));
     hold off;

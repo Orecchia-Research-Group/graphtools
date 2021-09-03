@@ -22,6 +22,9 @@ files = dir(directorySearch);
 for f=1:length(files)
     fprintf('%s\n', files(f).name);
     [~, dataset, ~] = fileparts(files(f).name);
+    % if ~strcmp(dataset, 'minedDBLP')
+    %    continue;
+    %end
     if any(strcmp(dataset, ["144" "bcsstk29" "bcsstk31" "fe_body" "fe_pwt"]))
         continue;                                                     
     end
@@ -30,25 +33,21 @@ for f=1:length(files)
     %end
     inputFilename = fullfile(inputDirectory, files(f).name);
     [G, n, m] = loadeg2graph(inputFilename);
-    %[vec, ~] = eigs(diag(sum(G)) - G, 3, 'SA');
-    %save(fullfile(outputDirectory, sprintf('%s.mat', dataset)), 'vec');
+    if ~exist(fullfile(outputDirectory, sprintf('%s.mat', dataset)))
+        [vec, ~] = eigs(diag(sum(G)) - G, 3, 'SA');
+        save(fullfile(outputDirectory, sprintf('%s.mat', dataset)), 'vec');
+    end
     for lamda=lamdas
-        [edgesCut, partitions] = BalancedCut(bal, G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, lamda);
-        for i=1:length(partitions)
-            partitions{i} = partitions{i}';
+        try
+            [edgesCut, partitions] = BalancedCut(bal, G, 1, '', 1000, 4, 5, 1, 42, 10, 'infty', 'n', 1, lamda);
+            for i=1:length(partitions)
+                partitions{i} = partitions{i}';
+            end
+            ptnFilename = fullfile(outputDirectory, sprintf('%s_deg_%.0f.ptn', dataset, 100 * lamda));
+            toPtn(ptnFilename, partitions);
+        catch
+            fprintf(1, 'Failed for lambda=%.2f\n', lamda);
         end
-%         Lmask = sparse(double(L), 1, true, n, 1);
-%         Rmask = sparse(double(R), 1, true, n, 1);
-%         Cmask = Lmask & Rmask;
-%         
-        ptnFilename = fullfile(outputDirectory, sprintf('%s_bal_%02d.ptn', dataset, lamda));
-%         partitions{1} = L';
-%         partitions{2} = R';
-        toPtn(ptnFilename, partitions);
-%         if sum(Cmask) == 0
-%             break;
-%         end
-        
     end
 end
 
