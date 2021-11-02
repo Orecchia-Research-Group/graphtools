@@ -23,34 +23,15 @@ OUTPUTS:
  if no matching is required by MATLAB the flow computation does not waste time computing it.
 */
 
-#include <math.h>
+#include <string.h>
 #include "mex.h"
 #include "matrix.h"
 #include "timer.h"
+#include "flow.h"
 
 /* PROTOTYPE
 function [flow, cut, matching]= Pairing(G, bisec, source_modifier, sink_modifier, original_modifier);
 */
-
-void hipr 
-( 
-   long ninput, 
-   long minput, 
-   long *tails, 
-   long *heads, 
-   long *weights, 
-   long s, 
-   long t,
-   int **output_set,
-   long **mheads,
-   long **mtails,
-   long **mweights,
-   long* nedges,
-   long* fflow,
-   int route_flag
-);
-
-
 
 mxArray* Sparse(long* heads, long* tails, long* weights, long m, long n );
 
@@ -85,7 +66,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     long n;
     long m;
-    int *output_set;
+    long *output_set;
     long *mheads = NULL;
     long *mtails = NULL;
     long *mweights = NULL;
@@ -95,6 +76,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long reciprocal_size_cut;
     long internal_edge_count;
     long internalNodes;
+    long matching_index = 0;
 
     mxArray *matching;
     mxArray *cut, *reciprocalCut;
@@ -105,11 +87,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long *temp_a;
 
     // float t1, t2;
-    int route_flag;
+    long route_flag;
 
     /*  t1 =timer();*/
 
-    if (nrhs > 7 || nrhs < 6 || nlhs > 4 || nlhs < 3)
+    if (nrhs > 8 || nrhs < 7 || nlhs > 4 || nlhs < 3)
         mexErrMsgTxt("Error in usage of Pairing.\n");
 
 
@@ -118,11 +100,18 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     bisec = (long *) mxGetPr(prhs[1]);
     size_bisec = mxGetM(prhs[1]);
     volume = (long *) mxGetPr(prhs[2]);
-    source_modifier = ((long *) mxGetPr(prhs[3]))[0];
-    sink_modifier = ((long *) mxGetPr(prhs[4]))[0];
-    original_modifier = ((long *) mxGetPr(prhs[5]))[0];
+    char *matching_algorithm = mxArrayToString(prhs[3]);
+    if (!strcmp(matching_algorithm, "dinic"))
+        matching_index = 0;
+    else if (!strcmp(matching_algorithm, "dynamic"))
+        matching_index = 1;
+    else
+        mexErrMsgTxt("Error in recognizing the matching algorithm");
+    source_modifier = ((long *) mxGetPr(prhs[4]))[0];
+    sink_modifier = ((long *) mxGetPr(prhs[5]))[0];
+    original_modifier = ((long *) mxGetPr(prhs[6]))[0];
 
-    if (nrhs > 6) internal_modifier = ((long *) mxGetPr(prhs[6]))[0];
+    if (nrhs > 7) internal_modifier = ((long *) mxGetPr(prhs[7]))[0];
     else internal_modifier = 1;
 
 #ifdef DEBUG
@@ -233,12 +222,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         route_flag = 1;
     }
     /*  t1 = timer() - t1;*/
-    hipr(n, m, tails, heads, weights, N + internal_edge_count + 1, N + internal_edge_count + 2, &output_set, &mheads, &mtails, &mweights, &nedges, &fflow,
-         route_flag);
+    hipr(n, m, tails, heads, weights, N + internal_edge_count + 1, N + internal_edge_count + 2,
+            &output_set, &mheads, &mtails, &mweights, &nedges, &fflow, route_flag, matching_index);
     /*  t2 = timer();*/
 
 #ifdef DEBUG
-    fprintf(stderr, "Flow returned: %ld\n", fflow);
+    fprintf(stderr, "Flow returned: %ld Number of Edges: %ld\n", fflow, nedges);
 #endif
 
     /* INITIALIZE MATCHING */

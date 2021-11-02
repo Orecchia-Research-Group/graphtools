@@ -4,23 +4,27 @@
 %
 % INPUTS:
 %    (char) FileToRead - a eg2 undirected graph file to read - must be a valid graph
+%    (char | 1 | 2) outputfile - output file for run results - stopping condition is appended
+%    (char) suffix - Output filename suffix
 %    (int16) t - maximum number of iterations of algorithms - positive - max 2^16 -1 - rounded if not integral
 %    (double) stop - number of iterations after which, if no improv. in weirdratio, program exits - rounded below if not integral - can be array now
 %    (double) eta - learning parameter - must be positive
 %    (double) init - specification of weight of G in initialization
-%    (int64) p - precision used to compute expander flows - positive -  rounded if not integral
 %    (int32) seed - seed for random number generator
+%    (int64) p - precision used to compute expander flows - positive -  rounded if not integral
 %    (char) rate - specification of the learning rate to be used
 %                                     'd' - equals eta sqrt(8log(n)/t)
 %                                     'infty' - uses the second smallest eigenvalue of the Laplacian;
 %                                     'n'  - equals eta;
-%    (int32) lambda - flow that can pass through a node. If missing considered to be infinity
-
-
 %    (char) lwbd - 'y' if final lower bound desired. 'n' otherwise
-%    (char) outputfile - output file for run results - stopping condition is appended
-%    (double) certificate - 1 if certificate is required; 0 otherwise
-%    (char) suffix - other string to be appended to output file
+%    (char) matchingAlgorithm - algorithm to use for flow decomposition
+%                                     'dinic' - start from source walk to sink; start again
+%                                     'dynamic' - Use dynamic trees
+%    (double) certificatespec - 1 if certificate is required; 0 otherwise
+%    (double) ufactor - fraction of total volume in smaller 
+%    (int64) lambda_num - numerator for lambda controlling how much flow can pass through a node
+%    (int64) lambda_den - denominator for lambda controoling how much flow can pass through a node
+
 
 % OUTPUTS:
 %    expansionFound - best  expansion score found
@@ -42,7 +46,7 @@
 % - reorder parameters
 
 function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = ...
-    cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, ufactor, varargin)
+    cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, matchingAlgorithm, certificatespec, ufactor, varargin)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%  ERROR CHECKING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,6 +112,14 @@ end
 
 if(~ischar(suffix))
     error(error_string, 'suffix file name');
+end
+
+if(~isnumeric(ufactor) || ufactor >= 0.5)
+    error(error_string, 'ufactor');
+end
+
+if(~ischar(matchingAlgorithm) || ~(strcmp(matchingAlgorithm, 'dinic') || strcmp(matchingAlgorithm, 'dynamic')))
+    error(error_string, 'matching algorithm');
 end
 
 % Mixed cut or edge cut?
@@ -244,6 +256,7 @@ fprintf(2, 'Random generator seed: %f.\n', seed);
 fprintf(2, 'Flow precision: %ld.\n', p);
 fprintf(2, 'Run rate: %s.\n', rate);
 fprintf(2, 'Lower bound: %s.\n', lwbd);
+fprintf(2, 'Matching algorithm: %s\n', matchingAlgorithm);
 fprintf(2, 'Lambda: %d / %d = %.2f.\n', lamda_num, lamda_den, double(lamda_num) / double(lamda_den));
 
 %%%%%%%%%%%%%%%%%%%%%%% ALGORITHM MAIN LOOP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -308,10 +321,10 @@ for i=1:double(t)
     % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
     if (lamda_num > 0)
         [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
-            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor, lamda_num, lamda_den);
+            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, matchingAlgorithm, ufactor, lamda_num, lamda_den);
     else
         [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
-            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor);
+            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, matchingAlgorithm, ufactor);
     end
     flowtime = flowtime + toc(tFlow);
     % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));

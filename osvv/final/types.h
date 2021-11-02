@@ -1,5 +1,8 @@
 /* defs.h */
 
+#ifndef FILE_TYPES_SEEN
+#define FILE_TYPES_SEEN
+
 #ifdef EXCESS_TYPE_LONG
 typedef unsigned long excessType;
 #else
@@ -11,13 +14,12 @@ typedef unsigned long long int excessType; /* change to double if not supported 
 typedef long cType;
 
 typedef  /* arc */
-   struct arcSt
-{
+struct arcSt {
+   cType cap;                       /* original capacity */
    cType           resCap;          /* residual capasity */
    struct nodeSt   *head;           /* arc head */
    struct arcSt    *rev;            /* reverse arc */
-}
-  arc;
+} arc;
 
 typedef  /* node */
    struct nodeSt
@@ -39,3 +41,4 @@ typedef /* bucket */
   node             *firstInactive;    /* first node with zero excess */
 } bucket;
 
+#endif
