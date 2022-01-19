@@ -9,6 +9,7 @@
 %    (double) eta - learning parameter - must be positive
 %    (double) init - specification of weight of G in initialization
 %    (int64) p - precision used to compute expander flows - positive -  rounded if not integral
+%    (int64) pwr_k - How many cut vectors to use in each iteration
 %    (int32) seed - seed for random number generator
 %    (char) rate - specification of the learning rate to be used
 %                                     'd' - equals eta sqrt(8log(n)/t)
@@ -25,7 +26,7 @@
 % OUTPUTS:
 %    expansionFound - best  expansion score found
 %    edgesCut - number of edges in best cut found
-%    cutFound - list of vertices composing best cut found
+%    communities - best communities found
 %    H - certificate of expansion, a graph on same vertex set of G
 %    endtime - total time taken
 %    inittime - time taken by initialization
@@ -33,16 +34,17 @@
 %    flowtime - time taken by flow computation
 %    iterations - total number of iterations run
 %    flownumber - total number of maxflow computations run
-%    lower - lower bound found
+%    scores - score at each iteration
+%    iterscores - tx3 with iteration number, score and lower bound at stop intervals
 
 % ISSUES:
-% - should have max number of vertices or edges?
+% - should have max number of vertices or edges?)
 % - nmin label is assumed to be 0 or 1? should be 0 outside the program. 1 in matlab
 % - does it make sense to use weirdrat as bound guiding the search?
 % - reorder parameters
 
-function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = ...
-    cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, rate, lwbd, certificatespec, ufactor, varargin)
+function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, iterscores, lower] = ...
+    cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, pwr_k, rate, lwbd, certificatespec, ufactor, varargin)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%  ERROR CHECKING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,11 +69,16 @@ if(~isnumeric(p) || p < 1)
 end
 p = int64(p); %rounded to integer - should check?
 
+if(~isnumeric(pwr_k) || pwr_k < 1)
+    error(error_string, 'vector number');
+end
+pwr_k = double(pwr_k);
+
 if(~isnumeric(seed))
     error(error_string, 'seed');
 end
 
-if(~ischar(rate)|| ~(strcmp(rate, 'd') || strcmp(rate, 'n') || strcmp(rate,'infty')))
+if(~ischar(rate)|| ~(strcmp(rate, 'd') || strcmp(rate, 'n') || strcmp(rate,'infty') || strcmp(rate,'KL')))
     error(error_string, 'rate spec');
 end
 
@@ -210,6 +217,11 @@ else
     end
 end
 
+% INITIAL ENTROPY
+entr = log2(n);
+ppool = gcp();
+pwr_k = min(pwr_k, ppool.NumWorkers);
+
 % LOWERBOUND
 congestion = init;
 
@@ -221,9 +233,23 @@ spectime = 0;
 flowtime = 0;
 lowertime = 0;
 
-
 % CERTIFICATE SPECIFICATION
 nomatching = 0;
+u = ones(n, pwr_k);
+
+% PARALLEL PLACEHOLDERS
+matchrat = zeros(pwr_k, 1);
+matching = cell(1, pwr_k);
+degree_distortion = zeros(pwr_k, 1);
+iterflownumber = zeros(pwr_k, 1);
+cut = cell(1, pwr_k);
+reciprocalCut = cell(1, pwr_k);
+ex = zeros(pwr_k, 1);
+ex_num = zeros(pwr_k, 1);
+ex_den = zeros(pwr_k, 1);
+weirdrat = zeros(pwr_k, 1);
+weirdrat_num = zeros(pwr_k, 1);
+weirdrat_den = zeros(pwr_k, 1);
 
 %%%%%%%%%%%%%%%%%%%%%%% POST INITIALIZATION SUMMARY %%%%%%%%%%%%%%%%%%%%%%%
 inittime = toc;
@@ -244,6 +270,7 @@ fprintf(2, 'Random generator seed: %f.\n', seed);
 fprintf(2, 'Flow precision: %ld.\n', p);
 fprintf(2, 'Run rate: %s.\n', rate);
 fprintf(2, 'Lower bound: %s.\n', lwbd);
+fprintf(2, 'Vector number: %d.\n', pwr_k);
 fprintf(2, 'Lambda: %d / %d = %.2f.\n', lamda_num, lamda_den, double(lamda_num) / double(lamda_den));
 
 %%%%%%%%%%%%%%%%%%%%%%% ALGORITHM MAIN LOOP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -253,103 +280,115 @@ for i=1:double(t)
     
     tSpectral = tic;
     % RANDOM BISECTION INITIALIZATION;
-    v = round(rand(n,1));
+    v = round(rand(n, pwr_k));
     v = v - mean(v);
     
     
     % LEARNING RATE INITIALIZATION
     if(strcmp(rate,'d'))
         current_eta = eta*sqrt(8*log(n)/i);
-    else
+    elseif (strcmp(rate, 'KL'))
+        current_eta = eta*sqrt(8*entr/i);
+    else    
         current_eta = eta;
     end
     
     % SPECTRAL PARTITIONING
     %% SECOND EIGENVALUE
+    M = factor * ((init + i - 1) .* sparse_deg - H) * factor;
     if(strcmp(rate,'infty'))
         % opts.k = 2;
         opts.tol = 1e-14;
         % opts.sigma = 'SM';
-        
-        [temp, trash ] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, 1, 'SA', opts);
-        u=temp([1:n],1);
-    else
-        %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
-        u = expv((-1)*current_eta, factor * ((init + i - 1) .* sparse_deg - H) * factor, v, 1e-3);
-        %%%                   %%%
+        [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
+        u = factor * u;
     end
-    spectime = spectime + toc(tSpectral);
-    
-    
-    % SORT VERTICES BY PROB. CHARGE AND DETERMINE BISECTION
-    [ordered, index] = sort(u);
-    index = int64(index);
-    j = floor(n / 2) + 1;
-    bisec=int64(index(1:floor(n/2)));
-    bisec_vol = sum(weight(bisec));
+    %% Parallel vector cut0matching
+    parfor step=1:pwr_k
+        nomatching = 0;
+        if(~strcmp(rate, 'infty'))
+            %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
+            u(:, step) = factor * expv((-1)*current_eta, M, v(:, step), 1e-3);
+            u_factor(step) = 1 / pwr_k;
+        end
+        spectime = spectime + toc(tSpectral);
 
-    while bisec_vol < vol / 2.0
-        bisec(end + 1) = int64(index(j));
-        bisec_vol = bisec_vol + weight(index(j));
-        j = j + 1;
-    end
-    while bisec_vol > vol / 2.0
-        bisec_vol = bisec_vol - weight(bisec(end));
-        bisec = bisec(1:end-1);
-    end
-    fprintf('Bisec volume: %ld. Bisec size: %ld. Vol frac: %f.\n', full(bisec_vol), length(bisec), full(double(bisec_vol) / vol));
+
+        % SORT VERTICES BY PROB. CHARGE AND DETERMINE BISECTION
+        [~, index] = sort(u(:, step));
+        index = int64(index);
+        j = floor(n / 2) + 1;
+        bisec=int64(index(1:floor(n/2)));
+        bisec_vol = sum(weight(bisec));
+
+        while bisec_vol < vol / 2.0
+            bisec(end + 1) = int64(index(j));
+            bisec_vol = bisec_vol + weight(index(j));
+            j = j + 1;
+        end
+        while bisec_vol > vol / 2.0
+            bisec_vol = bisec_vol - weight(bisec(end));
+            bisec = bisec(1:end-1);
+        end
+        fprintf(2, 'Bisec volume: %ld. Bisec size: %ld. Vol frac: %f.\n', full(bisec_vol), length(bisec), full(double(bisec_vol) / vol));
+
+        % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
+        if(strcmp(lwbd,'n') && certificatespec == 1 && i == t)
+            nomatching = 1;
+        end
+
+        tFlow = tic;
+        % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
+        if (lamda_num > 0)
+            [weirdrat_num(step), weirdrat_den(step), weirdrat(step), ex_num(step), ex_den(step), ex(step), cut{step}, reciprocalCut{step}, matching{step}, matchrat(step), iterflownumber(step)] =  ...
+                RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor, lamda_num, lamda_den);
+        else
+            [weirdrat_num(step), weirdrat_den(step), weirdrat(step), ex_num(step), ex_den(step), ex(step), cut{step}, reciprocalCut{step}, matching{step}, matchrat(step), iterflownumber(step)] =  ...
+                RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor);
+        end
+        flowtime = flowtime + toc(tFlow);
+        % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));
+        % UPDATE CERTIFICATE
     
-    % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
-    if(strcmp(lwbd,'n') && certificatespec == 1 && i == t)
-        nomatching = 1;
+        % fprintf(2, 'Min = %d Max = %d\n', full(min(sum(matching))), full(max(sum(matching))));
+        fprintf(2, 'Metric = %f\n', full(max(double(sum(matching{step})) ./ double(weight))));
+        degree_distortion(step) = full(max(double(sum(matching{step})) ./ double(weight)));
+        fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d |matching|_inf = %f\n', nnz(matching{step}), nnz(H), norm(factor * matching{step} ./ degree_distortion(step) * factor, inf));
     end
     
-    tFlow = tic;
-    % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
-    if (lamda_num > 0)
-        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
-            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor, lamda_num, lamda_den);
-    else
-        [minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  ...
-            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor);
-    end
-    flowtime = flowtime + toc(tFlow);
-    % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));
+    %% Update from parallel
     % UPDATE LOWER BOUND
-    congestion = congestion +1/matchrat;
-    
-    % UPDATE CERTIFICATE
-    
-    % fprintf(2, 'Min = %d Max = %d\n', full(min(sum(matching))), full(max(sum(matching))));
-    fprintf(2, 'Metric = %f\n', full(max(double(sum(matching)) ./ double(weight))));
-    degree_distortion = full(max(double(sum(matching)) ./ double(weight)));
-    fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d |matching|_inf = %f\n', nnz(matching), nnz(H), norm(factor * matching ./ degree_distortion * factor, inf));
-    % fprintf(2, 'Volume of matching %d\n', sum(matching, 'all'));
-    H = H + matching ./ degree_distortion;
-    D = D + diag(sum(matching));
-    % UPDATE COUNTER
-    flownumber = flownumber + iterflownumber;
-    
+    for step=1:pwr_k
+        congestion = congestion + 1 / matchrat(step) * u_factor(step);
+        % fprintf(2, 'Volume of matching %d\n', sum(matching, 'all'));
+        H = H + double(matching{step}) *  u_factor(step) ./ degree_distortion(step);
+        D = D + double(diag(sum(matching{step}))) *  u_factor(step) ./ degree_distortion(step);
+        % UPDATE COUNTER
+        flownumber = flownumber + iterflownumber(step);
+    end
     % CHECK IF CUT FOUND BEATS BEST CUT
     if(~isempty(cut)) % if some cut has been found
-        if(ex < minexp)
-            bestcut=cut;
-            reciprocalBestcut = reciprocalCut;
-            minexp = ex;
-            minexp_num = ex_num;
-            minexp_den = ex_den;
+        [minexp, minindex] = min([ex; minexp]);
+        if minindex < pwr_k + 1
+            bestcut=cut{minindex};
+            reciprocalBestcut = reciprocalCut{minindex};
+            minexp = ex(minindex);
+            minexp_num = ex_num(minindex);
+            minexp_den = ex_den(minindex);
             notimproved = 0;
+            minweirdrat = weirdrat(minindex);
+            minweirdrat_num = weirdrat_num(minindex);
+            minweirdrat_den = weirdrat_den(minindex);
         else
             notimproved = notimproved + 1;
         end
         if(strcmp(lwbd, 'ylast'))
-            certificate = D-H;
+            certificate = factor * ((init + i - 1) .* sparse_deg - H) * factor;
             certificatecongestion = congestion;
         end
     else
         notimproved = notimproved + 1;
     end
-    
     % PRINT CURRENT RESULT
     fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
         
@@ -362,7 +401,7 @@ for i=1:double(t)
         %%%%%%%%%%%%%%%%%%%%%%%% LOWER BOUND %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         tLower = tic;
         if(strcmp(lwbd, 'y'))
-            certificate = D-H;
+            certificate = factor * ((init + i - 1) .* sparse_deg - H) * factor;
             certificatecongestion = congestion;
         end
         
@@ -370,11 +409,12 @@ for i=1:double(t)
             opts.k = 2;
             opts.tol = 0.01;
             opts.sigma = 'se';
-            [temp, eigen ] = irbleigs(certificate, opts);
-            lower = 0.5*eigen(2,2)/certificatecongestion;
+            [temp, eigen] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, 1, 'SA', opts); % irbleigs(certificate, opts);
+            lower = 0.5*eigen(1)/certificatecongestion;
         else
-            lower = 0;
+            lower = 0;pwr_k
         end
+        iterscores(stop_cnt, :) = [i, stop(stop_cnt), minexp, lower];
         lowertime = toc(tLower);
         
         % PRINT RUN RESULTS TO OUTPUT FILE

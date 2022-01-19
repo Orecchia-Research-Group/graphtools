@@ -67,7 +67,7 @@ else
     lamda_den = int64(1);
 end
 
-fprintf('lamda_num = %d, lamda_den = %d\n', lamda_num, lamda_den);
+% fprintf(2, 'lamda_num = %d, lamda_den = %d\n', lamda_num, lamda_den);
 % INITIALIZATION OF OUTPUT VARIABLES
 n = int64(size(G,1));
 bestcut = int64([]);
@@ -104,6 +104,7 @@ weirdrat_den_upper = int64(weirdrat_den);
 weirdrat_upper = double(weirdrat_num_upper) / double(weirdrat_den_upper);
 
 %fprintf(2, 'side_num: %d. side_den: %d.\n', side_num, side_den);
+balance_violated = false;
 
 while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
     %%% [cap_add, cap_orig] = Farey(int64(cap_add), cap_orig, int64(10000));
@@ -121,6 +122,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         sink_modifier = int64(sink_modifier * lamda_den);
         internal_modifier = int64(internal_modifier * lamda_num);
         original_modifier = int64(original_modifier * lamda_den);
+        fprintf(2, 'source_modifier=%d, sink_modifier=%d, internal_modifier=%d, original_modifier=%d\n', source_modifier, sink_modifier, internal_modifier, original_modifier);
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -130,11 +132,11 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         fprintf(2, 'You disconnected: %f\n', flow);
     end
 
-    fprintf('flow: %d. weirdrat_num: %d. RHS: %d. Sink side: %d. weirdrat: %f lower: %f. upper: %f\n', ...
+    fprintf(2, 'flow: %d. weirdrat_num: %d. RHS: %d. Sink side: %d. weirdrat: %f lower: %f. upper: %f\n', ...
         flow, weirdrat_num, (bisec_vol) * source_modifier, (vol - bisec_vol) * sink_modifier, weirdrat, weirdrat_lower, weirdrat_upper);
     cutVolume = sum(weight(cut));
     reciprocalCutVolume = sum(weight(reciprocalCut));
-    if weirdrat_num_lower ~= 0
+    if balance_violated
         if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol)
             weirdrat_num_upper = weirdrat_num;
             weirdrat_den_upper = weirdrat_den;
@@ -147,7 +149,9 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
     elseif(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
         [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, int64(weight), int64(lamda_num), int64(lamda_den)); % COMPUTE NEW WEIRDRAT
-        if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol)
+
+        if (min(cutVolume, reciprocalCutVolume) < ufactor * vol)
+            balance_violated = true;
             weirdrat_num_lower = weirdrat_num;
             weirdrat_den_lower = weirdrat_den;
             weirdrat_lower = double(weirdrat_num_lower) / double(weirdrat_den_lower);
@@ -160,7 +164,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
     else  % OTHERWISE STOP
         break;
     end
-    if weirdrat_num_lower ~= 0
+    if balance_violated
         rat_num = int64(weirdrat_num_lower * weirdrat_den_upper + weirdrat_num_upper * weirdrat_den_lower);
         rat_den = 2 * weirdrat_den_lower * weirdrat_den_upper;
         [weirdrat_num, weirdrat_den] = Farey(rat_num, rat_den, p);

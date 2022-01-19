@@ -97,7 +97,7 @@ public:
 
         // Use the buffers to create the sparse array
         matlab::data::SparseArray<double> G =
-            factory.createSparseArray<double>({n, n}, m, 
+            factory.createSparseArray<double>({n, n}, 2 * m, 
                 std::move(weights_p), std::move(tails_p), std::move(heads_p));
 
         heads.clear();
