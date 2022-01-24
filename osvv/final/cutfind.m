@@ -406,15 +406,15 @@ for i=1:double(t)
         end
         
         if(~strcmp(lwbd,'n'))
-            opts.k = 2;
+            opts.k = 1;
             opts.tol = 0.01;
             opts.sigma = 'se';
-            [temp, eigen] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, 1, 'SA', opts); % irbleigs(certificate, opts);
+            [temp, eigen] = eigs(@(x) ((D - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, 1, 'SA', opts); % irbleigs(certificate, opts);
             lower = 0.5*eigen(1)/certificatecongestion;
         else
-            lower = 0;pwr_k
+            lower = 0;
         end
-        iterscores(stop_cnt, :) = [i, stop(stop_cnt), minexp, lower];
+        iterscores(stop_cnt, :) = [i, stop(stop_cnt), minexp, lower, endtime];
         lowertime = toc(tLower);
         
         % PRINT RUN RESULTS TO OUTPUT FILE

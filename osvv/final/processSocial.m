@@ -35,7 +35,7 @@ lambda = [];
 balances = [];
 
 i = 1;
-graphFiles = dir(fullfile(graphDirectory, '*.eg2'));
+graphFiles = dir(fullfile(graphDirectory, '*.metis'));
 for f=1:length(graphFiles)
     % Load graph;
     graphFilename = graphFiles(f).name;
@@ -47,8 +47,7 @@ for f=1:length(graphFiles)
     if any(strcmp(datasetName, {'orkut', 'livejournal'}))
        continue
     end
-    [G, n, m] = loadeg2graph(fullfile(graphDirectory, graphFilename));
-    weight = full(sum(G));
+    [G, weight] = loadMetisGraph(fullfile(graphDirectory, graphFilename));
     volume = sum(weight);
     
     try
@@ -58,7 +57,7 @@ for f=1:length(graphFiles)
         categories = temp.data(:, [1 3 5 2 4 6]);
     catch
     end
-    resultFiles = dir(fullfile(inputDirectory, sprintf('%s_balanced_*_*_*.ptn', datasetName)));
+    resultFiles = dir(fullfile(inputDirectory, sprintf('%s_parallel_*_*_*.ptn', datasetName)));
     for f_res=1:length(resultFiles)
         resultFilename = fullfile(inputDirectory, resultFiles(f_res).name);
         [~, filename, ~] = fileparts(resultFilename);
