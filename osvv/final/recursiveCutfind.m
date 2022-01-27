@@ -65,13 +65,18 @@ for c=2:clusterCount
         a = hist(bins, unique(bins));
         fprintf(2, 'Size: %d\n', a);
         [~, connIndex] = max(a);
-        for comm=1: comp
-            if comm == connIndex
-                continue;
-            end
-            L = [L; R(bins == comm)];
-        end
+        L = [L; R(bins ~= connIndex)];
         R = R(bins == connIndex);
+    end
+    grph = graph(G(largestClusterNodes(L), largestClusterNodes(L)));
+    bins = conncomp(grph);
+    comp = length(unique(bins));
+    if (comp > 1)
+        a = hist(bins, unique(bins));
+        fprintf(2, 'Size: %d\n', a);
+        [~, connIndex] = max(a);
+        R = [R; L(bins ~= connIndex)];
+        L = L(bins == connIndex);
     end
     L = sort(L);
     R = sort(R);
@@ -79,7 +84,7 @@ for c=2:clusterCount
     clusters{largestClusterIndex, 1} = largestClusterNodes(R);
     clusterSizes = [clusterSizes; size(clusters{end, 1}, 1)];
     clusterSizes(largestClusterIndex, 1) = size(clusters{largestClusterIndex, 1}, 1);
-
+    fprintf(2, 'clusterSize[%d] = %d\n', [1:length(clusterSizes); clusterSizes']);
 end
 
 for c=1:clusterCount
