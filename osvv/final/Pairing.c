@@ -225,7 +225,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /* m-arrays are initialized within hi_pr */
     n = N + 2 + internalNodes;
-    m = M + internal_edge_count + internalNodes;
+    m = k;
 
     if (nlhs == 3) {
         route_flag = 0;

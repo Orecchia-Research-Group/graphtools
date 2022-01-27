@@ -219,8 +219,8 @@ end
 
 % INITIAL ENTROPY
 entr = log2(n);
-ppool = gcp();
-pwr_k = min(pwr_k, ppool.NumWorkers);
+%ppool = gcp();
+%pwr_k = min(pwr_k, ppool.NumWorkers);
 
 % LOWERBOUND
 congestion = init;
@@ -302,6 +302,7 @@ for i=1:double(t)
         % opts.sigma = 'SM';
         [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
         u = factor * u;
+        u_factor(1:pwr_k) = 1 / pwr_k;
     end
     %% Parallel vector cut0matching
     parfor step=1:pwr_k
