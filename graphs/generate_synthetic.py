@@ -34,7 +34,7 @@ def create_graph(nodes, cluster_prob, p_func, q_func, e_func):
     ])
     print(probability_matrix)
     G = nx.stochastic_block_model(cluster_sizes, probability_matrix)
-    return G
+    return G, cluster_sizes
 
 
 if __name__ == '__main__':
@@ -43,12 +43,12 @@ if __name__ == '__main__':
 
     e_func = lambda gmean: 0.005 * np.log(gmean) / (2 * gmean)
     for n in nodes:
-        for name, cluster_probs in np.array([
-                ('balanced_invSqrt', (0.50 - 1 / (2 * np.sqrt(n)), 0.50 - 1 / (2 * np.sqrt(n)), 1 / np.sqrt(n))),
-                ('unbalanced_invSqrt', (0.75 - 1 / (2 * np.sqrt(n)), 0.25 - 1 / (2 * np.sqrt(n)), 1 / np.sqrt(n))),
-                ('balanced_log', (0.5 - np.log(n) / (2 * n), 0.5 - np.log(n) / (2 * n), np.log(n) / (n))),
-                ('unbalanced_log', (0.5 - np.log(n) / (2 * n), 0.5 - np.log(n) / (2 * n), np.log(n) / (n))),
-        ]):
+        for name, cluster_probs in [
+                ('balanced_invSqrt', np.array((0.50 - 1 / (2 * np.sqrt(n)), 0.50 - 1 / (2 * np.sqrt(n)), 1 / np.sqrt(n)))),
+                ('unbalanced_invSqrt', np.array((0.75 - 1 / (2 * np.sqrt(n)), 0.25 - 1 / (2 * np.sqrt(n)), 1 / np.sqrt(n)))),
+                ('balanced_log', np.array((0.5 - np.log(n) / (2 * n), 0.5 - np.log(n) / (2 * n), np.log(n) / (n)))),
+                ('unbalanced_log', np.array((0.5 - np.log(n) / (2 * n), 0.5 - np.log(n) / (2 * n), np.log(n) / (n)))),
+        ]:
             cluster_probs /= np.linalg.norm(cluster_probs, 1)
             print(cluster_probs)
             for p_name, p_func in [
@@ -66,20 +66,25 @@ if __name__ == '__main__':
                     for k in range(5):
                         for i in range(3):
                             prefix = "synthetic_graph_{}_{}_{}_{:d}".format(name, p_name, q_name, k+1)
-                            filename = "new_synthetic/{}.eg2".format(prefix)
+                            filename = "groundtruth_synthetic/{}.eg2".format(prefix)
                             if os.path.exists(filename):
                                 continue;
-                            G = create_graph(n, cluster_probs, p_func, q_func, e_func)
+                            G, cluster_sizes = create_graph(n, cluster_probs, p_func, q_func, e_func)
                             m = nx.number_of_edges(G)
                             conn = nx.is_connected(G)
                             print(prefix, conn)
                             if not conn:
                                 continue
-                            with open("new_synthetic/{}.eg2".format(prefix), "w") as f_out:
+                            with open("groundtruth_synthetic/{}.eg2".format(prefix), "w") as f_out:
                                 print(n, n, 2*m, file=f_out)
                                 for v in G.nodes:
                                     for _, u in G.edges(v, data=False):
                                         print(v, u, 1, file=f_out)
-                            edgelistFile = "new_synthetic/{}.edgelist".format(prefix)
+                            edgelistFile = "groundtruth_synthetic/{}.edgelist".format(prefix)
                             nx.write_edgelist(G, edgelistFile, data=False, delimiter='\t')
+                            with open("groundtruth_synthetic/{}.partition".format(prefix), "w") as f_true:
+                                for i, cs in enumerate(cluster_sizes):
+                                    for _ in range(cs):
+                                        print("{}".format(i), file=f_true)
+
                             break

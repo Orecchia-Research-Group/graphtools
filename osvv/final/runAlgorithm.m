@@ -7,9 +7,10 @@ files = dir(directorySearch);
 for f=1:length(files)
     fprintf('%s\n', files(f).name);
     [~, dataset, ~] = fileparts(files(f).name);
-    if ~any(strcmp(dataset, {'amazon', 'dcExtractedDblp', 'youtube'}))
-        continue;                                                     
-    end
+    fprintf(2, 'Processing %s\n', dataset);
+    %if ~any(strcmp(dataset, ["youtube" "livejournal" "orkut"]))
+    %    continue;                                                     
+    %end
     inputFilename = fullfile(inputDirectory, files(f).name);
     [~, n, ~] = loadeg2graph(inputFilename);
     [edgeCut, L, R] = func(inputFilename, eta, ufactor);

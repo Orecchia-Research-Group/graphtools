@@ -9,6 +9,8 @@ for root, dirs, files in os.walk(sys.argv[1]):
             continue
         infile = os.path.join(root, name)
         outfile = os.path.join(root, "{}.metis".format(dataset))
+        if os.path.exists(outfile):
+            continue
         kahip = os.path.join(root, "{}.kahip".format(dataset))
         with open(infile, "rb") as in_f:
             print(infile)
