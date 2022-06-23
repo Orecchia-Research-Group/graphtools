@@ -42,8 +42,9 @@ INPUTS: Note that vertex indices go from 1 to n.
 #define MAXLONG 1000000000
 
 #include "types.h"          /* type definitions */
-/* #include "   flow.h" */
+#include "flow.h"
 #include "timer.h"        /* timing routine */
+#include "dynamictree.h"
 
 /* MATLAB INTEGRATION LIBS */
 
@@ -58,7 +59,7 @@ INPUTS: Note that vertex indices go from 1 to n.
 #define BLACK 2
 
 /* #define PRINT_CUT */
-#define CHECK_SOLUTION
+// #define CHECK_SOLUTION
 
 long loadflowproblem
         (
@@ -82,32 +83,32 @@ long loadflowproblem
 
 /* global variables */
 
-long n;                    /* number of nodes */
-long m;                    /* number of arcs */
-long nm;                   /* n + ALPHA * m */
-long nMin;                 /* smallest node id */
-node *nodes;               /* array of nodes */
-arc *arcs;                /* array of arcs */
-bucket *buckets;             /* array of buckets */
-cType *cap;                 /* array of capacities */
-node *source;              /* source node pointer */
-node *sink;                /* sink node pointer */
-/*node   **queue;             */ /* queue for BFS */
-/* node   **qHead, **qTail, **qLast;*/     /* queue pointers */
-long dMax;                 /* maximum label */
-long aMax;                 /* maximum actie node label */
-long aMin;                 /* minimum active node label */
-long flow;                 /* flow value */
-long pushCnt = 0;           /* number of pushes */
-long relabelCnt = 0;       /* number of relabels */
-long updateCnt = 0;       /* number of updates */
-long gapCnt = 0;           /* number of gaps */
-long gNodeCnt = 0;           /* number of nodes after gap */
-float t1, t2;                 /* for saving times */
-node *sentinelNode;        /* end of the node list marker */
-arc *stopA;                  /* used in forAllArcs */
-long workSinceUpdate = 0;      /* the number of arc scans since last update */
-float globUpdtFreq;          /* global update frequency */
+long n;                             /* number of nodes */
+long m;                             /* number of arcs */
+long nm;                            /* n + ALPHA * m */
+long nMin;                          /* smallest node id */
+node *nodes;                        /* array of nodes */
+arc *arcs;                          /* array of arcs */
+bucket *buckets;                    /* array of buckets */
+cType *cap;                         /* array of capacities */
+node *source;                       /* source node pointer */
+node *sink;                         /* sink node pointer */
+node **queue;                    /* queue for BFS */
+node **qHead, **qTail, **qLast;   /* queue pointers */
+long dMax;                          /* maximum label */
+long aMax;                          /* maximum actie node label */
+long aMin;                          /* minimum active node label */
+long flow;                          /* flow value */
+long pushCnt = 0;                   /* number of pushes */
+long relabelCnt = 0;                /* number of relabels */
+long updateCnt = 0;                 /* number of updates */
+long gapCnt = 0;                    /* number of gaps */
+long gNodeCnt = 0;                  /* number of nodes after gap */
+float t1, t2;                       /* for saving times */
+node *sentinelNode;                 /* end of the node list marker */
+arc *stopA;                         /* used in forAllArcs */
+long workSinceUpdate = 0;           /* the number of arc scans since last update */
+float globUpdtFreq;                 /* global update frequency */
 long totalNoOutgoingFlowErrors;
 
 /* macros */
@@ -128,8 +129,8 @@ long totalNoOutgoingFlowErrors;
            j++;\
 }
 
-#define forAllNodes(i) for ( i = nodes; i != sentinelNode; i++ )
-#define forAllArcs(i, a) for (a = i->first, stopA = (i+1)->first; a != stopA; a++)
+#define forAllNodes(i) for ( i = nodes; (i) != sentinelNode; (i)++ )
+#define forAllArcs(i, a) for (a = (i)->first, stopA = (i+1)->first; a != stopA; a++)
 
 #define nNode(i) ( (i) - nodes + nMin )
 #define nArc(a)  ( ( a == NULL )? -1 : (a) - arcs )
@@ -137,10 +138,11 @@ long totalNoOutgoingFlowErrors;
 #define min(a, b) ( ( (a) < (b) ) ? a : b )
 
 /* FIFO queue for BFS macros */
-/*
-#define qInit() \
+
+#define qInit(n) \
 {\
   qHead = qTail = queue;\
+  qLast = queue + (n)-1;\
 }
 
 #define qEmpty ( qHead == qTail )
@@ -154,11 +156,10 @@ long totalNoOutgoingFlowErrors;
 
 #define qDequeue(i) \
 {\
-  i = *qHead;\
+  i = qHead;\
   if ( qHead == qLast ) qHead = queue;\
   else qHead++;\
 }
-*/
 
 /* 
    bucket macros:
@@ -559,7 +560,7 @@ void stageTwo()
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                    if (a->resCap < i->excess)
+                    if (a->resCap < (long) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -576,7 +577,7 @@ void stageTwo()
         a = i->first;
         while (i->excess > 0) {
             if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                if (a->resCap < i->excess)
+                if (a->resCap < (long) i->excess)
                     delta = a->resCap;
                 else
                     delta = i->excess;
@@ -588,6 +589,175 @@ void stageTwo()
             a++;
         }
     }
+}
+
+void stageTwoDynamic()
+{
+    node *i, *j, *tos, *bos, *r;
+    arc *a;
+    cType delta;
+
+#ifdef DEBUG
+    float tS2_Selfloop_Start, tS2_EliminateCycle_Start, tS2_Topo_Start,
+        tS2_RemoveExcess_Start, tS2_End;
+
+    tS2_Selfloop_Start = timer();
+#endif
+
+    /* deal with self-loops */
+    forAllNodes(i) {
+        i->current = i->first;
+        forAllArcs(i, a){
+            if (a->head == i) {
+                a->resCap = cap[a - arcs];
+            }
+        }
+    }
+
+#ifdef DEBUG
+    tS2_EliminateCycle_Start = timer();
+#endif
+
+    /* eliminate flow cycles */
+    dynamic_tree_t *p;
+    p = dt_init(n, nodes, source);
+    while (true) {
+        int dfs_ret = dt_dfs(p);
+        if (!dfs_ret) { // link or cycle elimination is performed
+            continue;
+        }
+        if (p->cur_node->current == (p->cur_node + 1)->first || p->cur_node == sink) {             // if no suitable edges cut tail
+            node *previous;
+            if ((previous = dt_before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
+                // The alternative is that p is the source
+                dt_cut(p, previous);
+            } else {
+                break;
+            }
+        }
+    }
+    dt_cleanUp(p);
+
+    // recompute excess
+    forAllNodes(i) {
+        i->excess = 0;
+    }
+
+    forAllNodes(i) {
+        forAllArcs(i, a){
+            if (a->cap > 0) {
+                long flow = a->cap - a->resCap;
+                i->excess -= flow;
+                a->head->excess += flow;
+            }
+        }
+    }
+
+#ifdef DEBUG
+    tS2_Topo_Start = timer();
+#endif
+
+    /* initialize */
+    tos = bos = NULL;
+    forAllNodes(i) {
+        i->d = WHITE;
+        /*   buckets[i-nodes].firstActive = NULL; */
+        buckets[i - nodes].firstActive = sentinelNode;
+        i->current = i->first;
+    }
+
+    forAllNodes(i)if ((i->d == WHITE) && (i->excess > 0) &&
+                      (i != source) && (i != sink)) {
+            r = i;
+            r->d = GREY;
+            do {
+                for (; i->current != (i + 1)->first; i->current++) {
+                    a = i->current;
+                    if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
+                        j = a->head;
+                        if (j->d == WHITE) {
+                            /* start scanning j */
+                            j->d = GREY;
+                            buckets[j - nodes].firstActive = i;
+                            i = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (i->current == (i + 1)->first) {
+                    /* scan of i complete */
+                    i->d = BLACK;
+                    if (i != source) {
+                        if (bos == NULL) {
+                            bos = i;
+                            tos = i;
+                        } else {
+                            i->bNext = tos;
+                            tos = i;
+                        }
+                    }
+
+                    if (i != r) {
+                        i = buckets[i - nodes].firstActive;
+                        i->current++;
+                    } else
+                        break;
+                }
+            } while (1);
+        }
+
+#ifdef DEBUG
+    tS2_RemoveExcess_Start = timer();
+#endif
+
+    if (bos != NULL) {
+        for (i = tos; i != bos; i = i->bNext) {
+            a = i->first;
+            while (i->excess > 0) {
+                if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
+                    if (a->resCap < (long int) i->excess)
+                        delta = a->resCap;
+                    else
+                        delta = i->excess;
+                    a->resCap -= delta;
+                    a->rev->resCap += delta;
+                    i->excess -= delta;
+                    a->head->excess += delta;
+                }
+                a++;
+            }
+        }
+        /* now do the bottom */
+
+        i = bos;
+        a = i->first;
+        while (i->excess > 0) {
+            if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
+                if (a->resCap < (long int) i->excess)
+                    delta = a->resCap;
+                else
+                    delta = i->excess;
+                a->resCap -= delta;
+                a->rev->resCap += delta;
+                i->excess -= delta;
+                a->head->excess += delta;
+            }
+            a++;
+        }
+    }
+
+#ifdef DEBUG
+    tS2_End = timer();
+
+    fprintf(stderr, "-------------------------------\n");
+    fprintf(stderr, "S2 Selfloop Removal: %lf\n", tS2_EliminateCycle_Start - tS2_Selfloop_Start);
+    fprintf(stderr, "S2 Eliminate Cycle: %lf\n", tS2_Topo_Start - tS2_EliminateCycle_Start);
+    fprintf(stderr, "S2 Toposort: %lf\n", tS2_RemoveExcess_Start - tS2_Topo_Start);
+    fprintf(stderr, "S2 Remove Excess: %lf\n", tS2_End - tS2_RemoveExcess_Start);
+    fprintf(stderr, "-------------------------------\n\n\n");
+#endif
+
 }
 
 
@@ -713,7 +883,7 @@ void discharge(i)
 
                 if (j->d == jD) {
                     pushCnt++;
-                    if (a->resCap < i->excess)
+                    if (a->resCap < (long) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -831,8 +1001,175 @@ void stageOne() {
 
 node *decomposePathInternal(node *n, long *minCap);
 
+void bfs(){
+    queue = (node **) calloc(n + 3, sizeof(node **));
+    arc *a;
 
-void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag)
+    qInit(n + 3);
+    source->d = 0;
+    qEnqueue(source);
+    while(!qEmpty){
+        node **current;
+        qDequeue(current);
+
+        // if(nNode(*current) == nNode(sink)) break;
+
+        forAllArcs(*current, a){
+            if ((a->cap == 0) || (a->cap == a->resCap)) continue;
+            if (a->head->d == -1){
+                a->head->d = (*current)->d + 1;
+                qEnqueue(a->head);
+            }
+        }
+    }
+    free(queue);
+}
+
+void addMatching(long **mheads, long **mtails, long **mweights,
+                 node* mhead, node* mtail, long mweight, long *kPtr,
+                 long *matchingCapacityPtr) {
+    long *reallocPtr;
+    long matchingCapacity = *matchingCapacityPtr;
+    long k = *kPtr;
+    if (k >= matchingCapacity) {
+        if (!matchingCapacity) *matchingCapacityPtr = 2 * n;
+        else *matchingCapacityPtr = 2 * matchingCapacity;
+        matchingCapacity = *matchingCapacityPtr;
+        reallocPtr = *mheads;
+        *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
+        if (NULL == *mheads) {
+            free(reallocPtr);
+            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+            exit(1);
+        }
+
+        reallocPtr = *mtails;
+        *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
+        if (NULL == *mtails) {
+            free(reallocPtr);
+            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+            exit(1);
+        }
+
+        reallocPtr = *mweights;
+        *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
+        if (NULL == *mweights) {
+            free(reallocPtr);
+            fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
+            exit(1);
+        }
+    }
+
+    (*mheads)[k] = nNode(mhead);
+    (*mtails)[k] = nNode(mtail);
+    (*mweights)[k] = mweight;
+
+    (*mtails)[k + 1] = nNode(mhead);
+    (*mheads)[k + 1] = nNode(mtail);
+    (*mweights)[k + 1] = mweight;
+
+#ifdef DEBUG
+    fprintf(stderr, "Adding %ld--%ld: %ld\n", nNode(mhead), nNode(mtail), mweight);
+#endif
+
+    *kPtr = k + 2;
+}
+
+void matchingDinic(long **mheads, long **mtails, long **mweights,
+                   long *kPtr, long *matchingCapacityPtr) {
+    node *i;
+    arc *a;
+
+    node *last;
+    arc *stopA;
+    long minCap;
+    /* INITIALIZE MATCHING ARRAYS */
+    forAllNodes(i) {
+        i->d = 0;
+    }
+
+    forAllArcs(source, a) {
+        long na = nArc(a);
+        source->d = -1;  /*mark on path for cycle detection. */
+        if (cap[na] > 0) {
+            while (a->resCap < cap[na]) {
+                minCap = cap[na] - a->resCap;
+                last = decomposePathInternal(a->head, &minCap);
+                a->resCap += minCap;
+                if (last != NULL) {
+                    addMatching(mheads, mtails, mweights, a->head,
+                                last, minCap, kPtr, matchingCapacityPtr);
+                } else {
+                    printf("cycle with source detected marked %ld should be -2\n", source->d);
+                    source->d = -1;
+                }
+
+            }
+        }
+    }
+}
+
+void matchingDynamic(long **mheads, long **mtails, long **mweights,
+                     long *kPtr, long *matchingCapacityPtr) {
+    node *mhead;
+    node *mtail;
+    long mweight;
+
+    dynamic_tree_t* p = dt_init(n, nodes, source);
+    while (source->excess != 0) {
+        // Look for an augmenting path
+
+        while (p->cur_node != sink) {
+#ifdef DEBUG
+            fprintf(stderr, "p->cur_node = %ld\n", nNode(p->cur_node));
+#endif
+            long dfs_ret = dt_dfs(p);
+            if (!dfs_ret) { // link is performed
+                continue;
+            }
+            if (p->cur_node->current == (p->cur_node + 1)->first) {             // if no suitable edges cut tail
+                node *previous;
+                if ((previous = dt_before(p, p->cur_node)) != NULL) {              // Checks that a previous exists.
+                    // The alternative is that p is the source
+                    dt_cut(p, previous);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (p->cur_node != sink) {
+            break;
+        }
+
+        dt_findPath(p, &mhead, &mtail, &mweight);
+
+        if (!mweight) continue;
+
+        source->excess -= mweight;
+
+        addMatching(mheads, mtails, mweights, mhead, mtail, mweight,
+                    kPtr, matchingCapacityPtr);
+    }
+    dt_cleanUp(p);
+}
+
+void print_graph() {
+    node *i;
+    arc *a;
+    forAllNodes(i) {
+        forAllArcs(i, a) {
+            if(a->cap == 0 || a->resCap > 0) continue;
+            long tail = nNode(i);
+            if(tail != nNode(source) && tail != nNode(sink) && tail > (n - 2) / 2) tail -= (n - 2) / 2;
+            long head = nNode(a->head);
+            if(head != nNode(source) && head != nNode(sink) && head > (n - 2) / 2) head -= (n - 2) / 2;
+            fprintf(stderr, "%ld->%ld: %ld / %ld\n", tail, head, a->resCap, a->cap);
+        }
+    }
+}
+
+void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag, matching_index)
         long ninput;
         long minput;
         long *tails;
@@ -840,14 +1177,16 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         long *weights;
         long s;
         long t;
-        int **output_set;
+        long **output_set;
         long **mheads;
         long **mtails;
         long **mweights;
         long *nedges;
         long *fflow;
-        int route_flag;
+        long route_flag;
+        long matching_index;
 {
+    bucket *l;
 #if (defined(PRINT_FLOW) || defined(CHECK_SOLUTION))
     node *i;
     arc *a;
@@ -874,6 +1213,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
 #ifndef CUT_ONLY
     stageTwo();
+    // stageTwoDynamic();
 #endif
 
 #ifdef CHECK_SOLUTION
@@ -923,10 +1263,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     /* check if mincut is saturated */
     aMax = dMax = 0;
-    for (l = buckets; l < buckets + n; l++) {
-        l->firstActive = sentinelNode;
-        l->firstInactive = sentinelNode;
-    }
+
     globalUpdate();
     if (source->d < n) {
         printf("ERROR: the solution is not optimal\n");
@@ -975,7 +1312,13 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     /*  t1 = timer();*/
     /* RETRIEVE CUT FOUND - CODE BY REID */
-
+    aMax = dMax = 0;
+    aMax = dMax = 0;
+    for (l = buckets; l < buckets + n; l++) {
+        l->firstActive = sentinelNode;
+        l->firstInactive = sentinelNode;
+    }
+    globalUpdate();
     *output_set = calloc(sizeof(**output_set), n - 2);
 
     forAllNodes(j)
@@ -1008,6 +1351,8 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     for (long i = 0; i < n + 2; i++) {
         excesses[i] = 0;
     }
+    node *i;
+    arc *a;
 
     forAllNodes(i) {
         forAllArcs(i, a) {
@@ -1041,90 +1386,18 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     if (route_flag == 1) {
         long minCap;
         long matchingCapacity;
-        long *reallocPtr;
-
-        node *last;
-        arc *stopA;
-
-
         long k;
 
-        totalNoOutgoingFlowErrors = 0;
         /* INITIALIZE MATCHING ARRAYS */
         matchingCapacity = 0;
         k = 0;
-
-        forAllNodes(i) {
-            i->d = 0;
-            i->current = i->first;
-        }
-
-
-        forAllArcs(source, a) {
-            long na = nArc(a);
-            source->d = -1;  /*mark on path for cycle detection. */
-
-            if (cap[na] > 0) {
-                while (a->resCap < cap[na]) {
-                    minCap = cap[na] - a->resCap;
-                    if (minCap < 0) {
-                        printf("WARNING: Found negative minCap = %ld - %ld = %ld\n", cap[na], a->resCap, minCap);
-                    }
-
-                    last = decomposePathInternal(a->head, &minCap);
-
-                    if (minCap < 0) {
-                        printf("WARNING: Returned negative minCap = %ld\n", minCap);
-                    }
-
-                    if (last != NULL) {
-                        a->resCap += minCap;
-                        if (k >= matchingCapacity) {
-                            if (!matchingCapacity) matchingCapacity = 2 * n;
-                            else matchingCapacity = 2 * matchingCapacity;
-                            reallocPtr = *mheads;
-                            *mheads = realloc(*mheads, sizeof(**mheads) * matchingCapacity);
-                            if (NULL == *mheads) {
-                                free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mheads for %ld places\n", matchingCapacity);
-                                exit(1);
-                            }
-
-                            reallocPtr = *mtails;
-                            *mtails = realloc(*mtails, sizeof(**mtails) * matchingCapacity);
-                            if (NULL == *mtails)  {
-                                free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mtails for %ld places\n", matchingCapacity);
-                                exit(1);
-                            }
-
-                            reallocPtr = *mweights;
-                            *mweights = realloc(*mweights, sizeof(**mweights) * matchingCapacity);
-                            if (NULL == *mweights) {
-                                free(reallocPtr);
-                                fprintf(stderr, "Failed to allocate mweights for %ld places\n", matchingCapacity);
-                                exit(1);
-                            }
-                        }
-                        if (minCap < 0) {
-                            printf("Edge (%ld, %ld) has negative weight %ld\n", nNode(a->head), nNode(last), minCap);
-                        }
-                        (*mheads)[k] = nNode(a->head);
-                        (*mtails)[k] = nNode(last);
-                        (*mweights)[k] = minCap;
-
-                        (*mtails)[k + 1] = nNode(a->head);
-                        (*mheads)[k + 1] = nNode(last);
-                        (*mweights)[k + 1] = minCap;
-
-                        k = k + 2;
-                    } //else {
-                      //  printf("cycle with source detected marked %ld should be -2\n", source->d);
-                      //  source->d = -1;
-                    //}
-
-                }
-            }
+        switch (matching_index) {
+            case 0:;
+                matchingDinic(mheads, mtails, mweights, &k, &matchingCapacity);
+                break;
+            case 1:;
+                matchingDynamic(mheads, mtails, mweights, &k, &matchingCapacity);
+                break;
         }
         *nedges = k;
     }
@@ -1231,9 +1504,11 @@ long loadflowproblem(n, m, tails, heads, weights, s, t,
         arc_tail[pos_current + 1] = head;
         arc_current->head = nodes + head;
         arc_current->resCap = cap;
+        arc_current->cap = cap;
         arc_current->rev = arc_current + 1;
         (arc_current + 1)->head = nodes + tail;
         (arc_current + 1)->resCap = 0;
+        (arc_current + 1)->cap = 0;
         (arc_current + 1)->rev = arc_current;
 
 
@@ -1246,6 +1521,10 @@ long loadflowproblem(n, m, tails, heads, weights, s, t,
         arc_current += 2;
         pos_current += 2;
     }
+
+#ifdef DEBUG
+    fprintf(stderr, "loadflowproblem: node_min: %ld. node_max: %ld\n", node_min, node_max);
+#endif
 
 /********** ordering arcs - linear time algorithm ***********/
 
@@ -1297,6 +1576,10 @@ long loadflowproblem(n, m, tails, heads, weights, s, t,
                 cap = arc_new->resCap;
                 arc_new->resCap = arc_current->resCap;
                 arc_current->resCap = cap;
+
+                cap = arc_new->cap;
+                arc_new->cap = arc_current->cap;
+                arc_current->cap = cap;
 
                 if (arc_new != arc_current->rev) {
                     arc_tmp = arc_new->rev;

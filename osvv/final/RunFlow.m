@@ -42,7 +42,7 @@
 % ISSUES: can do mincut at precision p too?
 %
 
-function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, reciprocalBestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag, ufactor, varargin)
+function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, reciprocalBestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag, matching_algorithm, ufactor, varargin)
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INITIALIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -123,9 +123,9 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         internal_modifier = int64(internal_modifier * lamda_num);
         original_modifier = int64(original_modifier * lamda_den);
         fprintf(2, 'source_modifier=%d, sink_modifier=%d, internal_modifier=%d, original_modifier=%d\n', source_modifier, sink_modifier, internal_modifier, original_modifier);
-        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
-        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     end
     counter = counter + 1;
     if (flow == 0)
@@ -136,6 +136,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         flow, weirdrat_num, (bisec_vol) * source_modifier, (vol - bisec_vol) * sink_modifier, weirdrat, weirdrat_lower, weirdrat_upper);
     cutVolume = sum(weight(cut));
     reciprocalCutVolume = sum(weight(reciprocalCut));
+    fprintf(2, 'cutVolume: %d. reciprocalCutVolume: %d\n', cutVolume, reciprocalCutVolume);
     if balance_violated
         if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol)
             weirdrat_num_upper = weirdrat_num;
@@ -191,7 +192,7 @@ end
 %% Run with upper
 cap_add = int64(weirdrat_num);
 cap_orig = int64(weirdrat_den);
-%fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
+fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
 
 source_modifier = int64(cap_add) * int64(side_den);
 sink_modifier = int64(cap_add) * int64(side_num);
@@ -203,9 +204,9 @@ if (lamda_num > 0)
     sink_modifier = int64(sink_modifier * lamda_den);
     internal_modifier = int64(internal_modifier * lamda_num);
     original_modifier = int64(original_modifier * lamda_den);
-    [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+    [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
 else
-    [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+    [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
 end
 
 
@@ -230,9 +231,9 @@ if(nomatching_flag == 0)
         sink_modifier = int64(sink_modifier * lamda_den);
         internal_modifier = int64(internal_modifier * lamda_num);
         original_modifier = int64(original_modifier * lamda_den);
-        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
-        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
+        [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     end
     matchingSum = sum(int64(full(sum(matching))));
     if 2 * flow ~= matchingSum

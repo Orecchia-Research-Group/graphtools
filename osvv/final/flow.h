@@ -16,19 +16,25 @@ INPUTS: Note that vertex indices go from 1 to n.
  - fflow: pointer to long which becomes equal to flow routed.
 */
 
-void hipr 
-( 
-   long n, 
-   long m, 
-   long *tails, 
-   long *heads, 
-   long *weights, 
-   long s, 
-   long t,
-   long *output_set,
-   long *mheads;
-   long *mtails;
-   long *mweights;
-   long* fflow
+#ifndef FLOW_SEEN
+#define FLOW_SEEN
+
+void hipr(
+        long ninput,
+        long minput,
+        long *tails,
+        long *heads,
+        long *weights,
+        long s,
+        long t,
+        long **output_set,
+        long **mheads,
+        long **mtails,
+        long **mweights,
+        long *nedges,
+        long *fflow,
+        long route_flag,
+        long matching_index
 );
 
+#endif
