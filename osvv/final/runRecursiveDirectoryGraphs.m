@@ -40,7 +40,7 @@ for f=1:length(files)
                 continue;
             end
             %try
-                [score, clusters] = recursiveCutfind(clusterCount, G, 1, '', 1000, 5, 10, 1, 42, 1000, 4, 'KL', 'n', 1, balance/1000, lamda_num, lamda_den);
+                [score, clusters] = recursiveCutfind(clusterCount, G, 1, '', 1000, 5, 100, 1, 42, 100, 1, 'infty', 'n', 1, balance/1000, lamda_num, lamda_den);
             %catch
             %    fprintf(2, 'Failed lambda=%d / %d\n', lamda_num, lambda_den);
             %end

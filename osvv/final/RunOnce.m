@@ -1,4 +1,4 @@
-function [L, R] = RunOnce(graph, partition, outfile, lamda_num, lamda_den)
+function [L, R] = RunOnce(graph, partition, outfile, lamda_num, lamda_den, ufactor)
 %RUNONCE Run cutfind once on a graph and its partition
 %
 % INPUT:
@@ -53,7 +53,7 @@ weight(:) = degree;
 
 [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, cut, weight, lamda_num, lamda_den); % COMPUTE NEW WEIRDRAT
 [oldex_num, oldex_den, oldex] = cutexp(G, lamda_num, lamda_den, weight, cut, reciprocalCut);
-[minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  RunFlow(G, cut, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, 0, lamda_num, lamda_den);
+[minweirdrat_num, minweirdrat_den, minweirdrat, ex_num, ex_den, ex, cut, reciprocalCut, matching, matchrat, iterflownumber] =  RunFlow(G, cut, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, ufactor / 1000, lamda_num, lamda_den);
 fprintf('Name: %s. lamda: %d / %d = %.3f. Old score: %d / %d = %f. New score: %d / %d = %f\n', outfile, lamda_num, lamda_den, double(lamda_num) / double(lamda_den), oldex_num, oldex_den, oldex, ex_num, ex_den, ex);
 partitions{1} = cut';
 partitions{2} = reciprocalCut';

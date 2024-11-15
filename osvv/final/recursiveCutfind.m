@@ -94,8 +94,7 @@ for c=1:clusterCount
         if cr == c
             continue
         end
-        newMask = sparse(clusters{cr}, 1, true, n, 1);
-        Rmask = Rmask | newMask;
+        Rmask(clusters{cr}) = true;
     end
     R = find(Rmask);
     [~, ~, clusterExpansion(c)] = cutexp(G, int64(lamda_num), int64(lamda_den), int64(weight), int64(L), int64(R));

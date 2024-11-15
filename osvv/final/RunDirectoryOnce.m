@@ -1,4 +1,4 @@
-function [  ] = RunDirectoryOnce(graphDirectory, resultDirectory, lamdas_num, lamdas_den)
+function [  ] = RunDirectoryOnce(graphDirectory, resultDirectory, lamdas_num, lamdas_den, ufactor)
 %RUNDIRECTORYGRAPHS Runs all graphs in the input directory and saves
 %   results in the output directory
 %
@@ -17,7 +17,7 @@ function [  ] = RunDirectoryOnce(graphDirectory, resultDirectory, lamdas_num, la
 %   and produce overlapping ones using different lambdas by running FI just once
 %   Preferrably call from `screen` on a terminal or use some kind of cloud (eg SLURM).
 
-algs = {'KernighanLin', 'SweepCut', 'metis'};
+algs = {'metis'}; % {'KernighanLin', 'SweepCut', 'metis'};       % TODO: Run only metis
 % algs = {'metis'};
 directorySearch = fullfile(graphDirectory, '*.eg2');
 files = dir(directorySearch);
@@ -27,7 +27,7 @@ for f=1:length(files)
     inputFilename = fullfile(graphDirectory, files(f).name);
     [G, ~, ~] = loadeg2graph(inputFilename);
     for alg=algs
-        inputFilename = fullfile(resultDirectory, sprintf('%s_%s.ptn', dataset, alg{1}));
+        inputFilename = fullfile(resultDirectory, sprintf('%s_%s_100.ptn', dataset, alg{1})); % TODO: Remove 100
         fprintf('%s\n', inputFilename);
         if ~isfile(inputFilename)
             continue;
@@ -36,12 +36,12 @@ for f=1:length(files)
         for i=1:length(lamdas_num)
             lamda_num = lamdas_num(i);
             lamda_den = lamdas_den(i);
-            outputFilename = fullfile(resultDirectory, sprintf('%s_%s_runOnce_%d_%d.ptn', dataset, alg{1}, lamda_num, lamda_den));
+            outputFilename = fullfile(resultDirectory, sprintf('%s_%s_runOnce_%d_%d_%d.ptn', dataset, alg{1}, lamda_num, lamda_den, ufactor));
             if isfile(outputFilename)
                 continue;
             end
             try
-                [~, ~] = RunOnce(G, partitions, outputFilename, lamda_num, lamda_den);
+                [~, ~] = RunOnce(G, partitions, outputFilename, lamda_num, lamda_den, ufactor);
             catch
                 fprintf(2, 'Failed %s for lambda = %d / %d\n', dataset, lamda_num, lamda_den);
                 continue;
