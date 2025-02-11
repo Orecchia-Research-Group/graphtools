@@ -22,6 +22,7 @@ TODO: Be able to read all hMETIS formats
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include "mex.hpp"
 #include "mexAdapter.hpp"
 #include "MatlabDataArray.hpp"
@@ -29,6 +30,11 @@ TODO: Be able to read all hMETIS formats
 
 void loadhMetisGraph(std::string graphFilename, size_t &n, size_t &m, std::vector<size_t> &heads, std::vector<size_t> &tails, std::vector<double> &weights, std::vector<double> &nodeWeights) {
     int64_t flag = 0;
+    std::string suffix = ".hmetis";
+    if (!graphFilename.ends_with(suffix)) {
+        throw std::runtime_error("File needs to be .hmetis");
+    }
+
     std::ifstream graphFile(graphFilename);
     if (!graphFile.is_open()) {
         std::cerr << "Failed to open graphFilename " << graphFilename <<". Check path and permissions.\n";
@@ -106,7 +112,6 @@ public:
         std::vector<size_t> tails;
         std::vector<double> weights;
         std::vector<double> nodeWeights;
-
 
         std::string graphFilename(matlab::data::CharArray(inputs[0]).toAscii());
         loadhMetisGraph(graphFilename, n, m, heads, tails, weights, nodeWeights);
