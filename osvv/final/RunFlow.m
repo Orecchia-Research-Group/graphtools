@@ -42,30 +42,36 @@
 % ISSUES: can do mincut at precision p too?
 %
 
-function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, reciprocalBestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching_flag, matching_algorithm, ufactor, varargin)
+function   [weirdrat_num, weirdrat_den, weirdrat, ex_num, ex_den, ex, bestcut, reciprocalBestcut, matching, matchrat, flownumber] = RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, options)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%  ARGUMENTS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+arguments
+    G (:, :) double {mustBeGraph}
+    bisec (:, 1) int64
+    weight (1, :) int64
+    minweirdrat_num (1, 1) double
+    minweirdrat_den (1, 1) double
+    minweirdrat (1, 1) double
+    options.p (1, 1) int64 = 1000
+    options.nomatching_flag (1, 1) double = 1
+    options.matching_algorithm (1, :) char {mustBeMember(options.matching_algorithm, {'dinic', 'dynamic'})} = 'dinic'
+    options.ufactor (1, 1) double {mustBeLessThanOrEqual(options.ufactor, 0.5)} = 0
+    options.lambda_num  (1, 1) int64 = -1
+    options.lambda_den  (1, 1) int64 {mustBePositive} = 1
+end
+
+mustBeGreaterThanOrEqual(options.lambda_den, options.lambda_num)
+
+p = options.p;
+nomatching_flag = options.nomatching_flag;
+matching_algorithm = options.matching_algorithm;
+ufactor = options.ufactor;
+lambda_num = options.lambda_num;
+lambda_den = options.lambda_den;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INITIALIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-FAREY_PRECISION = 10000;
-
-if size(bisec, 2) == length(bisec)
-    error('RunFlow: bisec must be a column vector\n');
-end
-
-% Mixed cut or edge cut?
-if (size(varargin, 2) > 0)
-    if length(varargin) < 2
-        error('Lambda not passed correctly to RunFlow');
-    end
-    lamda_num = int64(varargin{1});
-    lamda_den = int64(varargin{2});
-    if lamda_num > lamda_den
-        error('Lambda needs to be less than or equal to 1 in RunFlow');
-    end
-else
-    lamda_num = int64(-1);
-    lamda_den = int64(1);
-end
+FAREY_PRECISION = 1000;
 
 % fprintf(2, 'lamda_num = %d, lamda_den = %d\n', lamda_num, lamda_den);
 % INITIALIZATION OF OUTPUT VARIABLES
@@ -117,11 +123,11 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
     internal_modifier = int64(cap_orig) * int64(side_den);
     original_modifier = int64(cap_orig) * int64(side_den);
 
-    if (lamda_num > 0)
-        source_modifier = int64(source_modifier * lamda_den);
-        sink_modifier = int64(sink_modifier * lamda_den);
-        internal_modifier = int64(internal_modifier * lamda_num);
-        original_modifier = int64(original_modifier * lamda_den);
+    if (lambda_num > 0)
+        source_modifier = int64(source_modifier * lambda_den);
+        sink_modifier = int64(sink_modifier * lambda_den);
+        internal_modifier = int64(internal_modifier * lambda_num);
+        original_modifier = int64(original_modifier * lambda_den);
         fprintf(2, 'source_modifier=%d, sink_modifier=%d, internal_modifier=%d, original_modifier=%d\n', source_modifier, sink_modifier, internal_modifier, original_modifier);
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
@@ -149,7 +155,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         end
     elseif(flow < double(bisec_vol) * source_modifier) % IF BETTER CUT FOUND
         %CHANGES
-        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, int64(weight), int64(lamda_num), int64(lamda_den)); % COMPUTE NEW WEIRDRAT
+        [weirdrat_num, weirdrat_den, weirdrat] =  cutweird(G, cut, reciprocalCut, bisec, int64(weight), int64(lambda_num), int64(lambda_den)); % COMPUTE NEW WEIRDRAT
 
         if (min(cutVolume, reciprocalCutVolume) < ufactor * vol)
             balance_violated = true;
@@ -172,7 +178,7 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         weirdrat = double(weirdrat_num) / double(weirdrat_den);
     end
 
-    [newex_num, newex_den, newex] = cutexp(G, int64(lamda_num), int64(lamda_den), int64(weight), cut, reciprocalCut);
+    [newex_num, newex_den, newex] = cutexp(G, int64(lambda_num), int64(lambda_den), int64(weight), cut, reciprocalCut);
     % CHECK IF EXPANSION HAS IMPROVED - IF IT HAS RECORD NEW CUT
     if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol) && (newex < ex)
         ex_num = newex_num;
@@ -199,11 +205,11 @@ sink_modifier = int64(cap_add) * int64(side_num);
 internal_modifier = int64(cap_orig) * int64(side_den);
 original_modifier = int64(cap_orig) * int64(side_den);
 
-if (lamda_num > 0)
-    source_modifier = int64(source_modifier * lamda_den);
-    sink_modifier = int64(sink_modifier * lamda_den);
-    internal_modifier = int64(internal_modifier * lamda_num);
-    original_modifier = int64(original_modifier * lamda_den);
+if (lambda_num > 0)
+    source_modifier = int64(source_modifier * lambda_den);
+    sink_modifier = int64(sink_modifier * lambda_den);
+    internal_modifier = int64(internal_modifier * lambda_num);
+    original_modifier = int64(original_modifier * lambda_den);
     [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
 else
     [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -226,11 +232,11 @@ if(nomatching_flag == 0)
     internal_modifier = int64(match_den) * side_num;
     original_modifier = int64(match_den) * side_num;
 
-    if (lamda_num > 0)
-        source_modifier = int64(source_modifier * lamda_den);
-        sink_modifier = int64(sink_modifier * lamda_den);
-        internal_modifier = int64(internal_modifier * lamda_num);
-        original_modifier = int64(original_modifier * lamda_den);
+    if (lambda_num > 0)
+        source_modifier = int64(source_modifier * lambda_den);
+        sink_modifier = int64(sink_modifier * lambda_den);
+        internal_modifier = int64(internal_modifier * lambda_num);
+        original_modifier = int64(original_modifier * lambda_den);
         [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut, matching] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -242,9 +248,9 @@ if(nomatching_flag == 0)
    % MATCHING SCALING
    matching = matching / double(match_num * side_den);
    matchrat = double(match_num)/double(match_den);
-   if (lamda_num > 0)
-       matching = matching / double(lamda_den);
-       matchrat = matchrat * double(lamda_den);
+   if (lambda_num > 0)
+       matching = matching / double(lambda_den);
+       matchrat = matchrat * double(lambda_den);
    end
    if(~issparse(matching))
         fprintf('Matching is not sparse...\n');

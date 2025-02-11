@@ -1,4 +1,4 @@
-%% MATLAB FUNCTION: recursiveCutfind
+ %% MATLAB FUNCTION: recursiveCutfind
 %
 % PURPOSE:  Run cutfind recursively, breaking up the largest component every
 %           time until cluster_count is reached.
@@ -13,29 +13,52 @@
 
 
 
-function [score, clusters] = recursiveCutfind(clusterCount, FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, pwr_k, rate, lwbd, certificatespec, ufactor, varargin)
+function [score, clusters] = recursiveCutfind(clusterCount, fileToRead, options)
 
-% Mixed cut or edge cut?
-if (size(varargin, 2) > 0)
-    if length(varargin) < 2
-        error(error_string, 'lambda');
-    end
-    lamda_num = int64(varargin{1});
-    lamda_den = int64(varargin{2});
-    if lamda_num > lamda_den
-        error('Lambda needs to be less than or equal to 1');
-    end
-else
-    lamda_num = int64(-1);
-    lamda_den = int64(1);
+arguments
+    clusterCount (1, :) int64 {mustBePositive}
+    fileToRead (1, :) char {mustBeFileOrGraph}
+    options.outputfile (1, :) {mustBeFileOrID(options.outputfile, 0, 1)} = 1
+    options.suffix (1, :) char = ''
+    options.t (1, 1) int16 {mustBePositive} = 100
+    options.stop (1, :) int64 {mustBeNumeric, mustBeGreaterThanOrEqual(options.stop, 1)} = 10
+    options.eta (1, 1) double {mustBePositive} = 0.5
+    options.init (1, 1) double {mustBeNonnegative} = 1
+    options.seed (1, 1) {mustBeNumeric} = 0
+    options.p (1, 1) int64 {mustBeGreaterThanOrEqual(options.p, 1)} = 1000
+    options.pwr_k (1, 1) int64 {mustBePositive} = 1
+    options.rate (1, :) char {mustBeMember(options.rate, {'d', 'n', 'infty', 'KL'})} = 'n'
+    options.lwbd (1, :) char {mustBeMember(options.lwbd, {'y', 'n', 'ylast'})} = 'n'
+    options.matchingAlgorithm (1, :) char {mustBeMember(options.matchingAlgorithm, {'dinic', 'dynamic'})} = 'dinic'
+    options.certificateSpec (1, 1) {mustBeNumericOrLogical, mustBeInRange(options.certificateSpec, 0, 1)} = 0
+    options.ufactor (1, 1) double {mustBeLessThanOrEqual(options.ufactor, 0.5)} = 0
+    options.lambda_num  (1, 1) int64 = 1
+    options.lambda_den  (1, 1) int64 {mustBePositive} = 1
 end
 
-if(ischar(FileToRead))
-    [G, weight] = loadMetisGraph(FileToRead);
+outputfile = options.outputfile;
+suffix = options.suffix;
+t = int16(options.t);
+stop = options.stop;
+eta = options.eta;
+init = options.init;
+seed = options.seed;
+p = int64(options.p);
+pwr_k = options.pwr_k;
+rate = options.rate;
+lwbd = options.lwbd;
+matchingAlgorithm = options.matchingAlgorithm;
+certificateSpec = options.certificateSpec;
+ufactor = options.ufactor;
+lambda_num = options.lambda_num;
+lambda_den = options.lambda_den;
+
+if(ischar(fileToRead))
+    [G, weight] = loadMetisGraph(fileToRead);
     n = size(G, 1);
     weight = int64(weight);
 else
-    G = FileToRead;
+    G = fileToRead;
     n = size(G, 1);
     degree = int64(full(sum(G)));
     weight = ones(1, n, 'int64');
@@ -53,11 +76,11 @@ for c=2:clusterCount
     currentWeight = sum(weight(largestClusterNodes));
     currentUfactor = ufactor * totalWeight / currentWeight;
     
-    if lamda_num > 0
-        [expansionFound, edgeCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(flowgraph,  outputfile, suffix, t, stop,  eta, init, seed, p, pwr_k, rate, lwbd, certificatespec, currentUfactor, lamda_num, lamda_den);
-    else
-        [expansionFound, edgeCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = cutfind(flowgraph,  outputfile, suffix, t, stop,  eta, init, seed, p, pwr_k, rate, lwbd, certificatespec, currentUfactor);
-    end
+    [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, lower] = ...
+                    cutfind(flowgraph, outputFile=1, suffix=suffix, t=t, stop=stop, eta=eta, init=init, seed=seed, ...
+                    p=p, pwr_k=pwr_k, rate=rate, lwbd=lwbd, matchingAlgorithm=matchingAlgorithm, certificateSpec=certificateSpec, ...
+                    ufactor=currentUfactor, lambda_num=lambda_num, lambda_den=lambda_den);
+    
     grph = graph(G(largestClusterNodes(R), largestClusterNodes(R)));
     bins = conncomp(grph);
     comp = length(unique(bins));
@@ -97,7 +120,7 @@ for c=1:clusterCount
         Rmask(clusters{cr}) = true;
     end
     R = find(Rmask);
-    [~, ~, clusterExpansion(c)] = cutexp(G, int64(lamda_num), int64(lamda_den), int64(weight), int64(L), int64(R));
+    [~, ~, clusterExpansion(c)] = cutexp(G, int64(lambda_num), int64(lambda_den), int64(weight), int64(L), int64(R));
 end
 score = min(clusterExpansion);
 

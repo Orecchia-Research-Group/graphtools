@@ -3,8 +3,8 @@
 % PURPOSE: runs algorithm OSVV on graph
 %
 % INPUTS:
-%    (char) FileToRead - a eg2 undirected graph file to read - must be a valid graph
-%    (char | 1 | 2) outputfile - output file for run results - stopping condition is appended
+%    (char) fileToRead - a eg2 undirected graph file to read - must be a valid graph
+%    (char | 1 | 2) outputFile - output file for run results - stopping condition is appended
 %    (char) suffix - Output filename suffix
 %    (int16) t - maximum number of iterations of algorithms - positive - max 2^16 -1 - rounded if not integral
 %    (double) stop - number of iterations after which, if no improv. in weirdratio, program exits - rounded below if not integral - can be array now
@@ -17,12 +17,11 @@
 %                                     'd' - equals eta sqrt(8log(n)/t)
 %                                     'infty' - uses the second smallest eigenvalue of the Laplacian;
 %                                     'n'  - equals eta;
-%    (int32) lambda - flow that can pass through a node. If missing considered to be infinity
 %    (char) lwbd - 'y' if final lower bound desired. 'n' otherwise
 %    (char) matchingAlgorithm - algorithm to use for flow decomposition
 %                                     'dinic' - start from source walk to sink; start again
 %                                     'dynamic' - Use dynamic trees
-%    (double) certificate - 1 if certificate is required; 0 otherwise
+%    (double) certificateSpec - 1 if certificate is required; 0 otherwise
 %    (double) ufactor - fraction of total volume in smaller 
 %    (int64) lambda_num - numerator for lambda controlling how much flow can pass through a node
 %    (int64) lambda_den - denominator for lambda controoling how much flow can pass through a node
@@ -48,102 +47,47 @@
 % - reorder parameters
 
 function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, iterscores, lower] = ...
-    cutfind(FileToRead, outputfile, suffix, t, stop,  eta, init, seed, p, pwr_k, rate, lwbd, matchingAlgorithm, certificatespec, ufactor, varargin)
+    cutfind(fileToRead, options)
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%  ERROR CHECKING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-error_string = 'Error in parameter %s. See README file for usage.\n';
-
-if(~ischar(FileToRead) && (~isnumeric(FileToRead) || (size(FileToRead, 1) ~= size(FileToRead, 2))))
-    error(error_string, 'eg2 input file');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  ARGUMENTS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+arguments
+    fileToRead (:, :) {mustBeFileOrGraph}
+    options.outputfile (1, :) {mustBeFileOrID(options.outputfile, 0, 1)} = 1
+    options.suffix (1, :) char = ''
+    options.t (1, 1) int16 {mustBePositive} = 100
+    options.stop (1, :) int64 {mustBeNumeric, mustBeGreaterThanOrEqual(options.stop, 1)} = 10
+    options.eta (1, 1) double {mustBePositive} = 0.5
+    options.init (1, 1) double {mustBeNonnegative} = 1
+    options.seed (1, 1) {mustBeNumeric} = 0
+    options.p (1, 1) int64 {mustBeGreaterThanOrEqual(options.p, 1)} = 1000
+    options.pwr_k (1, 1) int64 {mustBePositive} = 1
+    options.rate (1, :) char {mustBeMember(options.rate, {'d', 'n', 'infty', 'KL'})} = 'n'
+    options.lwbd (1, :) char {mustBeMember(options.lwbd, {'y', 'n', 'ylast'})} = 'y'
+    options.matchingAlgorithm (1, :) char {mustBeMember(options.matchingAlgorithm, {'dinic', 'dynamic'})} = 'dinic'
+    options.certificateSpec (1, 1) {mustBeNumericOrLogical, mustBeInRange(options.certificateSpec, 0, 1)} = 1
+    options.ufactor (1, 1) double {mustBeLessThanOrEqual(options.ufactor, 0.5)} = 0
+    options.lambda_num  (1, 1) int64 = 1
+    options.lambda_den  (1, 1) int64 {mustBePositive} = 1
 end
 
-if(~isnumeric(t) || t < 1)
-    error(error_string, 'number of iterations');
-end
-t = int16(t);
+outputfile = options.outputfile;
+suffix = options.suffix;
+t = int16(options.t);
+stop = options.stop;
+eta = options.eta;
+init = options.init;
+seed = options.seed;
+p = int64(options.p);
+pwr_k = options.pwr_k;
+rate = options.rate;
+lwbd = options.lwbd;
+matchingAlgorithm = options.matchingAlgorithm;
+certificateSpec = options.certificateSpec;
+ufactor = options.ufactor;
+lambda_num = options.lambda_num;
+lambda_den = options.lambda_den;
 
-if(~isnumeric(eta) || eta < 0)
-    error(error_string, 'learning rate');
-end
-
-if(~isnumeric(p) || p < 1)
-    error(error_string, 'flow precision');
-end
-p = int64(p); %rounded to integer - should check?
-
-if(~isnumeric(pwr_k) || pwr_k < 1)
-    error(error_string, 'vector number');
-end
-pwr_k = double(pwr_k);
-
-if(~isnumeric(seed))
-    error(error_string, 'seed');
-end
-
-if(~ischar(rate)|| ~(strcmp(rate, 'd') || strcmp(rate, 'n') || strcmp(rate,'infty') || strcmp(rate,'KL')))
-    error(error_string, 'rate spec');
-end
-
-if(~isnumeric(init) || init < 0)
-    error(error_string, 'init weight');
-end
-
-if(~isnumeric(stop))
-    error(error_string, 'stopping condition');
-end
 size_stop = size(stop,2);
-if(size_stop <1)
-    error(error_string, 'stopping condition');
-end
-
-for k=1:size_stop
-    if(stop(k) < 1)
-        error(error_string, 'stopping condition');
-    end
-end
-
-if(~ischar(lwbd) || ~(strcmp(lwbd, 'y') || (strcmp(lwbd, 'n') || strcmp(lwbd, 'ylast'))))
-    error(error_string, 'lowerbound computation');
-end
-
-if(~ischar(outputfile) && outputfile ~= 1 && outputfile ~= 2)
-    error(error_string, 'output file name');
-end
-
-if(certificatespec ~= 1 && certificatespec ~= 0)
-    error(error_string, 'certificate specification');
-end
-
-
-if(~ischar(suffix))
-    error(error_string, 'suffix file name');
-end
-
-if(~isnumeric(ufactor) || ufactor >= 0.5)
-    error(error_string, 'ufactor');
-end
-
-if(~ischar(matchingAlgorithm) || ~(strcmp(matchingAlgorithm, 'dinic') || strcmp(matchingAlgorithm, 'dynamic')))
-    error(error_string, 'matching algorithm');
-end
-
-% Mixed cut or edge cut?
-if (size(varargin, 2) > 0)
-    if length(varargin) < 2
-        error(error_string, 'lambda');
-    end
-    lamda_num = int64(varargin{1});
-    lamda_den = int64(varargin{2});
-    if lamda_num > lamda_den
-        error('Lambda needs to be less than or equal to 1');
-    end
-else
-    lamda_num = int64(-1);
-    lamda_den = int64(1);
-end
-
 
 %%%%%%%%%%%%%%%%%%%%%% READ GRAPH & INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -154,12 +98,12 @@ tic;
 rand('twister', seed);
 
 % READ GRAPH G
-if(ischar(FileToRead))
-    [G, weight] = loadMetisGraph(FileToRead);
+if(ischar(fileToRead))
+    [G, weight] = loadMetisGraph(fileToRead);
     n = size(G, 1);
     weight = int64(weight);
 else
-    G = FileToRead;
+    G = fileToRead;
     n = size(G, 1);
     degree = int64(full(sum(G)));
     weight = ones(1, n, 'int64');
@@ -284,7 +228,7 @@ fprintf(2, 'Run rate: %s.\n', rate);
 fprintf(2, 'Lower bound: %s.\n', lwbd);
 fprintf(2, 'Vector number: %d.\n', pwr_k);
 fprintf(2, 'Matching algorithm: %s\n', matchingAlgorithm);
-fprintf(2, 'Lambda: %d / %d = %.2f.\n', lamda_num, lamda_den, double(lamda_num) / double(lamda_den));
+fprintf(2, 'Lambda: %d / %d = %.2f.\n', lambda_num, lambda_den, double(lambda_num) / double(lambda_den));
 
 %%%%%%%%%%%%%%%%%%%%%%% ALGORITHM MAIN LOOP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -315,15 +259,15 @@ for i=1:double(t)
         % opts.sigma = 'SM';
         [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
         u = factor * u;
-        u_factor(1:pwr_k) = 1 / pwr_k;
+        u_factor(1:pwr_k) = 1 / double(pwr_k);
     end
-    %% Parallel vector cut0matching
+    %% Parallel vector cut/matching
     parfor step=1:pwr_k
         nomatching = 0;
         if(~strcmp(rate, 'infty'))
             %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
             u(:, step) = factor * expv((-1)*current_eta, M, v(:, step), 1e-3);
-            u_factor(step) = 1 / pwr_k;
+            u_factor(step) = 1 / double(pwr_k);
         end
         spectime = spectime + toc(tSpectral);
 
@@ -347,19 +291,17 @@ for i=1:double(t)
         fprintf(2, 'Bisec volume: %ld. Bisec size: %ld. Vol frac: %f.\n', full(bisec_vol), length(bisec), full(double(bisec_vol) / vol));
 
         % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
-        if(strcmp(lwbd,'n') && certificatespec == 1 && i == t)
+        if(strcmp(lwbd,'n') && certificateSpec == 1 && i == t)
             nomatching = 1;
         end
 
         tFlow = tic;
         % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
-        if (lamda_num > 0)
-            [weirdrat_num(step), weirdrat_den(step), weirdrat(step), ex_num(step), ex_den(step), ex(step), cut{step}, reciprocalCut{step}, matching{step}, matchrat(step), iterflownumber(step)] =  ...
-                RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, matchingAlgorithm, ufactor, lamda_num, lamda_den);
-        else
-            [weirdrat_num(step), weirdrat_den(step), weirdrat(step), ex_num(step), ex_den(step), ex(step), cut{step}, reciprocalCut{step}, matching{step}, matchrat(step), iterflownumber(step)] =  ...
-                RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p, nomatching, matchingAlgorithm, ufactor);
-        end
+        [weirdrat_num(step), weirdrat_den(step), weirdrat(step), ex_num(step), ex_den(step), ex(step), ...
+            cut{step}, reciprocalCut{step}, matching{step}, matchrat(step), iterflownumber(step)] = ...
+            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p=p, ...
+            nomatching_flag=nomatching, matching_algorithm=matchingAlgorithm, ufactor=ufactor, ...
+            lambda_num=lambda_num, lambda_den=lambda_den);
         flowtime = flowtime + toc(tFlow);
         % fprintf(1, "%d %d\n", nnz(matching), size(matching, 2));
         % UPDATE CERTIFICATE

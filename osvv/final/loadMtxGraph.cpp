@@ -1,10 +1,8 @@
-/* C MATLAB FUNCTION: loadmetisgraph
+/* C MATLAB FUNCTION: loadMtxGraph
 
-PURPOSE:    Reads in a hMETIS file as described in the manual 
-            (http://glaros.dtc.umn.edu/gkhome/fetch/sw/hmetis/manual.pdf) for fmt = 10
-            and return the graph and the node weights as specified in the file
+PURPOSE:    Reads in a Matrix Market file.
 
-USAGE:      function [G, weights] = loadhmetisgraph(graphFilename);
+USAGE:      function [G, weights] = loadMtxGraph(graphFilename);
 
 INPUTS:
 - graphFilename (char):  Path to the graph file
@@ -13,7 +11,6 @@ Outputs:
 - G (sparse matrix):         A sparse representation of the graph read
 - weights (int64 vector):   Degree of each node
 
-TODO: Be able to read all hMETIS formats
 */
 
 #include <iostream>
@@ -27,6 +24,43 @@ TODO: Be able to read all hMETIS formats
 #include "MatlabDataArray.hpp"
 
 
+bool verifyBanner(std::string graphFilename, std::string line, bool &symmetric) {
+    std::istringstream iss{line};
+    std::string data[5];
+    iss >> data[0] >> data[1] >> data[2] >> data[3] >> data[4];
+    // std::vector<std::string> data{std::istream_iterator<size_t>(iss), std::istream_iterator<size_t>()};
+    if (data[0] != "%%MatrixMarket") {
+        std::cerr << "Matrix Market Banner not present in " << graphFilename << ".\n";
+        return false;
+    }
+
+    if (data[1] != "matrix") {
+        std::cerr << "You have a dense matrix in " << graphFilename << ". Are you sure this is a good idea?.\n";
+        return false;
+    }
+
+    if (data[2] != "coordinate") {
+        std::cerr << "Somehow you don't have coordinates in " << graphFilename << ". Not sure what to do with that.\n";
+        return false;
+    }
+
+    if (data[3] != "integer") {
+        std::cerr << "Flow for the cut/matching game works only for integer weights. " << graphFilename << " has " << data[3] << " type weights and is not supported.\n";
+        return false;
+    }
+
+    if (data[4] == "general") {
+        symmetric = false;
+    } else if (data[4] == "symmetric") {
+        symmetric = true;
+    } else {
+        std::cerr << "No idea what to do with hermitian or skew-symmetric in " << graphFilename <<".\n";
+        return false;
+    }
+    return true;
+}
+
+
 void loadhMetisGraph(std::string graphFilename, size_t &n, size_t &m, std::vector<size_t> &heads, std::vector<size_t> &tails, std::vector<double> &weights, std::vector<double> &nodeWeights) {
     int64_t flag = 0;
     std::ifstream graphFile(graphFilename);
@@ -37,58 +71,53 @@ void loadhMetisGraph(std::string graphFilename, size_t &n, size_t &m, std::vecto
 
     n = 0;
     m = 0;
+    bool symmetric = false;
     std::string line;
     size_t node = 0;
+
+    // Verify banner and detect if symmetric
+    std::getline(graphFile, line);
+    if (!verifyBanner(graphFilename, line, symmetric)) {
+        return;
+    }
+
+    while (graphFile.peek() == '%') graphFile.ignore(2048, '\n');
 
     // First line
     std::getline(graphFile, line);
     std::istringstream iss{line};
     std::vector<int64_t> data{std::istream_iterator<size_t>(iss), std::istream_iterator<size_t>()};
-    m = data[0];
-    n = data[1];
-    if (data.size() > 2)
-        flag = data[2];
-    std::cerr << "Read first line" << std::endl;
+    if (data[0] != data[1]) {
+        std::cerr << "Only able to process square adjacency lists. " << graphFilename << " has sizes " << data[0] << " and " << data[1] <<".\n";
+        return;
+    }
+    n = data[0];
+    m = data[2];
 
-    // Read hyperedges 
-    for (size_t h = 0; h < m; h++) { 
+    for (size_t i = 0; i < n; i++)
+        nodeWeights.push_back(0);
+
+    // Read edges
+    for (size_t h = 0; h < m; h++) {
         std::getline(graphFile, line);
         std::istringstream iss{line};
         std::vector<int64_t> data{std::istream_iterator<size_t>(iss), std::istream_iterator<size_t>()};
 
         // Internal edge
-        heads.push_back(n + 2 * h + 1);
-        tails.push_back(n + 2 * h);
-        weights.push_back(1);
+        tails.push_back(data[0] - 1);
+        heads.push_back(data[1] - 1);
+        weights.push_back(data[2]);
+        nodeWeights[data[0] - 1] += data[2];
 
-        // Star edges
-        for (size_t j = 0; j < data.size(); j++) {
-            heads.push_back(n + 2 * h);
-            tails.push_back(data[j] - 1);
-            weights.push_back(1);
-
-            heads.push_back(data[j] - 1);
-            tails.push_back(n + 2 * h + 1);
-            weights.push_back(1);
+        if (symmetric) {
+            tails.push_back(data[1] - 1);
+            heads.push_back(data[0] - 1);
+            weights.push_back(data[2]);
+            nodeWeights[data[1] - 1] += data[2];
         }
     }
 
-    std::cerr << "Read hyperedges line" << std::endl;
-    // Node weights
-    for (size_t v = 0; v < n; v++) { 
-        std::getline(graphFile, line);
-        std::istringstream iss{line};
-        std::vector<int64_t> data{std::istream_iterator<size_t>(iss), std::istream_iterator<size_t>()};
 
-        nodeWeights.push_back(data[0]);
-    }
-    std::cerr << "Read node weights" << std::endl;
-
-    // Hyperedge star weights are zero
-    for (size_t h = 0; h < 2 * m; h++) {
-        nodeWeights.push_back(0);
-    }
-    std::cerr << "Returning" << std::endl;
 }
 
 class MexFunction : public matlab::mex::Function
@@ -101,7 +130,7 @@ public:
     {
         size_t n;
         size_t m;
-        
+
         std::vector<size_t> heads;
         std::vector<size_t> tails;
         std::vector<double> weights;
@@ -111,7 +140,7 @@ public:
         std::string graphFilename(matlab::data::CharArray(inputs[0]).toAscii());
         loadhMetisGraph(graphFilename, n, m, heads, tails, weights, nodeWeights);
 
-        auto nodeWeightsArr = factory.createArray({1, n + 2 * m}, nodeWeights.begin(), nodeWeights.end());
+        auto nodeWeightsArr = factory.createArray({1, n}, nodeWeights.begin(), nodeWeights.end());
 
         matlab::data::buffer_ptr_t<size_t> heads_p = factory.createBuffer<size_t>(heads.size());
         matlab::data::buffer_ptr_t<size_t> tails_p = factory.createBuffer<size_t>(tails.size());
@@ -128,8 +157,8 @@ public:
 
         // Use the buffers to create the sparse array
         matlab::data::SparseArray<double> G =
-            factory.createSparseArray<double>({n + 2 * m, n + 2 * m}, weights.size(), 
-                std::move(weights_p), std::move(tails_p), std::move(heads_p));
+                factory.createSparseArray<double>({n, n}, weights.size(),
+                                                  std::move(weights_p), std::move(tails_p), std::move(heads_p));
 
         heads.clear();
         tails.clear();
@@ -141,3 +170,4 @@ public:
 
     }
 };
+
