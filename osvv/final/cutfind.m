@@ -17,7 +17,10 @@
 %                                     'd' - equals eta sqrt(8log(n)/t)
 %                                     'infty' - uses the second smallest eigenvalue of the Laplacian;
 %                                     'n'  - equals eta;
-%    (char) lwbd - 'y' if final lower bound desired. 'n' otherwise
+%    (char) lwbd - 'ylast' if final lower bound desired.
+%                  'y' if lower bound at 'stop' is desired.
+%                  'yall' if lower bound at all iterations is desired.
+%                  'n' otherwise
 %    (char) matchingAlgorithm - algorithm to use for flow decomposition
 %                                     'dinic' - start from source walk to sink; start again
 %                                     'dynamic' - Use dynamic trees
@@ -44,7 +47,6 @@
 % - should have max number of vertices or edges?)
 % - nmin label is assumed to be 0 or 1? should be 0 outside the program. 1 in matlab
 % - does it make sense to use weirdrat as bound guiding the search?
-% - reorder parameters
 
 function [expansionFound, edgesCut, L, R, H, endtime, inittime, spectime, flowtime, iterations, iterscores, lower] = ...
     cutfind(fileToRead, options)
@@ -62,12 +64,13 @@ arguments
     options.p (1, 1) int64 {mustBeGreaterThanOrEqual(options.p, 1)} = 1000
     options.pwr_k (1, 1) int64 {mustBePositive} = 1
     options.rate (1, :) char {mustBeMember(options.rate, {'d', 'n', 'infty', 'KL'})} = 'n'
-    options.lwbd (1, :) char {mustBeMember(options.lwbd, {'y', 'n', 'ylast'})} = 'y'
+    options.lwbd (1, :) char {mustBeMember(options.lwbd, {'ylast', 'y', 'yall', 'n'})} = 'y'
     options.matchingAlgorithm (1, :) char {mustBeMember(options.matchingAlgorithm, {'dinic', 'dynamic'})} = 'dinic'
     options.certificateSpec (1, 1) {mustBeNumericOrLogical, mustBeInRange(options.certificateSpec, 0, 1)} = 1
     options.ufactor (1, 1) double {mustBeLessThanOrEqual(options.ufactor, 0.5)} = 0
-    options.lambda_num  (1, 1) int64 = 1
-    options.lambda_den  (1, 1) int64 {mustBePositive} = 1
+    options.lambda_num (1, 1) int64 = 1
+    options.lambda_den (1, 1) int64 {mustBePositive} = 1
+    options.verbose (1, 1) int64 {mustBeNonnegative} = 0
 end
 
 outputfile = options.outputfile;
@@ -86,6 +89,7 @@ certificateSpec = options.certificateSpec;
 ufactor = options.ufactor;
 lambda_num = options.lambda_num;
 lambda_den = options.lambda_den;
+verbose = options.verbose;
 
 size_stop = size(stop,2);
 
@@ -207,29 +211,31 @@ weirdrat = zeros(pwr_k, 1);
 weirdrat_num = zeros(pwr_k, 1);
 weirdrat_den = zeros(pwr_k, 1);
 
-%%%%%%%%%%%%%%%%%%%%%%% POST INITIALIZATION SUMMARY %%%%%%%%%%%%%%%%%%%%%%%
 inittime = toc;
-fprintf(2, '\nInitialization complete. Time required: %f\n', inittime);
-fprintf(2, '\nRunning on ...\n');
-fprintf(2, 'Number of vertices: %d. Number of edges: %d. Graph volume: %d\n', n, m, vol);
-fprintf(2, 'Number of iterations: %d.\n', t);
 
-fprintf(2, 'Stopping condition:');
-for k=1:size_stop
-    fprintf(2,' %d', stop(k));
+%%%%%%%%%%%%%%%%%%%%%%% POST INITIALIZATION SUMMARY %%%%%%%%%%%%%%%%%%%%%%%
+if(verbose > 0)
+    fprintf(2, '\nInitialization complete. Time required: %f\n', inittime);
+    fprintf(2, '\nRunning on ...\n');
+    fprintf(2, 'Number of vertices: %d. Number of edges: %d. Graph volume: %d\n', n, m, vol);
+    fprintf(2, 'Number of iterations: %d.\n', t);
+    
+    fprintf(2, 'Stopping condition:');
+    for k=1:size_stop
+        fprintf(2,' %d', stop(k));
+    end
+    fprintf(2,'\n');
+    
+    fprintf(2, 'Learning rate: %f.\n', eta);
+    fprintf(2, 'Initialization: %f.\n', init);
+    fprintf(2, 'Random generator seed: %f.\n', seed);
+    fprintf(2, 'Flow precision: %ld.\n', p);
+    fprintf(2, 'Run rate: %s.\n', rate);
+    fprintf(2, 'Lower bound: %s.\n', lwbd);
+    fprintf(2, 'Vector number: %d.\n', pwr_k);
+    fprintf(2, 'Matching algorithm: %s\n', matchingAlgorithm);
+    fprintf(2, 'Lambda: %d / %d = %.2f.\n', lambda_num, lambda_den, double(lambda_num) / double(lambda_den));
 end
-fprintf(2,'\n');
-
-fprintf(2, 'Learning rate: %f.\n', eta);
-fprintf(2, 'Initialization: %f.\n', init);
-fprintf(2, 'Random generator seed: %f.\n', seed);
-fprintf(2, 'Flow precision: %ld.\n', p);
-fprintf(2, 'Run rate: %s.\n', rate);
-fprintf(2, 'Lower bound: %s.\n', lwbd);
-fprintf(2, 'Vector number: %d.\n', pwr_k);
-fprintf(2, 'Matching algorithm: %s\n', matchingAlgorithm);
-fprintf(2, 'Lambda: %d / %d = %.2f.\n', lambda_num, lambda_den, double(lambda_num) / double(lambda_den));
-
 %%%%%%%%%%%%%%%%%%%%%%% ALGORITHM MAIN LOOP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 tic;
@@ -288,7 +294,9 @@ for i=1:double(t)
             bisec_vol = bisec_vol - weight(bisec(end));
             bisec = bisec(1:end-1);
         end
-        fprintf(2, 'Bisec volume: %ld. Bisec size: %ld. Vol frac: %f.\n', full(bisec_vol), length(bisec), full(double(bisec_vol) / vol));
+        if(verbose > 1)
+            fprintf(2, 'Bisec volume: %ld. Bisec size: %ld. Vol frac: %f.\n', full(bisec_vol), length(bisec), full(double(bisec_vol) / vol));
+        end
 
         % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
         if(strcmp(lwbd,'n') && certificateSpec == 1 && i == t)
@@ -307,9 +315,11 @@ for i=1:double(t)
         % UPDATE CERTIFICATE
     
         % fprintf(2, 'Min = %d Max = %d\n', full(min(sum(matching))), full(max(sum(matching))));
-        fprintf(2, 'Metric = %f\n', full(max(double(sum(matching{step})) ./ double(weight))));
         degree_distortion(step) = full(max(double(sum(matching{step})) ./ double(weight)));
-        fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d |matching|_inf = %f\n', nnz(matching{step}), nnz(H), norm(factor * matching{step} ./ degree_distortion(step) * factor, inf));
+        if(verbose > 1)
+            fprintf(2, 'Metric = %f\n', full(max(double(sum(matching{step})) ./ double(weight))));
+            fprintf(2, 'Nonzero element of matching: %d. Nonzero elements of sum %d |matching|_inf = %f\n', nnz(matching{step}), nnz(H), norm(factor * matching{step} ./ degree_distortion(step) * factor, inf));
+        end
     end
     
     %% Update from parallel
@@ -338,7 +348,7 @@ for i=1:double(t)
         else
             notimproved = notimproved + 1;
         end
-        if(strcmp(lwbd, 'ylast'))
+        if(~strcmp(lwbd, 'n'))
             certificate = factor * ((init + i - 1) .* sparse_deg - H) * factor;
             certificatecongestion = congestion;
         end
@@ -346,12 +356,16 @@ for i=1:double(t)
         notimproved = notimproved + 1;
     end
     % PRINT CURRENT RESULT
-    fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
+    if(verbose > 0)
+        fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
+    end
         
     % CHECK STOPPING CONDITION
-    if(notimproved >= stop(stop_cnt) || i == t)
+    if(notimproved >= stop(stop_cnt) || i == t || strcmp(lwbd, 'yall'))
         endtime = toc;
-        fprintf(2,'\nBest cut found: %d / %ld. Expansion: %f.\n', minexp_num, minexp_den, minexp);
+        if(verbose > 0)
+            fprintf(2,'\nBest cut found: %d / %ld. Expansion: %f.\n', minexp_num, minexp_den, minexp);
+        end
         
         
         %%%%%%%%%%%%%%%%%%%%%%%% LOWER BOUND %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -377,14 +391,16 @@ for i=1:double(t)
         % fprintf(output(stop_cnt), 'r:\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n', 'seed', 'minexp', 'minexp_num', 'minexp_den', 'endtime', 'inittime', 'i', 'lower', 'flownumber', 'spectime', 'flowtime', 'lowertime');
         fprintf(output(stop_cnt), 'r:\t%d\t%f\t%d\t%d\t%f\t%f\t%d\t%f\t%d\t%f\t%f\t%f\n', seed, minexp, minexp_num, minexp_den, endtime, inittime, i, lower, flownumber, spectime, flowtime, lowertime);
         
-        if(~strcmp(lwbd, 'n'))
+        if(~strcmp(lwbd, 'n') && verbose > 0)
             fprintf(2,'Lower bound: %f.\n', lower);
         end
-        fprintf(2,'Algorithm has completed. Time required: %f\n', endtime);
+        if(verbose > 0)
+            fprintf(2,'Algorithm has completed. Time required: %f\n', endtime);
+        end
         
-        
-        
-        stop_cnt = stop_cnt + 1;
+        if(notimproved >= stop(stop_cnt))
+            stop_cnt = stop_cnt + 1;
+        end
         if(stop_cnt > size_stop)
             break;
         end

@@ -58,6 +58,7 @@ arguments
     options.ufactor (1, 1) double {mustBeLessThanOrEqual(options.ufactor, 0.5)} = 0
     options.lambda_num  (1, 1) int64 = -1
     options.lambda_den  (1, 1) int64 {mustBePositive} = 1
+    options.verbose (1, 1) int64 {mustBeNonnegative} = 0
 end
 
 mustBeGreaterThanOrEqual(options.lambda_den, options.lambda_num)
@@ -68,6 +69,7 @@ matching_algorithm = options.matching_algorithm;
 ufactor = options.ufactor;
 lambda_num = options.lambda_num;
 lambda_den = options.lambda_den;
+verbose = options.verbose;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INITIALIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -128,7 +130,9 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         sink_modifier = int64(sink_modifier * lambda_den);
         internal_modifier = int64(internal_modifier * lambda_num);
         original_modifier = int64(original_modifier * lambda_den);
-        fprintf(2, 'source_modifier=%d, sink_modifier=%d, internal_modifier=%d, original_modifier=%d\n', source_modifier, sink_modifier, internal_modifier, original_modifier);
+        if(verbose > 2)
+            fprintf(2, 'source_modifier=%d, sink_modifier=%d, internal_modifier=%d, original_modifier=%d\n', source_modifier, sink_modifier, internal_modifier, original_modifier);
+        end
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier, internal_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
     else
         [flow, cut, reciprocalCut] = Pairing(G, bisec, weight, matching_algorithm, source_modifier, sink_modifier, original_modifier); % DO FLOW, SHOULD OUTPUT SMALL SIZE OF CUT
@@ -138,11 +142,15 @@ while(true) % WHILE BETTER WEIRDRAT CUT EXISTS
         fprintf(2, 'You disconnected: %f\n', flow);
     end
 
-    fprintf(2, 'flow: %d. weirdrat_num: %d. RHS: %d. Sink side: %d. weirdrat: %f lower: %f. upper: %f\n', ...
-        flow, weirdrat_num, (bisec_vol) * source_modifier, (vol - bisec_vol) * sink_modifier, weirdrat, weirdrat_lower, weirdrat_upper);
+    
     cutVolume = sum(weight(cut));
     reciprocalCutVolume = sum(weight(reciprocalCut));
-    fprintf(2, 'cutVolume: %d. reciprocalCutVolume: %d\n', cutVolume, reciprocalCutVolume);
+    if(verbose > 2)
+        fprintf(2, 'flow: %d. weirdrat_num: %d. RHS: %d. Sink side: %d. weirdrat: %f lower: %f. upper: %f\n', ...
+            flow, weirdrat_num, (bisec_vol) * source_modifier, (vol - bisec_vol) * sink_modifier, weirdrat, weirdrat_lower, weirdrat_upper);
+        fprintf(2, 'cutVolume: %d. reciprocalCutVolume: %d\n', cutVolume, reciprocalCutVolume);
+    end
+    
     if balance_violated
         if (min(cutVolume, reciprocalCutVolume) >= ufactor * vol)
             weirdrat_num_upper = weirdrat_num;
@@ -198,7 +206,9 @@ end
 %% Run with upper
 cap_add = int64(weirdrat_num);
 cap_orig = int64(weirdrat_den);
-fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
+if(verbose > 2)
+    fprintf('weirdrat_num: %d. weirdrat_den: %d. weirdrat: %f\n', weirdrat_num, weirdrat_den, weirdrat);
+end
 
 source_modifier = int64(cap_add) * int64(side_den);
 sink_modifier = int64(cap_add) * int64(side_num);
@@ -220,7 +230,9 @@ end
 if(weirdrat_num == 0)
     error('RunFlow: ratio reduced to zero!');
 end
-fprintf(2, 'Number of maxflows: %d. ', counter + 1);
+if(verbose > 2)
+    fprintf(2, 'Number of maxflows: %d. ', counter + 1);
+end
 % ONCE STOPPED, CONSTRUCT ROUTED UNION OF MATCHINGS - DO THIS AT PRECISION P
 if(nomatching_flag == 0)
    %[match_num, match_den] = Farey(int64(weirdrat_num), weirdrat_den, p); % use Farey sequences to find best p-precision approximation to weirdrat
