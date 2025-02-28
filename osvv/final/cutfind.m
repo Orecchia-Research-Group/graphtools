@@ -123,7 +123,7 @@ m = nnz(G)/2;
 degree = int64(full(sum(G)));
 sparse_deg = diag(sum(G));
 vol = sum(weight);
-factor = diag(sum(G).^(-1/2));
+factor = diag(weights.^(-1/2));
 
 % Check that the graph is strongly connected
 [S, C] = graphconncomp(G);
@@ -260,9 +260,7 @@ for i=1:double(t)
     %% SECOND EIGENVALUE
     M = factor * ((init + i - 1) .* sparse_deg - H) * factor;
     if(strcmp(rate,'infty'))
-        % opts.k = 2;
         opts.tol = 1e-14;
-        % opts.sigma = 'SM';
         [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
         u = factor * u;
         u_factor(1:pwr_k) = 1 / double(pwr_k);
