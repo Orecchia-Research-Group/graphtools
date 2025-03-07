@@ -16,7 +16,6 @@ arguments
     options.eta  (1, 1) double {mustBePositive} = 0.5
     options.pwr_k (1, 1) int64 {mustBePositive} = 1
     options.embedding_dim (1, 1) int64 {mustBePositive} = 1
-    options.balanced (1, 1) boolean = true
 end
 
 init = options.init;
@@ -26,7 +25,7 @@ pwr_k = options.pwr_k;
 embedding_dim = options.embedding_dim;
 
 
-%% 
+%% Computing current eta
 n = size(H, 1);
 
 % LEARNING RATE INITIALIZATION
