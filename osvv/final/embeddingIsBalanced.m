@@ -14,8 +14,14 @@ arguments
 end
 
 %% Checking condition
-
+% R_t
 r = sum(v .* v, 2);
 ind = r <= t;
-ret = sum(weights(ind) * r(ind) >= b * weights * r);
+
+% Weighted variance inside inside R_t
+v_bar_rt = mean(v(ind), 1, Weights=weights(ind));
+rt_var = weights(ind) * sum((v - v_bar_rt).^2, 2);
+
+% mu(R_t^2) >= mu(V^2)
+ret = rt_var >= b * weights * r;
 end
