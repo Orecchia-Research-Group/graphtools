@@ -102,17 +102,9 @@ tic;
 rand('twister', seed);
 
 % READ GRAPH G
-if(ischar(fileToRead))
-    [G, weight] = loadMetisGraph(fileToRead);
-    n = size(G, 1);
-    weight = int64(weight);
-else
-    G = fileToRead;
-    n = size(G, 1);
-    degree = int64(full(sum(G)));
-    weight = ones(1, n, 'int64');
-    weight(:) = degree;
-end
+[G, weight] = loadGraph(fileToRead);
+n = size(G, 1);
+
 % ERROR CHECKING: G MUST BE UNDIRECTED
 % if(nnz(G - G') ~= 0)
 %    error('The eg2 graph is not undirected.\n');
@@ -123,15 +115,7 @@ m = nnz(G)/2;
 degree = int64(full(sum(G)));
 sparse_deg = diag(sum(G));
 vol = sum(weight);
-factor = diag(weights.^(-1/2));
-
-% Check that the graph is strongly connected
-[S, C] = graphconncomp(G);
-if (S > 1)
-    %[GC, GR] = groupcounts(C);
-    %[out,idx] = sort(GC);
-    error('Graph is not strongly connected. S = %d', S);
-end
+factor = sparse(1:n, 1:n, double(weight).^(-1/2));
 
 %  INTIAL CERTIFICATE
 H = init*G;
@@ -146,7 +130,8 @@ bestcut = int64(bestcut);
 minexp_den = int64(1);
 minexp = minexp_num;
 
-%MINWEIRDRAT
+%MINWEIRDRATfactor = diag(double(weight).^(-1/2));
+
 if(minexp_num > p)
     fprintf(2,'Max degree is higher than precision. Search will start at weirdrat = p.\n');
     
@@ -242,6 +227,7 @@ tic;
 for i=1:double(t)
     
     tSpectral = tic;
+    
     % RANDOM BISECTION INITIALIZATION;
     v = round(rand(n, pwr_k));
     v = v - mean(v);

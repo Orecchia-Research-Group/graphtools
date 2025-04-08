@@ -62,7 +62,6 @@ bool verifyBanner(std::string graphFilename, std::string line, bool &symmetric) 
 
 
 void loadhMetisGraph(std::string graphFilename, size_t &n, size_t &m, std::vector<size_t> &heads, std::vector<size_t> &tails, std::vector<double> &weights, std::vector<double> &nodeWeights) {
-    int64_t flag = 0;
     std::string suffix = ".mtx";
     if (!graphFilename.ends_with(suffix)) {
         throw std::runtime_error("File needs to be .mtx");
@@ -78,7 +77,6 @@ void loadhMetisGraph(std::string graphFilename, size_t &n, size_t &m, std::vecto
     m = 0;
     bool symmetric = false;
     std::string line;
-    size_t node = 0;
 
     // Verify banner and detect if symmetric
     std::getline(graphFile, line);
