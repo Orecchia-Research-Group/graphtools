@@ -1,17 +1,30 @@
-CCOMP = gcc
-CPLUSCOMP = g++
-MEX=$(MATLAB)/bin/mex
+CCOMP=gcc
+CPLUSCOMP=g++
+MEX=mex
 
-all: flow farey cutweird cutexp
-flow: Pairing.c Sparse.c flow.c timer.c types.h timer.h
-	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) -largeArrayDims Pairing.c Sparse.c flow.c timer.c
-farey: Farey.c
-	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) -largeArrayDims Farey.c 
-cutweird: cutweird.c
-	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) -largeArrayDims cutweird.c
-cutexp: cutexp.c
-	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) -largeArrayDims cutexp.c
+CXXFLAGS=-std=c++20 -fPIC -Wall -Wextra -O3
+MEXFLAGS=-O
+
+
+all: Pairing.mexa64 cutexp.mexa64 cutweird.mexa64 Farey.mexa64 loadMetisGraph.mexa64 loadMtxGraph.mexa64 readPtn.mexa64
+
+debug: set-debug all
+set-debug:
+	MEXFLAGS=-g -DDEBUG
+Pairing.mexa64: Pairing.o Sparse.o flow.o timer.o dynamictree.o
+	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
+cutweird.mexa64: cutweird.o farey.o
+	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
+%.mexa64: %.c
+	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
+%.mexa64: %.cpp
+	$(MEX) CPP=$(CPLUSCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
+
+%.o: %.c
+	$(MEX) CC=$(CCOMP) LD=$(CCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) -c $^
+%.o: %.cpp
+	$(MEX) CXX=$(CPLUSCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) -c $^
 
 clean:
-	rm -f *~ 
+	rm -rf *~ *.mexa64 *.o
 	rm -f \#*

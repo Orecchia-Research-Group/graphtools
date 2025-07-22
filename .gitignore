@@ -1,1 +1,8 @@
 .DS_Store
+*.o
+*.mexa64
+*~
+*.asv
+
+# JetBrains directory
+.idea
