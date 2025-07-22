@@ -4,22 +4,22 @@ PURPOSE: prepares the flow problem and calls hipr which performs it.
          Obtains hipr output and converts it to MATLAB objects.
 
 USAGE: 
-function [flow, cut, matching]= Pairing(G, bisec, source_modifier, sink_modifier, original_modifier);
+function [flow, cut, matching]= Pairing(G, source_set, sink_set, source_modifier, sink_modifier, original_modifier[, internal_modifier]);
 
 INPUTS: Note: vertex indices start at 1
  -G: a sparse graph
- -bisec: an array of 64bits integers, each representing an index of a node
- in the desired bisection
+ -source_set: an array of 64bits integers, each representing an index of a node in the left side of the partition
+ -sink_set: an array of 64bits integers, each representing an index of a node in the right side of the partition
  - source_modifier: a 64 bit integer representing the capacity to put for edges between source
- and bisec
- - sink_modifier: a 64 bit integer representing the capacity to put for edges between sink and complement of bisec
+ and source_set
+ - sink_modifier: a 64 bit integer representing the capacity to put for edges between sink and sink_set
  - original_modifier: capacity to multiply edges in G
  - lambda: percentage of degree flow that can pass through the node
 
 OUTPUTS:
  - flow: value of flow routed
  - cut: mincut (list of indices), smaller side of mincut is returned
- - matching: demand flow routed between bisec and complement. Note that
+ - matching: demand flow routed between source_set and sink_set. Note that
  if no matching is required by MATLAB the flow computation does not waste time computing it.
 */
 
@@ -31,14 +31,15 @@ OUTPUTS:
 #include "flow.h"
 
 /* PROTOTYPE
-function [flow, cut, matching]= Pairing(G, bisec, source_modifier, sink_modifier, original_modifier);
+function [flow, cut, matching]= Pairing(G, source_set, sink_set, source_modifier, sink_modifier, original_modifier[, internal_modifier]);
 */
 
 mxArray* Sparse(long* heads, long* tails, long* weights, long m, long n );
 
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     const mxArray *G;
-    long *bisec;
+    long *source_set;
+    long *sink_set;
     long source_modifier;
     long sink_modifier;
     long original_modifier;
@@ -46,7 +47,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     long N;
     long M;
-    long size_bisec;
+    long source_set_size;
+    long sink_set_size;
     long *col_G;
     long *row_G;
     double *pr_G;
@@ -62,7 +64,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     long k;
     long h;
     long reciprocalOffset;
-    int *mask;
+    int *source_set_mask;
+    int *sink_set_mask;
     mxArray *temp;
 
     long n;
@@ -92,27 +95,29 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /*  t1 =timer();*/
 
-    if (nrhs > 8 || nrhs < 7 || nlhs > 4 || nlhs < 3)
+    if (nrhs > 9 || nrhs < 8 || nlhs > 4 || nlhs < 3)
         mexErrMsgTxt("Error in usage of Pairing.\n");
 
 
     /* EXTRACT DATA FROM MATLAB */
     G = prhs[0];
-    bisec = (long *) mxGetPr(prhs[1]);
-    size_bisec = mxGetM(prhs[1]);
-    volume = (long *) mxGetPr(prhs[2]);
-    char *matching_algorithm = mxArrayToString(prhs[3]);
+    source_set = (long *) mxGetPr(prhs[1]);
+    source_set_size = mxGetM(prhs[1]);
+    sink_set = (long *) mxGetPr(prhs[2]);
+    sink_set_size = mxGetM(prhs[2]);
+    volume = (long *) mxGetPr(prhs[3]);
+    char *matching_algorithm = mxArrayToString(prhs[4]);
     if (!strcmp(matching_algorithm, "dinic"))
         matching_index = 0;
     else if (!strcmp(matching_algorithm, "dynamic"))
         matching_index = 1;
     else
         mexErrMsgTxt("Error in recognizing the matching algorithm");
-    source_modifier = ((long *) mxGetPr(prhs[4]))[0];
-    sink_modifier = ((long *) mxGetPr(prhs[5]))[0];
-    original_modifier = ((long *) mxGetPr(prhs[6]))[0];
+    source_modifier = ((long *) mxGetPr(prhs[5]))[0];
+    sink_modifier = ((long *) mxGetPr(prhs[6]))[0];
+    original_modifier = ((long *) mxGetPr(prhs[7]))[0];
 
-    if (nrhs > 7) internal_modifier = ((long *) mxGetPr(prhs[7]))[0];
+    if (nrhs > 8) internal_modifier = ((long *) mxGetPr(prhs[8]))[0];
     else internal_modifier = 1;
 
 #ifdef DEBUG
@@ -141,13 +146,21 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
        NEED TO ADD SOURCE / SINK AND RELATIVE EDGES
     */
 
-    mask = calloc(sizeof(*mask), N + 1);
-    if (!mask) {
+    source_set_mask = calloc(sizeof(*source_set_mask), N + 1);
+    if (!source_set_mask) {
         fprintf(stderr, "Error allocating mask\n");
     }
 
-    for (h = 0; h < size_bisec; h++)
-        mask[bisec[h]] = 1;
+    for (h = 0; h < source_set_size; h++)
+        source_set_mask[source_set[h]] = 1;
+
+    sink_set_mask = calloc(sizeof(*sink_set_mask), N + 1);
+    if (!sink_set_mask) {
+        fprintf(stderr, "Error allocating mask\n");
+    }
+
+    for (h = 0; h < sink_set_size; h++)
+        sink_set_mask[sink_set[h]] = 1;
 
     k = 0;
 
@@ -198,17 +211,18 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     for (h = 0; h < N; h++) {
         if (volume[h] == 0) continue;
-        if (mask[h + 1] == 1) {
+        if (source_set_mask[h + 1] == 1) {
             heads[k] = h + 1;
             tails[k] = N + internalNodes + 1;
             weights[k] = source_modifier * volume[h];
-        } else {
+            k++;
+        }
+        if (sink_set_mask[h + 1] == 1) {
             heads[k] = N + internalNodes + 2;
             tails[k] = h + reciprocalOffset + 1;
             weights[k] = sink_modifier * volume[h];
+            k++;
         }
-
-        k++;
     }
 
     /* CALL HI_PR - modified to output flow - would prefer for hipr to allocate this memory*/
@@ -297,7 +311,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
    /*   t2 = timer() -t2;
 	fprintf(stderr, "Oth tm: %f", t2 + t1);*/
-   free(mask);
+   free(source_set_mask);
+   free(sink_set_mask);
    free(heads);
    free(tails);
    free(weights);

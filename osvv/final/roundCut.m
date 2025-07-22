@@ -16,21 +16,21 @@ mu_V = sum(weights);
 if embeddingIsBalanced(v, weights, t, b)
     %% Balanced embedding
     % Create random projection
-    
     g = rand(d, 1);
     r = v * g;
     [~, idx] = sort(r, "descend");
     mu_S_up = 0;
     mu_S_down = mu_V;
-    S_up_mask = zeros(n, 1, boolean);
-    S_down_mask = ones(n, 1, boolean);
+    S_up_mask = zeros(n, 1, "logical");
+    S_down_mask = ones(n, 1, "logical");
+    best_S_index = -1;
     for i=1:n
         u = idx(i);
         mu_u = weights(u);
         mu_S_up = mu_S_up + mu_u;
         S_up_mask(u) = true;
-        if t * mu_S_up >= mu_V
-            S = find(S_up_mask);
+        if (t * mu_S_up >= mu_V) && (best_S_index < 0)
+            best_S_index = i;
         end
         if t * (mu_S_down - mu_u) < mu_V
             T = find(S_down_mask);
@@ -39,6 +39,7 @@ if embeddingIsBalanced(v, weights, t, b)
         mu_S_down = mu_S_down - mu_u;
         S_down_mask(u) = false;
     end
+    S = sort(idx(1:best_S_index));
 else
     %% Unbalanced embedding
     % Separate based on measure

@@ -3,7 +3,7 @@ function [A, B] = directedRoundCut(S, T, v, weights)
 %   
 
 v_squared_norm = sum(v .^ 2, 2);
-r_squared = median(v_squared_norm(S), Weights=weights(S));
+r_squared = median(v_squared_norm(S), Weights=double(weights(S)));
 T_plus_mask = v_squared_norm(T) <= r_squared;
 T_minus_mask = v_squared_norm(T) >= r_squared;
 T_plus_mu = sum(weights(T(T_plus_mask)));

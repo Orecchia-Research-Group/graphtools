@@ -32,8 +32,8 @@ long gcd(long a, long b)
         return a + b;
     // a is greater
     if (a > b)
-        return gcd(a - b, b);
-    return gcd(a, b - a);
+        return gcd(a % b, b);
+    return gcd(a, b % a);
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {       // TODO: Add weight vector argument
@@ -46,11 +46,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     long *reciprocal_cut;
     long size_cut;
     long reciprocal_size_cut;
-    long *bisec;
-    long size_bisec;
+    long *source_set;
+    long *sink_set;
+    long source_set_size;
+    long sink_set_size;
     long *weight;
-    long weight_bisec = 0;
-    long weight_recip = 0;
+    long source_set_volume = 0;
+    long sink_set_volume = 0;
     long w_bisec;
     long w_recip;
     long p = 10000;
@@ -63,7 +65,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
 
     int *mask_cut;
     int *reciprocal_mask_cut;
-    int *mask_bisec;
+    int *source_set_mask;
+    int *sink_set_mask;
 
     mwSize dims[] = {1, 1};
     long *temp;
@@ -73,7 +76,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     //fprintf(stderr, "cutweird: nrhs = %d nlhs = %d\n", nrhs, nlhs);
 
     /* CHECK CORRECT NUMBER OF INPUT/OUTPUTS */
-    if (nrhs != 7 || nlhs != 3)
+    if (nrhs != 8 || nlhs != 3)
         mexErrMsgTxt("Error in cutweird. Incorrect usage.\n");
 
     /* CHECK TYPES */
@@ -87,15 +90,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         mexErrMsgTxt("Error in cutweird. Reciprocal cut must be of class int64.\n");
 
     if (mxGetClassID(prhs[3]) != mxINT64_CLASS)
-        mexErrMsgTxt("Error in cutweird. Bisec must be of class int64.\n");
+        mexErrMsgTxt("Error in cutweird. sink_set must be of class int64.\n");
 
     if (mxGetClassID(prhs[4]) != mxINT64_CLASS)
+        mexErrMsgTxt("Error in cutweird. sink_set must be of class int64.\n");
+
+    if (mxGetClassID(prhs[5]) != mxINT64_CLASS)
         mexErrMsgTxt("Error in cutweird. Weight must be of class int64.\n");
     
-    if (mxGetClassID(prhs[5]) != mxINT64_CLASS)
+    if (mxGetClassID(prhs[6]) != mxINT64_CLASS)
         mexErrMsgTxt("Error in cutweird. lamda_num must be of class int64.\n");
     
-    if (mxGetClassID(prhs[6]) != mxINT64_CLASS)
+    if (mxGetClassID(prhs[7]) != mxINT64_CLASS)
         mexErrMsgTxt("Error in cutweird. lamda_den must be of class int64.\n");
 
 
@@ -113,11 +119,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     reciprocal_cut = (long *) mxGetPr(prhs[2]);
     reciprocal_size_cut = mxGetM(prhs[2]);
 
-    bisec = (long *) mxGetPr(prhs[3]);
-    size_bisec = mxGetM(prhs[3]);
-    weight = (long *) mxGetPr(prhs[4]);
-    lamda_num = ((long *) mxGetPr(prhs[5]))[0];
-    lamda_den = ((long *) mxGetPr(prhs[6]))[0];
+    source_set = (long *) mxGetPr(prhs[3]);
+    source_set_size = mxGetM(prhs[3]);
+    sink_set = (long *) mxGetPr(prhs[4]);
+    sink_set_size = mxGetM(prhs[4]);
+    weight = (long *) mxGetPr(prhs[5]);
+    lamda_num = ((long *) mxGetPr(prhs[6]))[0];
+    lamda_den = ((long *) mxGetPr(prhs[7]))[0];
     if (lamda_num < 0) {
         lamda_den = 1l;
     }
@@ -134,24 +142,33 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     if (!(reciprocal_mask_cut = calloc(sizeof(*reciprocal_mask_cut), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
     else for (i = 0; i < reciprocal_size_cut; i++) reciprocal_mask_cut[reciprocal_cut[i] - 1] = 1;
 
-    if (!(mask_bisec = calloc(sizeof(*mask_bisec), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
-    else for (i = 0; i < size_bisec; i++) mask_bisec[bisec[i] - 1] = 1;
+    if (!(source_set_mask = calloc(sizeof(*source_set_mask), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
+    else for (i = 0; i < source_set_size; i++) source_set_mask[source_set[i] - 1] = 1;
+
+    if (!(sink_set_mask = calloc(sizeof(*sink_set_mask), n + 1))) mexErrMsgTxt("Error allocating memory in cutweird.");
+    else for (i = 0; i < sink_set_size; i++) sink_set_mask[sink_set[i] - 1] = 1;
 
     for (i = 0; i < n; i++) {
-        if (mask_bisec[i]) weight_bisec += weight[i];
-        else weight_recip += weight[i];
+        if (source_set_mask[i]) source_set_volume += weight[i];
+        if (sink_set_mask[i]) sink_set_volume += weight[i];
     }
 
-    w_bisec = weight_bisec;
-    w_recip = weight_recip;
+    w_bisec = source_set_volume;
+    w_recip = sink_set_volume;
     
-    if (abs(((double)weight_bisec) /  weight_recip - 1) < 1e-4) {
+    if ((sink_set_volume > source_set_volume) && (sink_set_volume / (double) source_set_volume - 1 < 0.0001)) {
         w_bisec = w_recip = 1;
+#ifdef DEBUG
+        fprintf(stderr, "Source and sink sets have almost the same weight: fabs(((double)source_set_volume) /  sink_set_volume - 1) = %lf < 1e-4\n", fabs(((double)source_set_volume) / sink_set_volume - 1));
+#endif
     } else {
-        farey(weight_recip, weight_bisec, p, &w_recip, &w_bisec);
+        farey(source_set_volume, sink_set_volume, p, &w_bisec, &w_recip);
+#ifdef DEBUG
+        fprintf(stderr, "Calling farey(%ld, %ld, %ld, %ld, %ld)\n", source_set_volume, sink_set_volume, p, w_bisec, w_recip);
+#endif
     }
 #ifdef DEBUG
-    fprintf(stderr, "Initial vol(L)=%ld vol(R)=%ld ratio=%lf\n", weight_bisec, weight_recip, abs(((double)weight_bisec) /  weight_recip - 1));
+    fprintf(stderr, "Initial vol(L)=%ld vol(R)=%ld ratio=%lf\n", source_set_volume, sink_set_volume, fabs(((double)source_set_volume) /  sink_set_volume - 1));
     fprintf(stderr, "vol(L)=%ld vol(R)=%ld\n", w_bisec, w_recip);
 #endif
 
@@ -159,11 +176,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     /* COMPUTE EDGES CUT */
 
     for (i = 0; i < n; i++) {
-        if (mask_cut[i] && mask_bisec[i]) {                 // π(S && A)
+        if (mask_cut[i] && source_set_mask[i]) {                 // π(S && A)
             denominator += weight[i] * lamda_den * w_recip;
         }
 
-        if (mask_cut[i] && (!mask_bisec[i]) && (!reciprocal_mask_cut[i])) {     // - π(L && !A), L = S \ T
+        if (mask_cut[i] && sink_set_mask[i] && !reciprocal_mask_cut[i]) {     // - π(L && B), L = S \ T
             denominator -= weight[i] * lamda_den * w_bisec;
         }
 
@@ -183,10 +200,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         }
     }
 
-#ifdef DEBUG
-    fprintf(stderr, "cutedges=%lf denominator=%ld\n", cutedges, denominator);
-#endif
-
     // denominator = e2 * size_intersect - size_cut + (size_cut + reciprocal_size_cut - n - size_overlap_intersect);
     if (denominator < 0)
         denominator = denominator * (-1);
@@ -198,15 +211,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         cutedges /= g;
         denominator /= g;
     }
-    plhs[0] = mxCreateDoubleScalar(cutedges);
-    plhs[1] = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
-    plhs[2] = mxCreateDoubleScalar(cutedges / (double) denominator);
-    temp = (long *) mxGetPr(plhs[1]);
-    *temp = denominator;
+
+#ifdef DEBUG
+    fprintf(stderr, "cutedges=%lf denominator=%ld\n", cutedges, denominator);
+#endif
+
+    farey(cutedges, denominator, p, &w_bisec, &w_recip);
+
+    plhs[0] = mxCreateDoubleScalar(w_bisec);
+    plhs[1] = mxCreateDoubleScalar(w_recip);
+    plhs[2] = mxCreateDoubleScalar(w_bisec / (double) w_recip);
 
     free(mask_cut);
     free(reciprocal_mask_cut);
-    free(mask_bisec);
+    free(source_set_mask);
+    free(sink_set_mask);
 
 }
 

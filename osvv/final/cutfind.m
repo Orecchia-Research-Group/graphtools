@@ -105,10 +105,8 @@ rand('twister', seed);
 [G, weight] = loadGraph(fileToRead);
 n = size(G, 1);
 
-% ERROR CHECKING: G MUST BE UNDIRECTED
-% if(nnz(G - G') ~= 0)
-%    error('The eg2 graph is not undirected.\n');
-% end
+% Check if G is directed or not
+isDirected = (nnz(G - G') ~= 0);
 
 % CONVERT m FROM NUMBER OF ARCS TO NUMBER OF EDGES
 m = nnz(G)/2;
@@ -225,63 +223,14 @@ end
 
 tic;
 for i=1:double(t)
-    
+    %% Cut Player Algorithm 3, pp 30 of Chen et al
     tSpectral = tic;
-    
-    % RANDOM BISECTION INITIALIZATION;
-    v = round(rand(n, pwr_k));
-    v = v - mean(v);
+    [A, B] = cutPlayer(H, i, weight, factor, sparse_deg, init=init, rate=rate, eta=eta, pwr_k=pwr_k, embedding_dim=1, directed=isDirected, t=3, b=1/10);
+    spectime = spectime + toc(tSpectral);
 
-
-    % LEARNING RATE INITIALIZATION
-    if(strcmp(rate,'d'))
-        current_eta = eta*sqrt(8*log(n)/i);
-    elseif (strcmp(rate, 'KL'))
-        current_eta = eta*sqrt(8*entr/i);
-    else    
-        current_eta = eta;
-    end
-    
-    % SPECTRAL PARTITIONING
-    %% SECOND EIGENVALUE
-    M = factor * ((init + i - 1) .* sparse_deg - H) * factor;
-    if(strcmp(rate,'infty'))
-        opts.tol = 1e-14;
-        [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + sum(sparse_deg * x) * sparse_deg * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
-        u = factor * u;
-        u_factor(1:pwr_k) = 1 / double(pwr_k);
-    end
     %% Parallel vector cut/matching
-    parfor step=1:pwr_k
+    for step=1:pwr_k
         nomatching = 0;
-        if(~strcmp(rate, 'infty'))
-            %%%  RANDOM WALK STEP %%% RESCALE V for better tolerance
-            u(:, step) = factor * expv((-1)*current_eta, M, v(:, step), 1e-3);
-            u_factor(step) = 1 / double(pwr_k);
-        end
-        spectime = spectime + toc(tSpectral);
-
-
-        % SORT VERTICES BY PROB. CHARGE AND DETERMINE BISECTION
-        [~, index] = sort(u(:, step));
-        index = int64(index);
-        j = floor(n / 2) + 1;
-        bisec=int64(index(1:floor(n/2)));
-        bisec_vol = sum(weight(bisec));
-
-        while bisec_vol < vol / 2.0
-            bisec(end + 1) = int64(index(j));
-            bisec_vol = bisec_vol + weight(index(j));
-            j = j + 1;
-        end
-        while bisec_vol > vol / 2.0
-            bisec_vol = bisec_vol - weight(bisec(end));
-            bisec = bisec(1:end-1);
-        end
-        if(verbose > 1)
-            fprintf(2, 'Bisec volume: %ld. Bisec size: %ld. Vol frac: %f.\n', full(bisec_vol), length(bisec), full(double(bisec_vol) / vol));
-        end
-
         % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
         if(strcmp(lwbd,'n') && certificateSpec == 1 && i == t)
             nomatching = 1;
@@ -291,7 +240,7 @@ for i=1:double(t)
         % CALL SODA_IMPROV AND ROUTING PROCEDURE IN RUNFLOW
         [weirdrat_num(step), weirdrat_den(step), weirdrat(step), ex_num(step), ex_den(step), ex(step), ...
             cut{step}, reciprocalCut{step}, matching{step}, matchrat(step), iterflownumber(step)] = ...
-            RunFlow(G, bisec, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p=p, ...
+            RunFlow(G, A, B, weight, minweirdrat_num, minweirdrat_den, minweirdrat, p=p, ...
             nomatching_flag=nomatching, matching_algorithm=matchingAlgorithm, ufactor=ufactor, ...
             lambda_num=lambda_num, lambda_den=lambda_den);
         flowtime = flowtime + toc(tFlow);
@@ -309,6 +258,7 @@ for i=1:double(t)
     %% Update from parallel
     % UPDATE LOWER BOUND
     for step=1:pwr_k
+        u_factor(step) = 1 / double(pwr_k);
         congestion = congestion + 1 / matchrat(step) * u_factor(step);
         % fprintf(2, 'Volume of matching %d\n', sum(matching, 'all'));
         H = H + double(matching{step}) *  u_factor(step) ./ degree_distortion(step);
@@ -341,7 +291,7 @@ for i=1:double(t)
     end
     % PRINT CURRENT RESULT
     if(verbose > 0)
-        fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f. eta: %f\n', minweirdrat, i, minexp_num, minexp_den, minexp, current_eta);
+        fprintf(2, 'Wrat: %f. Iter %d. Exp: %d / %d = %f\n', minweirdrat, i, minexp_num, minexp_den, minexp);
     end
         
     % CHECK STOPPING CONDITION
@@ -369,7 +319,7 @@ for i=1:double(t)
             lower = 0;
         end
         iterscores(stop_cnt, :) = [i, stop(stop_cnt), minexp, lower, endtime];
-        lowertime = toc(tLower);
+        lowertime = lowertime + toc(tLower);
         
         % PRINT RUN RESULTS TO OUTPUT FILE
         % fprintf(output(stop_cnt), 'r:\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n', 'seed', 'minexp', 'minexp_num', 'minexp_den', 'endtime', 'inittime', 'i', 'lower', 'flownumber', 'spectime', 'flowtime', 'lowertime');

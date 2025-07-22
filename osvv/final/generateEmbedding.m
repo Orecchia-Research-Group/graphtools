@@ -7,7 +7,7 @@ function [u] = generateEmbedding(H, i, weights, factor, sparse_deg, options)
 %% Argument validation
 arguments
     H (:, :) {mustBeGraph}
-    i (1, 1) int64 {mustBePositive}
+    i (1, 1) double {mustBePositive}
     weights (1, :) int64 {mustBeNonnegative}
     factor (:, :) {mustBeGraph}
     sparse_deg (:, :) {mustBeGraph}
@@ -18,6 +18,7 @@ arguments
     options.embedding_dim (1, 1) int64 {mustBePositive} = 1
 end
 
+dweights = double(weights);
 init = options.init;
 rate = options.rate;
 eta = options.eta;
@@ -38,12 +39,13 @@ else
 end
 
 % SPECTRAL PARTITIONING
-half_mu = factor.^(-1);
+half_mu = diag(diag(factor).^(-1));
 %% SECOND EIGENVALUE
 if(strcmp(rate,'infty'))
     opts.tol = 1e-6;
-    [u, ~] = eigs(@(x) (factor * ((init + i - 1) .* sparse_deg - H) * factor * x + sum(half_mu * x) * half_mu * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
-    [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + (weights * x) * diag(weights) * ones(size(x))), n, diag(weights), pwr_k, 'SA', opts);
+    ddweights = diag(sparse(double(weights)));
+    % [u, ~] = eigs(@(x) (factor * ((init + i - 1) .* sparse_deg - H) * factor * x + sum(half_mu * x) * half_mu * ones(size(x))), n, sparse_deg, pwr_k, 'SA', opts);
+    [u, ~] = eigs(@(x) (((init + i - 1) .* sparse_deg - H) * x + (ddweights * x)' * ddweights * ones(size(x))), n, ddweights, pwr_k, 'SA', opts);
     u(:) = factor * u;
 end
 %% Parallel vector cut/matching
@@ -55,14 +57,14 @@ if(~strcmp(rate, 'infty'))
     % s = factor * s;
 
     M = factor * ((init + i - 1) .* sparse_deg - H) * factor;
-    parfor step=1:pwr_k * embedding_dim
+    for step=1:pwr_k * embedding_dim
         %%%  RANDOM WALK STEP 
         u(:, step) = factor * expv((-1)*current_eta, M, s(:, step), 1e-3);
     end
     u = reshape(u, n, pwr_k, embedding_dim);
 
     %%% CENTER
-    u = u - mean(u, 1, Weights=weights);
+    u = u - mean(u, 1, Weights=dweights);
 
     %%% RESCALE V for better tolerance
     
