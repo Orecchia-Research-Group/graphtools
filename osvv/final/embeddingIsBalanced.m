@@ -17,6 +17,10 @@ end
 % R_t
 r = sum(v .* v, 2);
 ind = r <= t;
+if sum(ind) == 0
+    ret = false;
+    return;
+end
 
 % Weighted variance inside inside R_t
 v_bar_rt = mean(v(ind), 1, Weights=weights(ind));

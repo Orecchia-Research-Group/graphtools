@@ -59,7 +59,8 @@ if(~strcmp(rate, 'infty'))
     M = factor * ((init + i - 1) .* sparse_deg - H) * factor;
     for step=1:pwr_k * embedding_dim
         %%%  RANDOM WALK STEP 
-        u(:, step) = factor * expv((-1)*current_eta, M, s(:, step), 1e-3);
+        % u(:, step) = factor * expv((-1)*current_eta, M, s(:, step), 1e-2);
+        u(:, step) = factor * expmv(M, s(:, step), (-1)*current_eta);
     end
     u = reshape(u, n, pwr_k, embedding_dim);
 

@@ -47,7 +47,7 @@ else
     [~, idx] = sort(r, "descend");
     T = find(r <= t / 2);
     mu_S = 0;
-    S_mask = zeros(n, 1, boolean);
+    S_mask = false(n, 1);
     thr = 24 * mu_V / (100 * log(mu_V));    % Compute threshold
     for i=1:n
         u = idx(i);
@@ -61,6 +61,9 @@ else
             printf(2, "This wasn't supposed to happen. Refer to Algorithm 4 of https://arxiv.org/pdf/2301.08920.")
             break;
         end
+    end
+    if exist('S', 'var') == 0
+        S = find(r >= t / 2);
     end
 end
 end

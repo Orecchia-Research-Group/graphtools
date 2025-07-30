@@ -15,6 +15,8 @@ Pairing.mexa64: Pairing.o Sparse.o flow.o timer.o dynamictree.o
 	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 cutweird.mexa64: cutweird.o farey.o
 	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
+Farey.mexa64: Farey.o farey.o
+	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 %.mexa64: %.c
 	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 %.mexa64: %.cpp
