@@ -246,18 +246,18 @@ if(nomatching_flag == 0)
         fprintf(2, 'Warning: flow is %d, but matching has volume %d\n', flow, matchingSum / 2);
     end
    % MATCHING SCALING
-   matching = matching / double(match_num * side_den);
-   matchrat = double(match_num)/double(match_den);
-   if (lambda_num > 0)
-       matching = matching / double(lambda_den);
-       matchrat = matchrat * double(lambda_den);
-   end
-   if(~issparse(matching))
+    matching = matching / double(match_num * side_den);
+    matchrat = double(match_num)/double(match_den);
+    if (lambda_num > 0)
+        matching = matching / double(lambda_den);
+        matchrat = matchrat * double(lambda_den);
+    end
+    if(~issparse(matching))
         fprintf('Matching is not sparse...\n');
-   end
+    end
 else
-   matching = sparse(1:double(n), 1:double(n), 0);
-   matchrat = 1;
+    matching = sparse(1:double(n), 1:double(n), 0);
+    matchrat = 1;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%% OUTPUT PREPARATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

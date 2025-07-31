@@ -14,6 +14,13 @@ function [result_cell] = synthetic_analysis(folder, dataset)
     result_column_names = {'Name', 'Edges', 'p', 'q', 'repeat', 'Ground-truth', 'Time (s)', 'Best found', 'Lower bound', 'Accuracy', 'Precision', 'Recall', 'F1-score'};
     result_cell = result_column_names;
 
+    % Start a parpool for the parfor
+    p = gcp('nocreate'); % Attempt to get the current pool without creating one
+    if isempty(p)
+        % No parallel pool exists, so create one
+        parpool(4); % This will create a parallel pool with 4 workers
+    end
+
     % Loop through each graph
     for k = 1:length(mtxFiles)
         mtxName = mtxFiles(k).name;

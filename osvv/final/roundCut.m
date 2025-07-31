@@ -63,7 +63,7 @@ else
         end
     end
     if exist('S', 'var') == 0
-        S = find(r >= t / 2);
+        S = find(r > t / 2);
     end
 end
 end

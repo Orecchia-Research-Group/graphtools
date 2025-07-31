@@ -8,9 +8,8 @@ MEXFLAGS=-O
 
 all: Pairing.mexa64 cutexp.mexa64 cutweird.mexa64 Farey.mexa64 loadMetisGraph.mexa64 loadMtxGraph.mexa64 readPtn.mexa64
 
-debug: set-debug all
-set-debug:
-	MEXFLAGS=-g -DDEBUG
+debug: MEXFLAGS=-g -DDEBUG
+debug: clean all
 Pairing.mexa64: Pairing.o Sparse.o flow.o timer.o dynamictree.o
 	$(MEX) CC=$(CCOMP) LD=$(CPLUSCOMP) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 cutweird.mexa64: cutweird.o farey.o

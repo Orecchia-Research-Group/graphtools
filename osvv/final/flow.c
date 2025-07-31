@@ -1086,6 +1086,7 @@ void matchingDinic(long **mheads, long **mtails, long **mweights,
     /* INITIALIZE MATCHING ARRAYS */
     forAllNodes(i) {
         i->d = 0;
+        i->current = i->first;
     }
 
     forAllArcs(source, a) {
