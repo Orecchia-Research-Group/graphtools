@@ -229,7 +229,7 @@ for i=1:double(t)
     spectime = spectime + toc(tSpectral);
 
     %% Parallel vector cut/matching
-    for step=1:pwr_k
+    parfor step=1:pwr_k
         nomatching = 0;
         % IF CERTIFICATESPEC = 1 DO NOT NEED TO COMPUTE MATCHING IN LAST ITERATION - USED ESPECIALLY in NO FEEDBACK RUNS
         if(strcmp(lwbd,'n') && certificateSpec == 1 && i == t)
