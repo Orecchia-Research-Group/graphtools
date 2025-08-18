@@ -22,7 +22,7 @@ end
     if isempty(mtxFiles)
         error('No .mtx files found in %s', folder);
     end
-    result_column_names = {'Name', 'Edges', 'lambda', 'lambda_num', 'lambda_den', 'p', 'q', 'repeat', 'Ground-truth', 'Time (s)', 'Best found', 'Lower bound', 'Accuracy', 'Precision', 'Recall', 'F1-score'};
+    result_column_names = {'Name', 'lambda', 'lambda_num', 'lambda_den', 'bestExpNum', 'bestExpDen', 'bestExp', 'p', 'q', 'repeat', 'Ground-truth', 'Time (s)', 'Best found', 'Lower bound', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'LL', 'LC', 'LR', 'CL', 'CC', 'CR', 'RL', 'RC', 'RR'};
     result_cell = result_column_names;
 
     % Start a parpool for the parfor
@@ -80,7 +80,7 @@ end
             lam_num = int64(lambda_num(i));
             lam_den = int64(lambda_den(i));
             lam = double(lam_num) / double(lam_den);
-            [expansionFound, ~, S, T, ~, endtime, ~, ~, ~, ~, ~, lower] = cutfind(mtxPath, stop=40, pwr_k=4, eta=1, lambda_num=lam_num, lambda_den=lam_den);
+            [expansionFound, edgesCut, S, T, ~, endtime, ~, ~, ~, ~, ~, lower] = cutfind(mtxPath, stop=40, pwr_k=4, eta=1, lambda_num=lam_num, lambda_den=lam_den);
 
             % Check if prediction is flipped
             if length(intersect(A, S)) + length(intersect(B, T)) < length(intersect(A, T)) + length(intersect(B, S))
@@ -107,9 +107,20 @@ end
             f1 = mean(f1);
 
             [~, ~, realExp] = cutexp(G, int64(lam_num), int64(lam_den), int64(weight), A, B);
+            [bestExpNum, bestExpDen, bestExp] = cutexp(G, int64(lam_num), int64(lam_den), int64(weight), S, T);
 
+
+            LL = sum(weight(intersect(setdiff(A, B), setdiff(S, T))));
+            LC = sum(weight(intersect(setdiff(A, B), intersect(S, T))));
+            LR = sum(weight(intersect(setdiff(A, B), setdiff(T, S))));
+            CL = sum(weight(intersect(intersect(A, B), setdiff(S, T))));
+            CC = sum(weight(intersect(intersect(A, B), intersect(S, T))));
+            CR = sum(weight(intersect(intersect(A, B), setdiff(T, S))));
+            RL = sum(weight(intersect(setdiff(B, A), setdiff(S, T))));
+            RC = sum(weight(intersect(setdiff(B, A), intersect(S, T))));
+            RR = sum(weight(intersect(setdiff(B, A), setdiff(T, S))));
             % Append to results: [p, q, r, accuracy, precision, recall, f1]
-            result_cell(end + 1, :) = {datasetName, number_of_edges, lam, lam_num, lam_den, p, q, r, realExp, endtime, expansionFound, lower, accuracy, precision, recall, f1};
+            result_cell(end + 1, :) = {datasetName, lam, lam_num, lam_den, bestExpNum, bestExpDen, bestExp, p, q, r, realExp, endtime, expansionFound, lower, accuracy, precision, recall, f1, LL, LC, LR, CL, CC, CR, RL, RC, RR};
         end
     end
     % result_column_names = {'p', 'q', 'repeat', 'accuracy', 'precision', 'recall', 'f1'};
