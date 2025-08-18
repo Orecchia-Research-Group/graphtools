@@ -5,6 +5,7 @@ arguments
     lambda_num (1, :) int64 = 1
     lambda_den (1, :) int64 = 1
     options.which {mustBeMember(options.which, {'a', 'C', 'non overlapping'})} = 'non overlapping'
+    options.q (1, :) double = -1
 end
     if nargin < 2
         dataset = 'balanced';
@@ -35,10 +36,9 @@ end
     for k = 1:length(mtxFiles)
         mtxName = mtxFiles(k).name;
         mtxPath = fullfile(folder, mtxFiles(k).name);
-        fprintf('Processing: %s\n', mtxFiles(k).name);
 
         % Parse corresponding .ptn filename from .mtx filename
-        % e.g., synthetic_dsname_50_70_3.mtx => synthetic_dsname_50_70_3.ptn
+        % e.g., synthetic_balanced_50_70_3.mtx => synthetic_balanced_50_70_3.ptn
         [~, baseName, ~] = fileparts(mtxFiles(k).name);
         ptnPath = fullfile(folder, [baseName '.ptn']);
 
@@ -58,6 +58,14 @@ end
         p = str2double(tokens{2});
         q = str2double(tokens{3});
         r = str2double(tokens{4});
+
+        % Check if processing this file
+        if (options.q ~= -1 && ~ismember(q, options.q))
+            fprintf('Skipping: %s\n', mtxFiles(k).name)
+            continue;
+        end
+
+        fprintf('Processing: %s\n', mtxFiles(k).name);
 
         % Run cutfind
         [G, weight] = loadGraph(mtxPath);
@@ -106,5 +114,5 @@ end
     end
     % result_column_names = {'p', 'q', 'repeat', 'accuracy', 'precision', 'recall', 'f1'};
     % result_cell = [result_column_names; num2cell(results)];
-    writecell(result_cell, fullfile(folder, sprintf('../%s_results.csv', dataset)));
+    writecell(result_cell, fullfile(folder, sprintf('../%s_%03d_results.csv', dataset, options.q)));
 end
