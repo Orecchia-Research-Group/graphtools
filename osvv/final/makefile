@@ -16,15 +16,16 @@ else ifeq ($(UNAME_S),Darwin)
 else
     # Windows: default mex extension
     MEXEXT = mexw64
-	MEX = mex.bat
+    MEX = mex.bat
     # Use mex.bat -setup to detect the active compiler
     MEXINFO := $(shell $(MEX) -setup 2>&1 | head -n 1)
+    $(info $(MEXIFNO))
     ifneq (,$(findstring Microsoft,$(MEXINFO)))
         OBJEXT = obj   # MSVC
         CC = cl
         CXX = cl
     else ifneq (,$(findstring MinGW,$(MEXINFO)))
-        OBJEXT = o     # MinGW
+        OBJEXT = obj     # MinGW
         CC = gcc
         CXX = g++
     else ifneq (,$(findstring clang,$(MEXINFO)))
@@ -51,13 +52,13 @@ all: $(TARGETS)
 debug: MEXFLAGS=-g -DDEBUG
 debug: clean all
 
-Pairing.$(MEXEXT): Pairing.o Sparse.o flow.o timer.o dynamictree.o
+Pairing.$(MEXEXT): Pairing.$(OBJEXT) Sparse.$(OBJEXT)  flow.$(OBJEXT) timer.$(OBJEXT) dynamictree.$(OBJEXT)
 	$(MEX) CC=$(CC) LD=$(CXX) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 
-cutweird.$(MEXEXT): cutweird.o farey.o
+cutweird.$(MEXEXT): cutweird.$(OBJEXT) cfarey.$(OBJEXT)
 	$(MEX) CC=$(CC) LD=$(CXX) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 
-Farey.$(MEXEXT): Farey.o farey.o
+Farey.$(MEXEXT): Farey.$(OBJEXT) cfarey.$(OBJEXT)
 	$(MEX) CC=$(CC) LD=$(CXX) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 
 %.${MEXEXT}: %.c
@@ -66,11 +67,11 @@ Farey.$(MEXEXT): Farey.o farey.o
 %.${MEXEXT}: %.cpp
 	$(MEX) CXX=$(CXX) LD=$(CXX) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) $^
 
-%.o: %.c
+%.$(OBJEXT): %.c
 	$(MEX) CC=$(CC) LD=$(CC) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) -c $^
 
-%.o: %.cpp
+%.$(OBJEXT): %.cpp
 	$(MEX) CXX=$(CXX) LD=$(CXX) CXXFLAGS="$(CXXFLAGS)" $(MEXFLAGS) -c $^
 
 clean:
-	$(RM) -f *~ *.o *.$(MEXEXT) \#*
+	$(RM) -f *~ *.$(OBJEXT) *.$(MEXEXT) \#*

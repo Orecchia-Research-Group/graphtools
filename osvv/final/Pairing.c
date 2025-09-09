@@ -128,7 +128,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 #endif
 
     N = mxGetM(G);
-    mexCallMATLAB(1, &temp, 1, &G, "nnz");
+    mxArray **graph_ptr = (mxArray **) &G;
+    mexCallMATLAB(1, &temp, 1, graph_ptr, "nnz");
     M = mxGetScalar(temp);
 
     col_G = (int64_t *) mxGetJc(G);

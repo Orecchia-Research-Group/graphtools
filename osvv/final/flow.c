@@ -717,7 +717,7 @@ void stageTwoDynamic()
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                    if (a->resCap < (int64_t int) i->excess)
+                    if (a->resCap < (int64_t) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -735,7 +735,7 @@ void stageTwoDynamic()
         a = i->first;
         while (i->excess > 0) {
             if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                if (a->resCap < (int64_t int) i->excess)
+                if (a->resCap < (int64_t) i->excess)
                     delta = a->resCap;
                 else
                     delta = i->excess;
