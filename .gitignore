@@ -1,6 +1,10 @@
 .DS_Store
+.vs
 *.o
+*.obj
 *.mexa64
+*.mexmaci64
+*.mexw64
 *~
 *.asv
 
