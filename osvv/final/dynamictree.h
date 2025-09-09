@@ -8,21 +8,21 @@
 //#define DEBUG
 
 typedef struct dynamic_tree_node {
-    long id;
-    long delmin, delcost;
+    int64_t id;
+    int64_t delmin, delcost;
     arc* edge; // edge going out from this vertex
     struct dynamic_tree_node *left, *right, *parent;
 
 #ifdef DEBUG
-    long rot_cnt;
-    long splay_cnt;
-    long expose_cnt;
+    int64_t rot_cnt;
+    int64_t splay_cnt;
+    int64_t expose_cnt;
 #endif
 } dynamic_node_t;
 
 
 typedef struct dynamic_tree {
-    long sz;
+    int64_t sz;
     dynamic_node_t* d_nodes;
     node* nodes;
     dynamic_node_t* d_cur_node;  // the root of the tree containing source
@@ -31,16 +31,16 @@ typedef struct dynamic_tree {
     node* source;
 
 #ifdef DEBUG
-    long link_cnt;
-    long cut_cnt;
+    int64_t link_cnt;
+    int64_t cut_cnt;
 #endif
 } dynamic_tree_t;
 
 void dt_print_op_stat(dynamic_tree_t* dTree);
 
-dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node);
+dynamic_tree_t* dt_init(int64_t num_nodes, node* nodes, node* start_node);
 
-void dt_initNode(dynamic_node_t* node, long i);
+void dt_initNode(dynamic_node_t* node, int64_t i);
 
 void dt_cleanUp(dynamic_tree_t* dTree);
 
@@ -82,18 +82,18 @@ dynamic_node_t* dt_d_after(dynamic_node_t* p);
 node* dt_before(dynamic_tree_t* dTree, node* p);
 node* dt_after(dynamic_tree_t* dTree, node* p);
 
-long dt_nMinCost(dynamic_node_t* p);
-long dt_nCost(dynamic_node_t* p);
-void dt_pUpdate(dynamic_node_t* p, long x);
+int64_t dt_nMinCost(dynamic_node_t* p);
+int64_t dt_nCost(dynamic_node_t* p);
+void dt_pUpdate(dynamic_node_t* p, int64_t x);
 
 void dt_d_cut(dynamic_tree_t* dTree, dynamic_node_t* p);
 void dt_cut(dynamic_tree_t* dTree, node* p);
 
 void dt_d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p);
 void dt_cutEdge(dynamic_tree_t* dTree, node* p);
-void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost);
+void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, int64_t* cost);
 
-long dt_dfs(dynamic_tree_t* p);
+int64_t dt_dfs(dynamic_tree_t* p);
 
 
 #endif
