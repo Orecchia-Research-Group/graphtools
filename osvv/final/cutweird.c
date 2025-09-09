@@ -163,7 +163,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
         fprintf(stderr, "Source and sink sets have almost the same weight: fabs(((double)source_set_volume) /  sink_set_volume - 1) = %lf < 1e-4\n", fabs(((double)source_set_volume) / sink_set_volume - 1));
 #endif
     } else {
-        farey(source_set_volume, sink_set_volume, p, &w_bisec, &w_recip);
+        cfarey(source_set_volume, sink_set_volume, p, &w_bisec, &w_recip);
 #ifdef DEBUG
         fprintf(stderr, "Calling farey(%ld, %ld, %ld, %ld, %ld)\n", source_set_volume, sink_set_volume, p, w_bisec, w_recip);
 #endif
@@ -217,7 +217,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     fprintf(stderr, "cutedges=%lf denominator=%ld\n", cutedges, denominator);
 #endif
 
-    farey(cutedges, denominator, p, &w_bisec, &w_recip);
+    cfarey(cutedges, denominator, p, &w_bisec, &w_recip);
 
     plhs[0] = mxCreateDoubleScalar(w_bisec);
     plhs[1] = mxCreateDoubleScalar(w_recip);

@@ -54,7 +54,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("Error in Farey. Precision out of range.\n");
 
     /*%%%%%%%%%%%%%%%%%%%%%%%%% MAIN BODY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-    farey(num_in, den_in, p, &num_out, &den_out);
+    cfarey(num_in, den_in, p, &num_out, &den_out);
 
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
 

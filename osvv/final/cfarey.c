@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdint.h>
 
-void farey(int64_t num_in, int64_t den_in, int64_t p, int64_t *num_out, int64_t *den_out) {
+void cfarey(int64_t num_in, int64_t den_in, int64_t p, int64_t *num_out, int64_t *den_out) {
     int64_t error;
     int64_t a, b, c, d;
     a = 0;
