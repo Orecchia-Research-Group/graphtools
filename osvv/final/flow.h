@@ -13,28 +13,30 @@ INPUTS: Note that vertex indices go from 1 to n.
  - mheads: pointer to array of heads of arcs of routed matching.
  - mtails: pointer to array of tails of arcs of routed matching.
  - mweights: pointer to array of weights of arcs of routed matching.
- - fflow: pointer to long which becomes equal to flow routed.
+ - fflow: pointer to int64_t which becomes equal to flow routed.
 */
 
 #ifndef FLOW_SEEN
 #define FLOW_SEEN
 
+#include <stdint.h>
+
 void hipr(
-        long ninput,
-        long minput,
-        long *tails,
-        long *heads,
-        long *weights,
-        long s,
-        long t,
-        long **output_set,
-        long **mheads,
-        long **mtails,
-        long **mweights,
-        long *nedges,
-        long *fflow,
-        long route_flag,
-        long matching_index
+        int64_t ninput,
+        int64_t minput,
+        int64_t *tails,
+        int64_t *heads,
+        int64_t *weights,
+        int64_t s,
+        int64_t t,
+        int64_t **output_set,
+        int64_t **mheads,
+        int64_t **mtails,
+        int64_t **mweights,
+        int64_t *nedges,
+        int64_t *fflow,
+        int64_t route_flag,
+        int64_t matching_index
 );
 
 #endif

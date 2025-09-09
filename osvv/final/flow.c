@@ -24,7 +24,7 @@ INPUTS: Note that vertex indices go from 1 to n.
  - mtails: pointer to array of tails of arcs of routed matching.
  - mweights: pointer to array of weights of arcs of routed matching.
  - nedges: pointer to number of edges in mgraph
- - fflow: pointer to long which becomes equal to flow routed.
+ - fflow: pointer to int64_t which becomes equal to flow routed.
  - route_flag: set to 1 if we want to receive mgraph as output
 */
 
@@ -38,8 +38,9 @@ INPUTS: Note that vertex indices go from 1 to n.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 /*#include <values.h>*/
-#define MAXLONG 1000000000
+#define MAXint64_t 1000000000
 
 #include "types.h"          /* type definitions */
 #include "flow.h"
@@ -61,32 +62,32 @@ INPUTS: Note that vertex indices go from 1 to n.
 /* #define PRINT_CUT */
 // #define CHECK_SOLUTION
 
-long loadflowproblem
+int64_t loadflowproblem
         (
-                long n,
-                long m,
-                long *tails,
-                long *heads,
-                long *weights,
-                long s,
-                long t,
-                long *n_ad,
-                long *m_ad,
+                int64_t n,
+                int64_t m,
+                int64_t *tails,
+                int64_t *heads,
+                int64_t *weights,
+                int64_t s,
+                int64_t t,
+                int64_t *n_ad,
+                int64_t *m_ad,
                 node **nodes_ad,
                 arc **arcs_ad,
-                long **cap_ad,
+                int64_t **cap_ad,
                 node **source_ad,
                 node **sink_ad,
-                long *node_min_ad
+                int64_t *node_min_ad
         );
 
 
 /* global variables */
 
-long n;                             /* number of nodes */
-long m;                             /* number of arcs */
-long nm;                            /* n + ALPHA * m */
-long nMin;                          /* smallest node id */
+int64_t n;                             /* number of nodes */
+int64_t m;                             /* number of arcs */
+int64_t nm;                            /* n + ALPHA * m */
+int64_t nMin;                          /* smallest node id */
 node *nodes;                        /* array of nodes */
 arc *arcs;                          /* array of arcs */
 bucket *buckets;                    /* array of buckets */
@@ -95,21 +96,21 @@ node *source;                       /* source node pointer */
 node *sink;                         /* sink node pointer */
 node **queue;                    /* queue for BFS */
 node **qHead, **qTail, **qLast;   /* queue pointers */
-long dMax;                          /* maximum label */
-long aMax;                          /* maximum actie node label */
-long aMin;                          /* minimum active node label */
-long flow;                          /* flow value */
-long pushCnt = 0;                   /* number of pushes */
-long relabelCnt = 0;                /* number of relabels */
-long updateCnt = 0;                 /* number of updates */
-long gapCnt = 0;                    /* number of gaps */
-long gNodeCnt = 0;                  /* number of nodes after gap */
+int64_t dMax;                          /* maximum label */
+int64_t aMax;                          /* maximum actie node label */
+int64_t aMin;                          /* minimum active node label */
+int64_t flow;                          /* flow value */
+int64_t pushCnt = 0;                   /* number of pushes */
+int64_t relabelCnt = 0;                /* number of relabels */
+int64_t updateCnt = 0;                 /* number of updates */
+int64_t gapCnt = 0;                    /* number of gaps */
+int64_t gNodeCnt = 0;                  /* number of nodes after gap */
 float t1, t2;                       /* for saving times */
 node *sentinelNode;                 /* end of the node list marker */
 arc *stopA;                         /* used in forAllArcs */
-long workSinceUpdate = 0;           /* the number of arc scans since last update */
+int64_t workSinceUpdate = 0;           /* the number of arc scans since last update */
 float globUpdtFreq;                 /* global update frequency */
-long totalNoOutgoingFlowErrors;
+int64_t totalNoOutgoingFlowErrors;
 
 /* macros */
 #define addedge(t, h, c)\
@@ -169,7 +170,7 @@ long totalNoOutgoingFlowErrors;
      operations iAdd, iDelete (from arbitrary position)
 */
 
-long i_dist;
+int64_t i_dist;
 
 #define aAdd(l, i)\
 {\
@@ -216,7 +217,7 @@ node *i_next, *i_prev;
 
 /* allocate datastructures, initialize related variables */
 
-long allocDS() {
+int64_t allocDS() {
 
     nm = ALPHA * n + m;
     /*
@@ -238,14 +239,14 @@ long allocDS() {
 
 void init() {
     node *i;        /* current node */
-    long overflowDetected;
+    int64_t overflowDetected;
     bucket *l;
     arc *a;
-#ifdef EXCESS_TYPE_LONG
+#ifdef EXCESS_TYPE_int64_t
     double testExcess;
 #endif
 #ifndef OLD_INIT
-    unsigned long delta;
+    uint64_t delta;
 #endif
 
     /* initialize excesses */
@@ -262,23 +263,23 @@ void init() {
     }
 
     overflowDetected = 0;
-#ifdef EXCESS_TYPE_LONG
+#ifdef EXCESS_TYPE_int64_t
     testExcess = 0;
     forAllArcs(source,a) {
       if (a->head != source) {
         testExcess += a->resCap;
       }
     }
-    if (testExcess > MAXLONG) {
+    if (testExcess > MAXint64_t) {
       printf("WARNING: excess overflow. See README for details.\nc\n");
       overflowDetected = 1;
     }
 #endif
 #ifdef OLD_INIT
-    source -> excess = MAXLONG;
+    source -> excess = MAXint64_t;
 #else
     if (overflowDetected) {
-        source->excess = MAXLONG;
+        source->excess = MAXint64_t;
     } else {
         source->excess = 0;
         forAllArcs(source, a) {
@@ -340,8 +341,8 @@ void globalUpdate() {
     node *i, *j;       /* node pointers */
     arc *a;           /* current arc pointers  */
     bucket *l, *jL;          /* bucket */
-    long curDist, jD;
-    long state;
+    int64_t curDist, jD;
+    int64_t state;
 
 
     updateCnt++;
@@ -560,7 +561,7 @@ void stageTwo()
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                    if (a->resCap < (long) i->excess)
+                    if (a->resCap < (int64_t) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -577,7 +578,7 @@ void stageTwo()
         a = i->first;
         while (i->excess > 0) {
             if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                if (a->resCap < (long) i->excess)
+                if (a->resCap < (int64_t) i->excess)
                     delta = a->resCap;
                 else
                     delta = i->excess;
@@ -646,7 +647,7 @@ void stageTwoDynamic()
     forAllNodes(i) {
         forAllArcs(i, a){
             if (a->cap > 0) {
-                long flow = a->cap - a->resCap;
+                int64_t flow = a->cap - a->resCap;
                 i->excess -= flow;
                 a->head->excess += flow;
             }
@@ -716,7 +717,7 @@ void stageTwoDynamic()
             a = i->first;
             while (i->excess > 0) {
                 if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                    if (a->resCap < (long int) i->excess)
+                    if (a->resCap < (int64_t int) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -734,7 +735,7 @@ void stageTwoDynamic()
         a = i->first;
         while (i->excess > 0) {
             if ((cap[a - arcs] == 0) && (a->resCap > 0)) {
-                if (a->resCap < (long int) i->excess)
+                if (a->resCap < (int64_t int) i->excess)
                     delta = a->resCap;
                 else
                     delta = i->excess;
@@ -763,15 +764,15 @@ void stageTwoDynamic()
 
 /* gap relabeling */
 
-long gap(emptyB)
+int64_t gap(emptyB)
         bucket *emptyB;
 
 {
 
     bucket *l;
     node *i;
-    long r;           /* index of the bucket before l  */
-    long cc;          /* cc = 1 if no nodes with positive excess before
+    int64_t r;           /* index of the bucket before l  */
+    int64_t cc;          /* cc = 1 if no nodes with positive excess before
 		      the gap */
 
     gapCnt++;
@@ -806,14 +807,14 @@ long gap(emptyB)
 
 /*--- relabelling node i */
 
-long relabel(i)
+int64_t relabel(i)
 
         node *i;   /* node to relabel */
 
 {
 
     node *j;
-    long minD;     /* minimum d of a node reachable from i */
+    int64_t minD;     /* minimum d of a node reachable from i */
     arc *minA;    /* an arc which leads to the node with minimal d */
     arc *a;
 
@@ -862,7 +863,7 @@ void discharge(i)
 {
 
     node *j;                 /* sucsessor of i */
-    long jD;                 /* d of the next bucket */
+    int64_t jD;                 /* d of the next bucket */
     bucket *lj;               /* j's bucket */
     bucket *l;                /* i's bucket */
     arc *a;                 /* current arc (i,j) */
@@ -883,7 +884,7 @@ void discharge(i)
 
                 if (j->d == jD) {
                     pushCnt++;
-                    if (a->resCap < (long) i->excess)
+                    if (a->resCap < (int64_t) i->excess)
                         delta = a->resCap;
                     else
                         delta = i->excess;
@@ -907,7 +908,7 @@ void discharge(i)
 
                     if (i->excess == 0) break;
 
-                } /* j belongs to the next bucket */
+                } /* j beint64_ts to the next bucket */
             } /* a  is not saturated */
         } /* end of scanning arcs from  i */
 
@@ -923,7 +924,7 @@ void discharge(i)
 
             if (i->d == n) break;
         } else {
-            /* i no longer active */
+            /* i no int64_ter active */
             i->current = a;
             /* put i on inactive list */
             iAdd(l, i);
@@ -999,7 +1000,7 @@ void stageOne() {
 }
 
 
-node *decomposePathInternal(node *n, long *minCap);
+node *decomposePathInternal(node *n, int64_t *minCap);
 
 void bfs(){
     queue = (node **) calloc(n + 3, sizeof(node **));
@@ -1025,12 +1026,12 @@ void bfs(){
     free(queue);
 }
 
-void addMatching(long **mheads, long **mtails, long **mweights,
-                 node* mhead, node* mtail, long mweight, long *kPtr,
-                 long *matchingCapacityPtr) {
-    long *reallocPtr;
-    long matchingCapacity = *matchingCapacityPtr;
-    long k = *kPtr;
+void addMatching(int64_t **mheads, int64_t **mtails, int64_t **mweights,
+                 node* mhead, node* mtail, int64_t mweight, int64_t *kPtr,
+                 int64_t *matchingCapacityPtr) {
+    int64_t *reallocPtr;
+    int64_t matchingCapacity = *matchingCapacityPtr;
+    int64_t k = *kPtr;
     if (k >= matchingCapacity) {
         if (!matchingCapacity) *matchingCapacityPtr = 2 * n;
         else *matchingCapacityPtr = 2 * matchingCapacity;
@@ -1075,14 +1076,14 @@ void addMatching(long **mheads, long **mtails, long **mweights,
     *kPtr = k + 2;
 }
 
-void matchingDinic(long **mheads, long **mtails, long **mweights,
-                   long *kPtr, long *matchingCapacityPtr) {
+void matchingDinic(int64_t **mheads, int64_t **mtails, int64_t **mweights,
+                   int64_t *kPtr, int64_t *matchingCapacityPtr) {
     node *i;
     arc *a;
 
     node *last;
     arc *stopA;
-    long minCap;
+    int64_t minCap;
     /* INITIALIZE MATCHING ARRAYS */
     forAllNodes(i) {
         i->d = 0;
@@ -1090,7 +1091,7 @@ void matchingDinic(long **mheads, long **mtails, long **mweights,
     }
 
     forAllArcs(source, a) {
-        long na = nArc(a);
+        int64_t na = nArc(a);
         source->d = -1;  /*mark on path for cycle detection. */
         if (cap[na] > 0) {
             while (a->resCap < cap[na]) {
@@ -1110,11 +1111,11 @@ void matchingDinic(long **mheads, long **mtails, long **mweights,
     }
 }
 
-void matchingDynamic(long **mheads, long **mtails, long **mweights,
-                     long *kPtr, long *matchingCapacityPtr) {
+void matchingDynamic(int64_t **mheads, int64_t **mtails, int64_t **mweights,
+                     int64_t *kPtr, int64_t *matchingCapacityPtr) {
     node *mhead;
     node *mtail;
-    long mweight;
+    int64_t mweight;
 
     dynamic_tree_t* p = dt_init(n, nodes, source);
     while (source->excess != 0) {
@@ -1124,7 +1125,7 @@ void matchingDynamic(long **mheads, long **mtails, long **mweights,
 #ifdef DEBUG
             fprintf(stderr, "p->cur_node = %ld\n", nNode(p->cur_node));
 #endif
-            long dfs_ret = dt_dfs(p);
+            int64_t dfs_ret = dt_dfs(p);
             if (!dfs_ret) { // link is performed
                 continue;
             }
@@ -1161,9 +1162,9 @@ void print_graph() {
     forAllNodes(i) {
         forAllArcs(i, a) {
             if(a->cap == 0 || a->resCap > 0) continue;
-            long tail = nNode(i);
+            int64_t tail = nNode(i);
             if(tail != nNode(source) && tail != nNode(sink) && tail > (n - 2) / 2) tail -= (n - 2) / 2;
-            long head = nNode(a->head);
+            int64_t head = nNode(a->head);
             if(head != nNode(source) && head != nNode(sink) && head > (n - 2) / 2) head -= (n - 2) / 2;
             fprintf(stderr, "%ld->%ld: %ld / %ld\n", tail, head, a->resCap, a->cap);
         }
@@ -1171,21 +1172,21 @@ void print_graph() {
 }
 
 void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtails, mweights, nedges, fflow, route_flag, matching_index)
-        long ninput;
-        long minput;
-        long *tails;
-        long *heads;
-        long *weights;
-        long s;
-        long t;
-        long **output_set;
-        long **mheads;
-        long **mtails;
-        long **mweights;
-        long *nedges;
-        long *fflow;
-        long route_flag;
-        long matching_index;
+        int64_t ninput;
+        int64_t minput;
+        int64_t *tails;
+        int64_t *heads;
+        int64_t *weights;
+        int64_t s;
+        int64_t t;
+        int64_t **output_set;
+        int64_t **mheads;
+        int64_t **mtails;
+        int64_t **mweights;
+        int64_t *nedges;
+        int64_t *fflow;
+        int64_t route_flag;
+        int64_t matching_index;
 {
     bucket *l;
 #if (defined(PRINT_FLOW) || defined(CHECK_SOLUTION))
@@ -1194,10 +1195,10 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 #endif
 
 #ifdef PRINT_FLOW
-    long ni, na;
+    int64_t ni, na;
 #endif
     node *j;
-    long cc;
+    int64_t cc;
 #ifdef CHECK_SOLUTION
     excessType sum;
     bucket *l;
@@ -1330,16 +1331,16 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
         }
 
     /* RETRIEVE FLOW */
-    *fflow = (long) flow;
+    *fflow = (int64_t) flow;
 #ifdef DEBUG
     fprintf(stderr, "hipr: flow=%ld\n", flow);
     /// Print flow on all edges
     /*forAllNodes(i) {
-        long s = 0;
+        int64_t s = 0;
         forAllArcs(i, a) {
-            long na = nArc(a);
+            int64_t na = nArc(a);
             if (cap[na] == 0) continue;
-            long local_flow = cap[na] - a->resCap;
+            int64_t local_flow = cap[na] - a->resCap;
             s += local_flow;
             if (i == source)
                 printf("%2ld -> %2ld: %ld\n", nNode(i), nNode(a->head), local_flow);
@@ -1348,8 +1349,8 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
             printf("Node: %2ld outflow: %ld\n", nNode(i), s);
     }*/
 
-    long *excesses = calloc(n + 2, sizeof(long));
-    for (long i = 0; i < n + 2; i++) {
+    int64_t *excesses = calloc(n + 2, sizeof(int64_t));
+    for (int64_t i = 0; i < n + 2; i++) {
         excesses[i] = 0;
     }
     node *i;
@@ -1357,14 +1358,14 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     forAllNodes(i) {
         forAllArcs(i, a) {
-            long na = nArc(a);
+            int64_t na = nArc(a);
             if (cap[na] == 0) continue;
             excesses[nNode(a->head)] += cap[na] - a->resCap;
             excesses[nNode(i)] -= cap[na] - a->resCap;
         }
     }
 
-    long nonZeroExcesses = 0;
+    int64_t nonZeroExcesses = 0;
     forAllNodes(i) {
         if (i == source || i == sink) continue;
         nonZeroExcesses += excesses[nNode(i)] != 0;
@@ -1372,7 +1373,7 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
     fprintf(stderr, "Non zero excesses = %ld\n", nonZeroExcesses);
 
-    long wrong_edges = 0;
+    int64_t wrong_edges = 0;
     forAllNodes(i) {
         forAllArcs(i, a) {
             if (a->resCap < 0) {
@@ -1385,9 +1386,9 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
     /* RETRIEVE ROUTED GRAPH - CODE BY SATISH */
 
     if (route_flag == 1) {
-        long minCap;
-        long matchingCapacity;
-        long k;
+        int64_t minCap;
+        int64_t matchingCapacity;
+        int64_t k;
 
         /* INITIALIZE MATCHING ARRAYS */
         matchingCapacity = 0;
@@ -1416,30 +1417,30 @@ void hipr(ninput, minput, tails, heads, weights, s, t, output_set, mheads, mtail
 
 
 
-long loadflowproblem(n, m, tails, heads, weights, s, t,
+int64_t loadflowproblem(n, m, tails, heads, weights, s, t,
                     n_ad, m_ad, nodes_ad, arcs_ad, cap_ad,
                     source_ad, sink_ad, node_min_ad)
 /* input */
-        long n;
-        long m;
-        long *tails;
-        long *heads;
-        long *weights;
-        long s;
-        long t;
+        int64_t n;
+        int64_t m;
+        int64_t *tails;
+        int64_t *heads;
+        int64_t *weights;
+        int64_t s;
+        int64_t t;
 
 /* output */
-        long *n_ad;                 /* address of the number of nodes */
-        long *m_ad;                 /* address of the number of arcs */
+        int64_t *n_ad;                 /* address of the number of nodes */
+        int64_t *m_ad;                 /* address of the number of arcs */
         node **nodes_ad;            /* address of the array of nodes */
         arc **arcs_ad;             /* address of the array of arcs */
-        long **cap_ad;              /* address of the array of capasities */
+        int64_t **cap_ad;              /* address of the array of capasities */
         node **source_ad;           /* address of the pointer to the source */
         node **sink_ad;             /* address of the pointer to the source */
-        long *node_min_ad;          /* address of the minimal node */
+        int64_t *node_min_ad;          /* address of the minimal node */
 {
 
-    long
+    int64_t
             node_min = 0,             /* minimal no of node  */
             node_max = 0,             /* maximal no of node */
             *arc_first = NULL,         /* internal array for holding
@@ -1451,7 +1452,7 @@ long loadflowproblem(n, m, tails, heads, weights, s, t,
     /* temporary variables carrying no of nodes */
             head, tail, i;
 
-    long
+    int64_t
     /* temporary variables carrying no of arcs */
             last, arc_num, arc_new_num;
 
@@ -1464,20 +1465,20 @@ long loadflowproblem(n, m, tails, heads, weights, s, t,
             *arc_new,
             *arc_tmp;
 
-    long *acap = NULL,             /* array of capasities */
+    int64_t *acap = NULL,             /* array of capasities */
             cap;                    /* capasity of the current arc */
 
-    long
+    int64_t
             pos_current = 0;          /* 2*no_alines */
 
-    long k;                      /* temporary */
+    int64_t k;                      /* temporary */
 
 /* allocating memory for  'nodes', 'arcs'  and internal arrays */
     nodes = (node *) calloc(n + 2, sizeof(node));
     arcs = (arc *) calloc(2 * m + 1, sizeof(arc));
-    arc_tail = (long *) calloc(2 * m, sizeof(long));
-    arc_first = (long *) calloc(n + 2, sizeof(long));
-    acap = (long *) calloc(2 * m, sizeof(long));
+    arc_tail = (int64_t *) calloc(2 * m, sizeof(int64_t));
+    arc_first = (int64_t *) calloc(n + 2, sizeof(int64_t));
+    acap = (int64_t *) calloc(2 * m, sizeof(int64_t));
     /* arc_first [ 0 .. n+1 ] = 0 - initialized by calloc */
 
     /* setting pointer to the first arc */
@@ -1656,7 +1657,7 @@ long loadflowproblem(n, m, tails, heads, weights, s, t,
 }
 
 
-node *decomposePathInternal(node *n, long *minCap) {
+node *decomposePathInternal(node *n, int64_t *minCap) {
     node *i;
     arc *a;
 
@@ -1666,7 +1667,7 @@ node *decomposePathInternal(node *n, long *minCap) {
         }
         n->d = -2;
         i = n;
-        long cycleFlow = cap[nArc(i->current)] - i->current->resCap;
+        int64_t cycleFlow = cap[nArc(i->current)] - i->current->resCap;
         #ifdef DEBUG
         fprintf(stderr, "Why are there still cycles here?\n");
         #endif
@@ -1675,7 +1676,7 @@ node *decomposePathInternal(node *n, long *minCap) {
             fprintf(stderr, "%ld ", nNode(i));
             #endif
             i = i->current->head;
-            long currentFlow = cap[nArc(i->current)] - i->current->resCap;
+            int64_t currentFlow = cap[nArc(i->current)] - i->current->resCap;
             if (cycleFlow > currentFlow) {
                 cycleFlow = currentFlow;
             }
@@ -1703,7 +1704,7 @@ node *decomposePathInternal(node *n, long *minCap) {
 
     for (; n->current != (n + 1)->first; n->current++) {
         a = n->current;
-        long na = nArc(a);
+        int64_t na = nArc(a);
         if (cap[na] > 0) {
 #ifdef DEBUG
             if (a->resCap < 0) {
@@ -1711,7 +1712,7 @@ node *decomposePathInternal(node *n, long *minCap) {
             }
 #endif
             while (a->resCap < cap[na]) {
-                long thisCap = cap[na] - a->resCap;
+                int64_t thisCap = cap[na] - a->resCap;
                 if (thisCap < 0) {
                     printf("WARNING: Found negative decomposing flow = %ld - %ld = %ld\n", cap[na], a->resCap, thisCap);
                 }

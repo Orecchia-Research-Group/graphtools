@@ -10,22 +10,22 @@ NOTES:  p < 100000
 
 */
 
-
+#include <math.h>
+#include <stdint.h>
 #include "mex.h"
 #include "matrix.h"
 #include "farey.h"
-#include <math.h>
 
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-    long num_in;
-    long den_in;
-    long p;
-    long num_out;
-    long den_out;
+    int64_t num_in;
+    int64_t den_in;
+    int64_t p;
+    int64_t num_out;
+    int64_t den_out;
 
     mwSize dims[] = {1, 1};
-    long *temp;
+    int64_t *temp;
 
     /*%%%%%%%%%%%%%%%%% ARGUMENT LOADING &  CHECKING %%%%%%%%%%%%%%%%%%%%%*/
     /* CHECK CORRECT NUMBER OF INPUT/OUTPUTS */
@@ -43,9 +43,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("Error in Farey. Precision must be of class int64.\n");
 
 
-    num_in = ((long *) mxGetPr(prhs[0]))[0];
-    den_in = ((long *) mxGetPr(prhs[1]))[0];
-    p = ((long *) mxGetPr(prhs[2]))[0];
+    num_in = ((int64_t *) mxGetPr(prhs[0]))[0];
+    den_in = ((int64_t *) mxGetPr(prhs[1]))[0];
+    p = ((int64_t *) mxGetPr(prhs[2]))[0];
 
     if (num_in < 0 || den_in < 0)
         mexErrMsgTxt("Error in Farey. Numerators and denominators must be positive.\n");
@@ -61,10 +61,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     plhs[0] = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
     plhs[1] = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
 
-    temp = (long *) mxGetPr(plhs[0]);
+    temp = (int64_t *) mxGetPr(plhs[0]);
     *temp = num_out;
 
-    temp = (long *) mxGetPr(plhs[1]);
+    temp = (int64_t *) mxGetPr(plhs[1]);
     *temp = den_out;
 
 }

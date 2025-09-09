@@ -34,61 +34,61 @@ OUTPUTS:
 function [flow, cut, matching]= Pairing(G, source_set, sink_set, source_modifier, sink_modifier, original_modifier[, internal_modifier]);
 */
 
-mxArray* Sparse(long* heads, long* tails, long* weights, long m, long n );
+mxArray* Sparse(int64_t* heads, int64_t* tails, int64_t* weights, int64_t m, int64_t n );
 
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     const mxArray *G;
-    long *source_set;
-    long *sink_set;
-    long source_modifier;
-    long sink_modifier;
-    long original_modifier;
-    long internal_modifier;
+    int64_t *source_set;
+    int64_t *sink_set;
+    int64_t source_modifier;
+    int64_t sink_modifier;
+    int64_t original_modifier;
+    int64_t internal_modifier;
 
-    long N;
-    long M;
-    long source_set_size;
-    long sink_set_size;
-    long *col_G;
-    long *row_G;
+    int64_t N;
+    int64_t M;
+    int64_t source_set_size;
+    int64_t sink_set_size;
+    int64_t *col_G;
+    int64_t *row_G;
     double *pr_G;
-    long *volume;
+    int64_t *volume;
 
-    long *tails;
-    long *heads;
-    long *weights;
-    long *degrees;
+    int64_t *tails;
+    int64_t *heads;
+    int64_t *weights;
+    int64_t *degrees;
 
-    long i;
-    long j;
-    long k;
-    long h;
-    long reciprocalOffset;
+    int64_t i;
+    int64_t j;
+    int64_t k;
+    int64_t h;
+    int64_t reciprocalOffset;
     int *source_set_mask;
     int *sink_set_mask;
     mxArray *temp;
 
-    long n;
-    long m;
-    long *output_set;
-    long *mheads = NULL;
-    long *mtails = NULL;
-    long *mweights = NULL;
-    long nedges;
-    long fflow;
-    long size_cut;
-    long reciprocal_size_cut;
-    long internal_edge_count;
-    long internalNodes;
-    long matching_index = 0;
+    int64_t n;
+    int64_t m;
+    int64_t *output_set;
+    int64_t *mheads = NULL;
+    int64_t *mtails = NULL;
+    int64_t *mweights = NULL;
+    int64_t nedges;
+    int64_t fflow;
+    int64_t size_cut;
+    int64_t reciprocal_size_cut;
+    int64_t internal_edge_count;
+    int64_t internalNodes;
+    int64_t matching_index = 0;
 
     mxArray *matching;
     mxArray *cut, *reciprocalCut;
     mxArray *flow;
-    long *cut_pr, *reciprocalCut_pr;
+    int64_t *cut_pr, *reciprocalCut_pr;
 
     mwSize dims[] = {1, 1};
-    long *temp_a;
+    int64_t *temp_a;
 
     // float t1, t2;
     int route_flag;
@@ -101,11 +101,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /* EXTRACT DATA FROM MATLAB */
     G = prhs[0];
-    source_set = (long *) mxGetPr(prhs[1]);
+    source_set = (int64_t *) mxGetPr(prhs[1]);
     source_set_size = mxGetM(prhs[1]);
-    sink_set = (long *) mxGetPr(prhs[2]);
+    sink_set = (int64_t *) mxGetPr(prhs[2]);
     sink_set_size = mxGetM(prhs[2]);
-    volume = (long *) mxGetPr(prhs[3]);
+    volume = (int64_t *) mxGetPr(prhs[3]);
     char *matching_algorithm = mxArrayToString(prhs[4]);
     if (!strcmp(matching_algorithm, "dinic"))
         matching_index = 0;
@@ -113,11 +113,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         matching_index = 1;
     else
         mexErrMsgTxt("Error in recognizing the matching algorithm");
-    source_modifier = ((long *) mxGetPr(prhs[5]))[0];
-    sink_modifier = ((long *) mxGetPr(prhs[6]))[0];
-    original_modifier = ((long *) mxGetPr(prhs[7]))[0];
+    source_modifier = ((int64_t *) mxGetPr(prhs[5]))[0];
+    sink_modifier = ((int64_t *) mxGetPr(prhs[6]))[0];
+    original_modifier = ((int64_t *) mxGetPr(prhs[7]))[0];
 
-    if (nrhs > 8) internal_modifier = ((long *) mxGetPr(prhs[8]))[0];
+    if (nrhs > 8) internal_modifier = ((int64_t *) mxGetPr(prhs[8]))[0];
     else internal_modifier = 1;
 
 #ifdef DEBUG
@@ -131,12 +131,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexCallMATLAB(1, &temp, 1, &G, "nnz");
     M = mxGetScalar(temp);
 
-    col_G = (long *) mxGetJc(G);
-    row_G = (long *) mxGetIr(G);
+    col_G = (int64_t *) mxGetJc(G);
+    row_G = (int64_t *) mxGetIr(G);
     pr_G = (double *) mxGetPr(G);
 
     internal_edge_count = 0;
-    for (long i = 0; i < N; i++) {
+    for (int64_t i = 0; i < N; i++) {
         internal_edge_count += (volume[i] > 0);
     }
     reciprocalOffset = N * (nrhs > 6);
@@ -176,13 +176,13 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         fprintf(stderr, "Error allocating memory for edge information\n");
     }
 
-    long zero_degree = 0;
+    int64_t zero_degree = 0;
     for (i = 0; i < N; i++) {
         for (j = col_G[i]; j < col_G[i + 1]; j++) {
             if (i == row_G[j]) continue;
             heads[k] = i + 1;
             tails[k] = row_G[j] + reciprocalOffset * (volume[row_G[j]] > 0) + 1;
-            weights[k] = ((long) pr_G[j]) * original_modifier;
+            weights[k] = ((int64_t) pr_G[j]) * original_modifier;
             degrees[i + 1] += weights[k];
             k++;
         }
@@ -195,7 +195,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     if (zero_degree > 0) fprintf(stderr, "There are %ld with zero degree\n", zero_degree);
 
-    long zero_internal = 0;
+    int64_t zero_internal = 0;
     for (h = 0; h < reciprocalOffset; h++) {
         if (volume[h] == 0) continue;
         heads[k] = h + reciprocalOffset + 1;
@@ -263,7 +263,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /* INITIALIZE FLOW */
     flow = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
-    temp_a = (long *) mxGetPr(flow);
+    temp_a = (int64_t *) mxGetPr(flow);
     *temp_a = fflow;
 
 
@@ -282,10 +282,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     k = 0;
     dims[0] = size_cut;
     cut = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
-    cut_pr = (long *) mxGetPr(cut);
+    cut_pr = (int64_t *) mxGetPr(cut);
     dims[0] = reciprocal_size_cut;
     reciprocalCut = mxCreateNumericArray(2, dims, mxINT64_CLASS, mxREAL);
-    reciprocalCut_pr = (long *) mxGetPr(reciprocalCut);
+    reciprocalCut_pr = (int64_t *) mxGetPr(reciprocalCut);
     
     #ifdef DEBUG
         fprintf(stderr, "Preparing to create cut = %ld and reciprocal cut = %ld\n", size_cut, reciprocal_size_cut);
@@ -293,11 +293,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
     for (i = 0; i < N; i++) {
         if (output_set[i] == 0) {
-            cut_pr[k] = (long) i + 1;
+            cut_pr[k] = (int64_t) i + 1;
             k++;
         }
         if (output_set[i + reciprocalOffset * (volume[i] > 0)] != 0) {
-            reciprocalCut_pr[j] = (long) i + 1;
+            reciprocalCut_pr[j] = (int64_t) i + 1;
             j++;
         }
     }

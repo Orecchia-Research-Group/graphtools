@@ -3,15 +3,12 @@
 #ifndef FILE_TYPES_SEEN
 #define FILE_TYPES_SEEN
 
-#ifdef EXCESS_TYPE_LONG
-typedef unsigned long excessType;
-#else
-typedef unsigned long long int excessType; /* change to double if not supported */
-/*typedef double excessType*/; /* change to double if not supported */
-#endif
+#include <stdint.h>
+
+typedef uint64_t excessType;
 
 /*typedef unsigned long cType;*/
-typedef long cType;
+typedef int64_t cType;
 
 typedef  /* arc */
    struct arcSt
@@ -29,7 +26,7 @@ typedef  /* node */
    arc             *current;         /* current outgoing arc */
    excessType      excess;           /* excess at the node 
 				        change to double if needed */
-   long            d;                /* distance label */
+   int64_t         d;                /* distance label */
    struct nodeSt   *bNext;           /* next node in bucket */
    struct nodeSt   *bPrev;           /* previous node in bucket */
 } node;

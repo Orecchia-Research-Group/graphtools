@@ -1,7 +1,8 @@
+#include <stdint.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
 #include "dynamictree.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "stdio.h"
 
 //#define DEBUG
 
@@ -12,10 +13,10 @@
 
 void dt_print_op_stat(dynamic_tree_t* dTree) {
 #ifdef DEBUG
-    long tot_rot_cnt = 0;
-    long tot_splay_cnt = 0;
-    long tot_expose_cnt = 0;
-    for (long i = 0; i < dTree->sz; i++){
+    int64_t tot_rot_cnt = 0;
+    int64_t tot_splay_cnt = 0;
+    int64_t tot_expose_cnt = 0;
+    for (int64_t i = 0; i < dTree->sz; i++){
         tot_rot_cnt += dTree->d_nodes[i].rot_cnt;
         tot_splay_cnt += dTree->d_nodes[i].splay_cnt;
         tot_expose_cnt += dTree->d_nodes[i].expose_cnt;
@@ -31,11 +32,11 @@ void dt_print_op_stat(dynamic_tree_t* dTree) {
 #endif
 }
 
-dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node) {
+dynamic_tree_t* dt_init(int64_t num_nodes, node* nodes, node* start_node) {
     dynamic_tree_t* dTree = calloc(1, sizeof(dynamic_tree_t));
     dTree->sz = num_nodes;
     dTree->d_nodes = calloc(num_nodes, sizeof(dynamic_node_t));
-    for (long i = 0; i < dTree->sz; i++) { // (TODO: int or long) -> long
+    for (int64_t i = 0; i < dTree->sz; i++) { // (TODO: int or int64_t) -> int64_t
         dt_initNode(&dTree->d_nodes[i], i);
         nodes[i].current = nodes[i].first;
     }
@@ -52,7 +53,7 @@ dynamic_tree_t* dt_init(long num_nodes, node* nodes, node* start_node) {
     return dTree;
 }
 
-void dt_initNode(dynamic_node_t* node, long i) {
+void dt_initNode(dynamic_node_t* node, int64_t i) {
     node->id = i;
     node->left = node->right = node->parent = NULL;
     node->delmin = 0;
@@ -66,12 +67,12 @@ void dt_initNode(dynamic_node_t* node, long i) {
 #endif
 }
 
-void dt_cleanUp_d_node(dynamic_node_t* d_node, bool* flag, long parent_cost) {
+void dt_cleanUp_d_node(dynamic_node_t* d_node, bool* flag, int64_t parent_cost) {
     flag[d_node->id] = true;
-    long cost = parent_cost + d_node->delcost;
+    int64_t cost = parent_cost + d_node->delcost;
     if (d_node->edge != NULL) {
         d_node->edge->resCap = d_node->edge->cap - cost;
-        long tot_cap = d_node->edge->cap + d_node->edge->rev->cap;
+        int64_t tot_cap = d_node->edge->cap + d_node->edge->rev->cap;
         d_node->edge->rev->resCap = tot_cap - d_node->edge->resCap;
     }
     if (d_node->left != NULL) {
@@ -84,7 +85,7 @@ void dt_cleanUp_d_node(dynamic_node_t* d_node, bool* flag, long parent_cost) {
 
 void dt_cleanUp(dynamic_tree_t* dTree) {
     bool* flag = calloc(dTree->sz, sizeof(bool));
-    for (long i = 0; i < dTree->sz; i++) {
+    for (int64_t i = 0; i < dTree->sz; i++) {
         if (flag[i] == false) {
             dt_splay(&dTree->d_nodes[i]);
             dt_cleanUp_d_node(&dTree->d_nodes[i], flag, 0);
@@ -128,9 +129,9 @@ void dt_rotR (dynamic_node_t* p) {
     dynamic_node_t* a = p->left;
     dynamic_node_t* b = p->right;
     dynamic_node_t* c = q->right;
-    long p_delcost = p->delcost + q->delcost;
-    long q_delcost = -p->delcost;
-    long q_delmin = 0;
+    int64_t p_delcost = p->delcost + q->delcost;
+    int64_t q_delcost = -p->delcost;
+    int64_t q_delmin = 0;
     if (b != NULL) {
         b->delcost += p->delcost;
         q_delmin = max(q_delmin, b->delmin - b->delcost);
@@ -138,7 +139,7 @@ void dt_rotR (dynamic_node_t* p) {
     if (c != NULL) {
         q_delmin = max(q_delmin, c->delmin - c->delcost);
     }
-    long p_delmin = max(0, q_delmin - q_delcost);
+    int64_t p_delmin = max(0, q_delmin - q_delcost);
     if (a != NULL) {
         p_delmin = max(p_delmin, a->delmin - a->delcost);
     }
@@ -175,9 +176,9 @@ void dt_rotL (dynamic_node_t* p) {
     dynamic_node_t* a = q->left;
     dynamic_node_t* b = p->left;
     dynamic_node_t* c = p->right;
-    long p_delcost = p->delcost + q->delcost;
-    long q_delcost = -p->delcost;
-    long q_delmin = 0;
+    int64_t p_delcost = p->delcost + q->delcost;
+    int64_t q_delcost = -p->delcost;
+    int64_t q_delmin = 0;
     if (b != NULL) {
         b->delcost += p->delcost;
         q_delmin = max(q_delmin, b->delmin - b->delcost);
@@ -185,7 +186,7 @@ void dt_rotL (dynamic_node_t* p) {
     if (a != NULL) {
         q_delmin = max(q_delmin, a->delmin - a->delcost);
     }
-    long p_delmin = max(0, q_delmin - q_delcost);
+    int64_t p_delmin = max(0, q_delmin - q_delcost);
     if (c != NULL) {
         p_delmin = max(p_delmin, c->delmin - c->delcost);
     }
@@ -293,14 +294,14 @@ bool dt_d_link(dynamic_tree_t* dTree, dynamic_node_t* p, dynamic_node_t* q, arc*
     dt_expose(p);
     if (p->right != NULL) {
         // p is not a root. Error
-        long pid = p - dTree->d_nodes;
-        long qid = q - dTree->d_nodes;
+        int64_t pid = p - dTree->d_nodes;
+        int64_t qid = q - dTree->d_nodes;
         fprintf(stderr, "Linking from node %ld to node %ld failed, because node %ld is not a root\n", pid, qid, pid);
         return false;
     }
     if (dt_d_root(q) == p) {
-        long pcost = dt_nMinCost(q);
-        long ccost = min(pcost, edge->cap - edge->resCap); // cycle minimum cost
+        int64_t pcost = dt_nMinCost(q);
+        int64_t ccost = min(pcost, edge->cap - edge->resCap); // cycle minimum cost
         dt_pUpdate(q, -ccost);
         edge->resCap += ccost;
         edge->rev->resCap -= ccost;
@@ -402,17 +403,17 @@ node* dt_after(dynamic_tree_t* dTree, node* p) {
     return p;
 }
 
-long dt_nMinCost(dynamic_node_t* p) {
+int64_t dt_nMinCost(dynamic_node_t* p) {
     dt_expose(p);
     return p->delcost - p->delmin;
 }
 
-long dt_nCost(dynamic_node_t* p) {
+int64_t dt_nCost(dynamic_node_t* p) {
     dt_splay(p);
     return p->delcost;
 }
 
-void dt_pUpdate(dynamic_node_t* p, long x) {
+void dt_pUpdate(dynamic_node_t* p, int64_t x) {
     dt_expose(p);
     p->delcost += x;
 }
@@ -433,7 +434,7 @@ void dt_d_cut(dynamic_tree_t* dTree, dynamic_node_t* p) {
     }
 
     p->edge->resCap = p->edge->cap - p->delcost;
-    long tot_cap = p->edge->cap + p->edge->rev->cap;
+    int64_t tot_cap = p->edge->cap + p->edge->rev->cap;
     p->edge->rev->resCap = tot_cap - p->edge->resCap;
     p->edge = NULL;
 
@@ -460,7 +461,7 @@ void dt_d_cutEdge(dynamic_tree_t* dTree, dynamic_node_t* p) {
     while(dt_nMinCost(p) == 0) {
         dynamic_node_t* u = p;
         dynamic_node_t* w;
-        long cost = u->delcost;
+        int64_t cost = u->delcost;
         while(true) {
             if ((w = u->right) != NULL && cost + w->delcost - w->delmin == 0) {
                 u = w;
@@ -484,9 +485,9 @@ void dt_cutEdge(dynamic_tree_t* dTree, node* p) {
 }
 
 // store the path from p to the root
-void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost) {
+void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, int64_t* cost) {
     node* p = dTree->source;
-    long pcost = dt_nMinCost(dt_to_d_node(dTree, p));
+    int64_t pcost = dt_nMinCost(dt_to_d_node(dTree, p));
     *b = dt_before(dTree, dt_root(dTree, p));
     *a = dt_after(dTree, p);
     *cost = pcost;
@@ -500,8 +501,8 @@ void dt_findPath(dynamic_tree_t* dTree, node** a, node** b, long* cost) {
  * return: 0 if link or cycle elimination is performed
  *         1 otherwise
  */
-long dt_dfs(dynamic_tree_t* p) {
-    long link_flag = 0;
+int64_t dt_dfs(dynamic_tree_t* p) {
+    int64_t link_flag = 0;
     for (; p->cur_node->current < (p->cur_node +
                                    1)->first; p->cur_node->current++) {   // Find suitable edge or exhaust edges
         arc *cur_arc = p->cur_node->current;

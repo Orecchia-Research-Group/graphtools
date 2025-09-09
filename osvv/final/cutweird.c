@@ -9,7 +9,7 @@ NOTES:
    - if weird ratio is negative, return abs.value (i.e. weirdratio of complement cut)
    - G is assumed to be undirected, no check for that
    - G is assumed to be sparse, program will check this
-   - ASSUMING C LONG TYPE IS 64 BITS
+   - ASSUMING C int64_t TYPE IS 64 BITS
 
 
 mexFunction INPUTS;
@@ -19,13 +19,14 @@ mexFunction INPUTS;
 */
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>
 #include "mex.h"
 #include "matrix.h"
 #include "farey.h"
 
 #define abs(x) (x) > 0 ? (x) : -(x)
 
-long gcd(long a, long b)
+int64_t gcd(int64_t a, int64_t b)
 {
     // Everything divides 0
     if ((!a) || (!b))
@@ -42,26 +43,26 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     mwIndex *row;
 
     double *array_G;
-    long *cut;
-    long *reciprocal_cut;
-    long size_cut;
-    long reciprocal_size_cut;
-    long *source_set;
-    long *sink_set;
-    long source_set_size;
-    long sink_set_size;
-    long *weight;
-    long source_set_volume = 0;
-    long sink_set_volume = 0;
-    long w_bisec;
-    long w_recip;
-    long p = 10000;
-    long i, j;
-    long n;
+    int64_t *cut;
+    int64_t *reciprocal_cut;
+    int64_t size_cut;
+    int64_t reciprocal_size_cut;
+    int64_t *source_set;
+    int64_t *sink_set;
+    int64_t source_set_size;
+    int64_t sink_set_size;
+    int64_t *weight;
+    int64_t source_set_volume = 0;
+    int64_t sink_set_volume = 0;
+    int64_t w_bisec;
+    int64_t w_recip;
+    int64_t p = 10000;
+    int64_t i, j;
+    int64_t n;
     double cutedges = 0;
-    long denominator = 0;
-    long lamda_num;
-    long lamda_den;
+    int64_t denominator = 0;
+    int64_t lamda_num;
+    int64_t lamda_den;
 
     int *mask_cut;
     int *reciprocal_mask_cut;
@@ -69,7 +70,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     int *sink_set_mask;
 
     mwSize dims[] = {1, 1};
-    long *temp;
+    int64_t *temp;
 
     /*%%%%%%%%%%%%%%%%% ARGUMENT LOADING &  CHECKING %%%%%%%%%%%%%%%%%%%%%*/
 
@@ -114,18 +115,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
     row = mxGetIr(G);
     array_G = mxGetPr(G);
 
-    cut = (long *) mxGetPr(prhs[1]);
+    cut = (int64_t *) mxGetPr(prhs[1]);
     size_cut = mxGetM(prhs[1]);
-    reciprocal_cut = (long *) mxGetPr(prhs[2]);
+    reciprocal_cut = (int64_t *) mxGetPr(prhs[2]);
     reciprocal_size_cut = mxGetM(prhs[2]);
 
-    source_set = (long *) mxGetPr(prhs[3]);
+    source_set = (int64_t *) mxGetPr(prhs[3]);
     source_set_size = mxGetM(prhs[3]);
-    sink_set = (long *) mxGetPr(prhs[4]);
+    sink_set = (int64_t *) mxGetPr(prhs[4]);
     sink_set_size = mxGetM(prhs[4]);
-    weight = (long *) mxGetPr(prhs[5]);
-    lamda_num = ((long *) mxGetPr(prhs[6]))[0];
-    lamda_den = ((long *) mxGetPr(prhs[7]))[0];
+    weight = (int64_t *) mxGetPr(prhs[5]);
+    lamda_num = ((int64_t *) mxGetPr(prhs[6]))[0];
+    lamda_den = ((int64_t *) mxGetPr(prhs[7]))[0];
     if (lamda_num < 0) {
         lamda_den = 1l;
     }
@@ -206,7 +207,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {  
 
     /*%%%%%%%%%%%%%%%%%%%%% TERMINATION AND CLEANING %%%%%%%%%%%%%%%%%%%%%%%%*/
 
-    long g = gcd(abs(cutedges), abs(denominator));
+    int64_t g = gcd(abs(cutedges), abs(denominator));
     if (g > 0) {
         cutedges /= g;
         denominator /= g;

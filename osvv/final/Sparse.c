@@ -17,10 +17,12 @@ INPUTS:
 OUTPUTS:
  - mxArray*: a pointer to the sparse Array
 */
+
+#include <stdint.h>
 #include "mex.h"
 #include "matrix.h"
 
-mxArray* Sparse(long* heads, long* tails, long* weights, long m, long n )
+mxArray* Sparse(int64_t* heads, int64_t* tails, int64_t* weights, int64_t m, int64_t n )
 {
   mxArray* H;
   mxArray* T;

@@ -1,13 +1,14 @@
 #include <math.h>
+#include <stdint.h>
 
-void farey(long num_in, long den_in, long p, long *num_out, long *den_out) {
-    long error;
-    long a, b, c, d;
+void farey(int64_t num_in, int64_t den_in, int64_t p, int64_t *num_out, int64_t *den_out) {
+    int64_t error;
+    int64_t a, b, c, d;
     a = 0;
     b = 1;
     c = ceil(((double) num_in) / den_in);
     d = 1;
-    long h, k;
+    int64_t h, k;
 
     for (;;) {
         h = a + c;
