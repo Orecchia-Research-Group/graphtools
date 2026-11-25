@@ -1,6 +1,7 @@
+#include "timer.h"
 #include <chrono>
 
-float timer()
+float timer(void)
 {
     using namespace std::chrono;
     static steady_clock::time_point start = steady_clock::now();

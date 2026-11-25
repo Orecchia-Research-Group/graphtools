@@ -3,7 +3,7 @@
 #include "types.h"
 
 #ifndef FILE_DYNAMICTREE_SEEN
-#define FILE_DYANMICTREE_SEEN
+#define FILE_DYNAMICTREE_SEEN
 
 //#define DEBUG
 
