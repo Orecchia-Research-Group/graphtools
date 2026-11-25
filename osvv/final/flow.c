@@ -1118,7 +1118,10 @@ void matchingDynamic(int64_t **mheads, int64_t **mtails, int64_t **mweights,
     int64_t mweight;
 
     dynamic_tree_t* p = dt_init(n, nodes, source);
-    while (source->excess != 0) {
+    /* Decompose until no flow-carrying arc leaves the source. Do not loop on
+     * source->excess: after stage two it does not equal the flow leaving the
+     * source, which made this routine stop early and return a partial matching. */
+    while (true) {
         // Look for an augmenting path
 
         while (p->cur_node != sink) {
